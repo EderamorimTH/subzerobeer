@@ -1,10 +1,21 @@
 // payment.js
+
+// Verificar se selectedNumbers está definido (deve ser uma variável global do script inline no HTML)
 if (typeof selectedNumbers === 'undefined') {
     console.error(`[${new Date().toISOString()}] Erro: selectedNumbers não definido`);
     alert('Erro interno: Números selecionados não encontrados. Tente novamente.');
     selectedNumbers = [];
 }
 
+// Função para gerar um userId único
+function generateUserId() {
+    const userId = Math.random().toString(36).substr(2, 9);
+    localStorage.setItem('userId', userId);
+    console.log(`[${new Date().toISOString()}] Novo userId gerado: ${userId}`);
+    return userId;
+}
+
+// Função para verificar a reserva dos números
 async function checkReservation(numbers) {
     try {
         console.log(`[${new Date().toISOString()}] Verificando reserva dos números:`, numbers);
@@ -26,6 +37,7 @@ async function checkReservation(numbers) {
     }
 }
 
+// Função para enviar a solicitação de pagamento
 async function sendPaymentRequest(data) {
     const maxRetries = 3;
     let retries = 0;
@@ -76,41 +88,49 @@ async function sendPaymentRequest(data) {
     }
 }
 
+// Manipulador de submissão do formulário
 document.getElementById('payment-form').addEventListener('submit', async (event) => {
     event.preventDefault();
+    const loadingMessage = document.getElementById('loading-message');
+    loadingMessage.style.display = 'block';
     console.log(`[${new Date().toISOString()}] Formulário enviado`);
-    document.getElementById('loading-message').style.display = 'block';
 
-    const buyerName = document.getElementById('buyer-name').value;
-    const buyerPhone = document.getElementById('buyer-phone').value;
-    const quantity = selectedNumbers.length;
+    try {
+        const buyerName = document.getElementById('buyer-name').value;
+        const buyerPhone = document.getElementById('buyer-phone').value;
+        const quantity = selectedNumbers.length;
 
-    console.log(`[${new Date().toISOString()}] Dados do formulário:`, { buyerName, buyerPhone, selectedNumbers, quantity });
+        console.log(`[${new Date().toISOString()}] Dados do formulário:`, { buyerName, buyerPhone, selectedNumbers, quantity });
 
-    if (selectedNumbers.length === 0) {
-        console.warn(`[${new Date().toISOString()}] Nenhum número selecionado`);
-        alert('Por favor, selecione pelo menos um número.');
-        document.getElementById('loading-message').style.display = 'none';
-        return;
+        if (selectedNumbers.length === 0) {
+            console.warn(`[${new Date().toISOString()}] Nenhum número selecionado`);
+            alert('Por favor, selecione pelo menos um número.');
+            loadingMessage.style.display = 'none';
+            return;
+        }
+        if (!buyerName || !buyerPhone) {
+            console.warn(`[${new Date().toISOString()}] Campos obrigatórios não preenchidos`);
+            alert('Por favor, preencha todos os campos.');
+            loadingMessage.style.display = 'none';
+            return;
+        }
+
+        localStorage.setItem('buyerName', buyerName);
+        localStorage.setItem('buyerPhone', buyerPhone);
+
+        const paymentData = {
+            quantity,
+            buyerName,
+            buyerPhone,
+            numbers: selectedNumbers,
+            userId: localStorage.getItem('userId') || generateUserId()
+        };
+        console.log(`[${new Date().toISOString()}] Enviando solicitação de pagamento:`, paymentData);
+
+        await sendPaymentRequest(paymentData);
+    } catch (error) {
+        console.error(`[${new Date().toISOString()}] Erro ao processar formulário:`, error.message);
+        alert('Erro ao processar pagamento: ' + error.message);
+        loadingMessage.style.display = 'none';
     }
-    if (!buyerName || !buyerPhone) {
-        console.warn(`[${new Date().toISOString()}] Campos obrigatórios não preenchidos`);
-        alert('Por favor, preencha todos os campos.');
-        document.getElementById('loading-message').style.display = 'none';
-        return;
-    }
-
-    localStorage.setItem('buyerName', buyerName);
-    localStorage.setItem('buyerPhone', buyerPhone);
-
-    const paymentData = {
-        quantity,
-        buyerName,
-        buyerPhone,
-        numbers: selectedNumbers,
-        userId: localStorage.getItem('userId') || generateUserId()
-    };
-    console.log(`[${new Date().toISOString()}] Enviando solicitação de pagamento:`, paymentData);
-
-    await sendPaymentRequest(paymentData);
 });
