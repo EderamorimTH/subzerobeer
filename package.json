@@ -10,6 +10,7 @@
         "express": "^4.17.1",
         "mongoose": "^6.3.0",
         "cors": "^2.8.5",
-        "mercadopago": "^2.0.6"
+        "mercadopago": "^2.0.6",
+        "dotenv": "^16.0.3"
     }
 }
