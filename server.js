@@ -1,7 +1,7 @@
 const express = require('express');
 const mongoose = require('mongoose');
 const cors = require('cors');
-const { MercadoPagoConfig, Preference } = require('mercadopago');
+const { MercadoPagoConfig, Preference, Payment } = require('mercadopago');
 
 const app = express();
 app.use(express.json());
@@ -208,45 +208,62 @@ app.post('/webhook', async (req, res) => {
     const payment = req.body;
     console.log(`[${new Date().toISOString()}] Webhook recebido:`, JSON.stringify(payment, null, 2));
     try {
-        if (payment.type === 'payment' && payment.data.status === 'approved') {
+        if (payment.type === 'payment') {
             const paymentId = payment.data.id;
-            const externalReference = JSON.parse(payment.data.external_reference || '{}');
-            const { numbers, userId, buyerName, buyerPhone } = externalReference;
+            // Consultar a API do Mercado Pago para obter o status detalhado
+            const paymentClient = new Payment(client);
+            const paymentDetails = await paymentClient.get({ id: paymentId });
+            console.log(`[${new Date().toISOString()}] Resposta da API do Mercado Pago:`, JSON.stringify(paymentDetails, null, 2));
 
-            const session = await mongoose.startSession();
-            session.startTransaction();
-            try {
-                const validNumbers = await Comprador.find({
-                    number: { $in: numbers },
-                    status: 'reservado',
-                    userId,
-                }).session(session);
-                if (validNumbers.length !== numbers.length) {
-                    await session.abortTransaction();
-                    session.endSession();
-                    console.error(`[${new Date().toISOString()}] Números não estão reservados para o usuário: ${userId}`);
+            if (paymentDetails.status === 'approved') {
+                let externalReference;
+                try {
+                    externalReference = JSON.parse(paymentDetails.external_reference || '{}');
+                } catch (e) {
+                    console.error(`[${new Date().toISOString()}] Erro ao parsear external_reference:`, e);
                     return res.sendStatus(400);
                 }
+                const { numbers, userId, buyerName, buyerPhone } = externalReference;
 
-                await Comprador.updateMany(
-                    { number: { $in: numbers }, status: 'reservado', userId },
-                    { $set: { status: 'vendido', userId: null, timestamp: null } },
-                    { session }
-                );
+                const session = await mongoose.startSession();
+                session.startTransaction();
+                try {
+                    const validNumbers = await Comprador.find({
+                        number: { $in: numbers },
+                        status: 'reservado',
+                        userId,
+                    }).session(session);
+                    if (validNumbers.length !== numbers.length) {
+                        await session.abortTransaction();
+                        session.endSession();
+                        console.error(`[${new Date().toISOString()}] Números não estão reservados para o usuário: ${userId}`);
+                        return res.sendStatus(400);
+                    }
 
-                await Purchase.updateMany(
-                    { numbers: { $in: numbers }, status: 'pending' },
-                    { $set: { status: 'approved', paymentId, date_approved: new Date() } },
-                    { session }
-                );
+                    const compradorResult = await Comprador.updateMany(
+                        { number: { $in: numbers }, status: 'reservado', userId },
+                        { $set: { status: 'vendido', userId: null, timestamp: null } },
+                        { session }
+                    );
+                    console.log(`[${new Date().toISOString()}] Compradores atualizados: ${compradorResult.modifiedCount}`);
 
-                await session.commitTransaction();
-                console.log(`[${new Date().toISOString()}] Pagamento ${paymentId} aprovado. Números ${numbers.join(', ')} marcados como vendido.`);
-            } catch (error) {
-                await session.abortTransaction();
-                throw error;
-            } finally {
-                session.endSession();
+                    const purchaseResult = await Purchase.updateMany(
+                        { numbers: { $in: numbers }, status: 'pending' },
+                        { $set: { status: 'approved', paymentId, date_approved: new Date() } },
+                        { session }
+                    );
+                    console.log(`[${new Date().toISOString()}] Compras atualizadas: ${purchaseResult.modifiedCount}`);
+
+                    await session.commitTransaction();
+                    console.log(`[${new Date().toISOString()}] Pagamento ${paymentId} aprovado. Números ${numbers.join(', ')} marcados como vendido.`);
+                } catch (error) {
+                    await session.abortTransaction();
+                    throw error;
+                } finally {
+                    session.endSession();
+                }
+            } else {
+                console.log(`[${new Date().toISOString()}] Pagamento ${paymentId} não está aprovado. Status: ${paymentDetails.status}`);
             }
         }
         res.sendStatus(200);
