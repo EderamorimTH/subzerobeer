@@ -183,6 +183,13 @@
             margin-top: 10px;
             text-align: center;
         }
+        .payment-message {
+            max-width: 600px;
+            margin: 20px auto;
+            padding: 15px;
+            border-radius: 5px;
+            background-color: #F0F0F0;
+        }
         footer {
             background-color: #000000;
             color: #FFFFFF;
@@ -277,6 +284,16 @@
 
 <section class="form-container">
     <h3>Finalize sua compra</h3>
+    <div id="payment-success" class="payment-message" style="display: none; color: #008000; text-align: center;">
+        <p>Pagamento aprovado com sucesso!</p>
+        <p>Seus números estão confirmados. Boa sorte!</p>
+    </div>
+    <div id="payment-failed" class="payment-message" style="display: none; color: #FF0000; text-align: center;">
+        <p>O pagamento não foi concluído. Seus números foram liberados. Escolha novamente para tentar outra vez.</p>
+    </div>
+    <div id="payment-pending" class="payment-message" style="display: none; color: #FFA500; text-align: center;">
+        <p>Seu pagamento está pendente. Aguarde a confirmação ou tente novamente se os números expirarem.</p>
+    </div>
     <form id="payment-form">
         <input type="text" id="buyer-name" placeholder="Nome Completo" required>
         <input type="tel" id="buyer-phone" placeholder="Telefone (WhatsApp)" required>
@@ -312,11 +329,38 @@
     const pricePerNumber = 10;
     const totalNumbers = 100;
 
+    // Função para lidar com parâmetros de retorno do Mercado Pago
+    function handlePaymentStatus() {
+        const urlParams = new URLSearchParams(window.location.search);
+        const status = urlParams.get('status');
+        const paymentSuccess = document.getElementById('payment-success');
+        const paymentFailed = document.getElementById('payment-failed');
+        const paymentPending = document.getElementById('payment-pending');
+
+        if (status === 'approved') {
+            paymentSuccess.style.display = 'block';
+            paymentFailed.style.display = 'none';
+            paymentPending.style.display = 'none';
+        } else if (status === 'rejected' || status === 'cancelled') {
+            paymentFailed.style.display = 'block';
+            paymentSuccess.style.display = 'none';
+            paymentPending.style.display = 'none';
+        } else if (status === 'pending' || status === 'in_process') {
+            paymentPending.style.display = 'block';
+            paymentSuccess.style.display = 'none';
+            paymentFailed.style.display = 'none';
+        }
+
+        // Limpar parâmetros da URL para evitar reaparecimento da mensagem
+        window.history.replaceState({}, document.title, window.location.pathname);
+    }
+
     window.onload = function() {
         const savedName = localStorage.getItem('buyerName');
         const savedPhone = localStorage.getItem('buyerPhone');
         if (savedName) document.getElementById('buyer-name').value = savedName;
         if (savedPhone) document.getElementById('buyer-phone').value = savedPhone;
+        handlePaymentStatus(); // Verificar status do pagamento ao carregar
         loadData();
     };
 
@@ -463,6 +507,5 @@
         }
     }
 </script>
-
 </body>
 </html>
