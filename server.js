@@ -9,8 +9,8 @@ app.use(cors()); // Permite chamadas do frontend no GitHub Pages
 // Configurar strictQuery para evitar aviso de depreciação
 mongoose.set('strictQuery', false);
 
-// Conectar ao MongoDB
-mongoose.connect(`mongodb+srv://Amorim:${process.env.MONGO_PASSWORD}@cluster0.8vhg4ws.mongodb.net/subzerobeer?retryWrites=true&w=majority&appName=Cluster0`, {
+// Conectar ao MongoDB usando MONGODB_URI
+mongoose.connect(process.env.MONGODB_URI, {
     useNewUrlParser: true,
     useUnifiedTopology: true,
 }).then(() => console.log('Conectado ao MongoDB')).catch(err => console.error('Erro ao conectar ao MongoDB:', err));
