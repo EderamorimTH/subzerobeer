@@ -24,6 +24,7 @@ const compradorSchema = new mongoose.Schema({
     timestamp: Date,
     buyerName: String,
     buyerPhone: String,
+    paymentId: String, // Para associar ao pagamento do Mercado Pago
 });
 const Comprador = mongoose.model('Comprador', compradorSchema, 'compradores');
 
@@ -44,8 +45,25 @@ async function initializeNumbers() {
 }
 initializeNumbers();
 
+// Liberar números reservados após 5 minutos
+async function clearExpiredReservations() {
+    try {
+        const fiveMinutesAgo = new Date(Date.now() - 5 * 60 * 1000);
+        await Comprador.updateMany(
+            { status: 'reservado', timestamp: { $lt: fiveMinutesAgo } },
+            { $set: { status: 'disponível', userId: null, timestamp: null } }
+        );
+        console.log('Reservas expiradas liberadas.');
+    } catch (error) {
+        console.error('Erro ao liberar reservas expiradas:', error);
+    }
+}
+// Executar a cada 5 minutos
+setInterval(clearExpiredReservations, 5 * 60 * 1000);
+
 app.get('/available_numbers', async (req, res) => {
     try {
+        await clearExpiredReservations(); // Limpar reservas expiradas antes de listar
         const numbers = await Comprador.find({ status: 'disponível' }).select('number');
         res.json(numbers.map(n => n.number));
     } catch (error) {
@@ -127,6 +145,7 @@ app.post('/create_preference', async (req, res) => {
                         title: 'Sorteio Sub-zero Beer',
                         unit_price: quantity * 10,
                         quantity: 1,
+                        currency_id: 'BRL',
                     },
                 ],
                 back_urls: {
@@ -135,15 +154,12 @@ app.post('/create_preference', async (req, res) => {
                     pending: 'https://ederamorimth.github.io/subzerobeer/pending.html',
                 },
                 auto_return: 'approved',
+                external_reference: JSON.stringify({ numbers, userId, buyerName, buyerPhone }), // Armazenar dados para o webhook
             };
             const response = await mercadopago.preferences.create(preference);
             const paymentLink = response.body.init_point;
 
-            await Comprador.updateMany(
-                { number: { $in: numbers } },
-                { $set: { status: 'vendido', buyerName, buyerPhone } },
-                { session }
-            );
+            // Não marcar como vendido aqui; esperar o webhook
             await session.commitTransaction();
             session.endSession();
             res.json({ init_point: paymentLink });
@@ -153,7 +169,7 @@ app.post('/create_preference', async (req, res) => {
             throw error;
         }
     } catch (error) {
-        console.error('Erro ao processar pagamento:', error);
+        console.error('Erro ao processar preferência:', error);
         res.status(500).json({ error: 'Erro ao processar pagamento.' });
     }
 });
@@ -161,12 +177,34 @@ app.post('/create_preference', async (req, res) => {
 app.post('/webhook', async (req, res) => {
     const payment = req.body;
     console.log('Webhook recebido:', payment);
-    if (payment.action === 'payment.updated' && payment.data.status === 'approved') {
-        const paymentId = payment.data.id;
-        console.log(`Pagamento ${paymentId} aprovado.`);
-        // Aqui você pode adicionar lógica para atualizar o banco, se necessário
+    try {
+        if (payment.action === 'payment.updated' && payment.data.status === 'approved') {
+            const paymentId = payment.data.id;
+            const externalReference = JSON.parse(payment.data.external_reference || '{}');
+            const { numbers, buyerName, buyerPhone } = externalReference;
+
+            const session = await mongoose.startSession();
+            session.startTransaction();
+            try {
+                await Comprador.updateMany(
+                    { number: { $in: numbers }, status: 'reservado' },
+                    { $set: { status: 'vendido', buyerName, buyerPhone, paymentId } },
+                    { session }
+                );
+                await session.commitTransaction();
+                console.log(`Pagamento ${paymentId} aprovado. Números ${numbers} marcados como vendido.`);
+            } catch (error) {
+                await session.abortTransaction();
+                throw error;
+            } finally {
+                session.endSession();
+            }
+        }
+        res.sendStatus(200);
+    } catch (error) {
+        console.error('Erro no webhook:', error);
+        res.sendStatus(500);
     }
-    res.sendStatus(200);
 });
 
 app.get('/progress', async (req, res) => {
