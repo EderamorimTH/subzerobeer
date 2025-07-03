@@ -1,0 +1,535 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sub-zero Beer</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&family=Roboto:wght@400;700&display=swap');
+
+        body {
+            font-family: 'Roboto', sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #FFFFFF;
+            color: #000000;
+        }
+        header {
+            background-color: #000000;
+            color: #FFFFFF;
+            padding: 20px;
+            text-align: center;
+            font-family: 'Playfair Display', serif;
+        }
+        header h1 {
+            margin: 0;
+            font-size: 2.5em;
+        }
+        nav {
+            margin-top: 10px;
+        }
+        .nav-button {
+            background-color: #003366;
+            color: #FFFFFF;
+            padding: 10px 20px;
+            border-radius: 5px;
+            text-decoration: none;
+            font-size: 1em;
+            transition: background-color 0.3s;
+        }
+        .nav-button:hover {
+            background-color: #005599;
+        }
+        .hero {
+            text-align: center;
+            padding: 50px 20px;
+            background: url('https://example.com/beer-background.jpg') no-repeat center center;
+            background-size: cover;
+            color: #FFFFFF;
+            position: relative;
+        }
+        .hero::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+        }
+        .hero-content {
+            position: relative;
+            z-index: 1;
+        }
+        .hero h2 {
+            font-size: 2.5em;
+            margin-bottom: 20px;
+            animation: fadeIn 1s ease-in;
+        }
+        .hero p {
+            font-size: 1.2em;
+            margin-bottom: 30px;
+            animation: fadeIn 1s ease-in 0.5s;
+        }
+        .button-container {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            animation: fadeIn 1s ease-in 1s;
+        }
+        .button-container button {
+            background-color: #003366;
+            color: #FFFFFF;
+            padding: 15px 30px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 1em;
+            transition: background-color 0.3s;
+        }
+        .button-container button:hover {
+            background-color: #005599;
+        }
+        .promo-text {
+            text-align: center;
+            padding: 20px;
+            font-size: 1.2em;
+            font-weight: bold;
+            background-color: #F0F0F0;
+        }
+        .number-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(50px, 1fr));
+            gap: 10px;
+            max-width: 90%;
+            margin: 30px auto;
+            padding: 0 20px;
+        }
+        .number {
+            background-color: #333333;
+            color: #FFFFFF;
+            padding: 15px;
+            text-align: center;
+            cursor: pointer;
+            border-radius: 5px;
+            font-size: 1em;
+            transition: transform 0.2s, background-color 0.3s;
+        }
+        .number:hover {
+            transform: scale(1.1);
+            background-color: #005599;
+        }
+        .number.sold {
+            background-color: #CCCCCC;
+            cursor: not-allowed;
+        }
+        .number.selected {
+            background-color: #FFFFFF;
+            color: #000000;
+            border: 2px solid #003366;
+        }
+        .form-container {
+            max-width: 600px;
+            margin: 30px auto;
+            padding: 20px;
+            background-color: #FFFFFF;
+            border-radius: 10px;
+            box-shadow: 0 0 20px rgba(0,0,0,0.1);
+        }
+        .form-container input {
+            width: 100%;
+            padding: 10px;
+            margin: 10px 0;
+            border: 1px solid #999999;
+            border-radius: 5px;
+            font-size: 1em;
+        }
+        .form-container button {
+            background-color: #003366;
+            color: #FFFFFF;
+            padding: 15px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            width: 100%;
+            font-size: 1.2em;
+            transition: background-color 0.3s;
+        }
+        .form-container button:hover {
+            background-color: #005599;
+        }
+        footer {
+            background-color: #000000;
+            color: #FFFFFF;
+            text-align: center;
+            padding: 20px;
+        }
+        footer a {
+            color: #003366;
+            font-weight: bold;
+            text-decoration: none;
+        }
+        footer a:hover {
+            color: #005599;
+        }
+        .social-icons {
+            margin-top: 10px;
+        }
+        .social-icons a {
+            margin: 0 10px;
+            font-size: 1.5em;
+            color: #FFFFFF;
+            transition: color 0.3s;
+        }
+        .social-icons a:hover {
+            color: #005599;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        @media (max-width: 600px) {
+            .hero h2 {
+                font-size: 2em;
+            }
+            .hero p {
+                font-size: 1em;
+            }
+            .button-container {
+                flex-direction: column;
+            }
+            .number-grid {
+                grid-template-columns: repeat(auto-fit, minmax(40px, 1fr));
+            }
+        }
+    </style>
+</head>
+<body>
+
+<header>
+    <h1>Sub-zero Beer</h1>
+    <nav>
+        <a href="/sorteio.html" class="nav-button">Sorteio</a>
+    </nav>
+</header>
+
+<section class="hero" id="home">
+    <div class="hero-content">
+        <h2>Participe do nosso sorteio!</h2>
+        <p>Compre números por R$ 10 e concorra a 1 caixa de litrão e 1 porção de frango a passarinho!</p>
+        <div class="button-container">
+            <button onclick="scrollToNumbers()">Escolha seus números agora</button>
+            <button onclick="selectRandomNumbers()">Escolher 5 Números Aleatórios</button>
+        </div>
+    </div>
+</section>
+
+<section class="promo-text">
+    <p>O bar mais moderninho de Cuiabá é aqui</p>
+    <p>Aquela cerveja gelada e ambiente agradável que você procura está aqui</p>
+    <p>Participe do nosso sorteio e concorra a 1 cx de litrão e 1 porção de frango a passarinho</p>
+</section>
+
+<section id="numbers" class="number-grid">
+    <!-- Os números serão gerados via JavaScript -->
+</section>
+
+<section class="form-container">
+    <h3>Finalize sua compra</h3>
+    <form id="payment-form">
+        <input type="text" id="buyer-name" placeholder="Nome Completo" required>
+        <input type="tel" id="buyer-phone" placeholder="Telefone (WhatsApp)" required>
+        <p>Números selecionados: <span id="selected-numbers">Nenhum</span></p>
+        <p>Total: R$ <span id="total-price">0</span></p>
+        <button type="submit">Pagar com Pix/Cartão</button>
+    </form>
+</section>
+
+<footer>
+    <p>Contato:</p>
+    <p>Siga-nos no Instagram: <a href="https://www.instagram.com/Subzerobeercba">@Subzerobeercba</a></p>
+    <p>Para dúvidas, entre em contato via Instagram!</p>
+    <div class="social-icons">
+        <a href="https://www.instagram.com/Subzerobeercba" target="_blank"><i class="fab fa-instagram"></i></a>
+    </div>
+    <p>© 2025 Sub-zero Beer</p>
+</footer>
+
+<script>
+    function scrollToNumbers() {
+        document.getElementById('numbers').scrollIntoView({ behavior: 'smooth' });
+    }
+
+    const numberContainer = document.getElementById('numbers');
+    let selectedNumbers = [];
+    const pricePerNumber = 10;
+
+    window.onload = function() {
+        const savedName = localStorage.getItem('buyerName');
+        const savedPhone = localStorage.getItem('buyerPhone');
+        if (savedName) document.getElementById('buyer-name').value = savedName;
+        if (savedPhone) document.getElementById('buyer-phone').value = savedPhone;
+        loadData();
+    };
+
+    async function reserveNumbers(numbers) {
+        try {
+            const response = await fetch('https://rifa-miguel.onrender.com/reserve_numbers', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ numbers, userId: localStorage.getItem('userId') || generateUserId() })
+            });
+            if (!response.ok) throw new Error(`Erro HTTP: ${response.status}`);
+            const result = await response.json();
+            if (!result.success) {
+                throw new Error(result.message || 'Alguns números já estão reservados.');
+            }
+            return true;
+        } catch (error) {
+            console.error('Erro ao reservar números:', error);
+            alert(error.message || 'Erro ao reservar números. Tente novamente.');
+            return false;
+        }
+    }
+
+    function generateUserId() {
+        const userId = Math.random().toString(36).substr(2, 9);
+        localStorage.setItem('userId', userId);
+        return userId;
+    }
+
+    async function selectRandomNumbers() {
+        try {
+            const availableRes = await fetch('https://rifa-miguel.onrender.com/available_numbers', {
+                method: 'GET',
+                headers: { 'Content-Type': 'application/json' },
+            });
+            if (!availableRes.ok) throw new Error(`Erro HTTP: ${availableRes.status}`);
+            const availableNumbers = await availableRes.json();
+
+            selectedNumbers.forEach(num => {
+                const numDiv = Array.from(numberContainer.children).find(div => div.textContent === num);
+                if (numDiv) numDiv.classList.remove('selected');
+            });
+            selectedNumbers = [];
+
+            const shuffled = availableNumbers.sort(() => 0.5 - Math.random());
+            const randomNumbers = shuffled.slice(0, Math.min(5, availableNumbers.length));
+
+            if (await reserveNumbers(randomNumbers)) {
+                randomNumbers.forEach(num => {
+                    const numDiv = Array.from(numberContainer.children).find(div => div.textContent === num);
+                    if (numDiv && !numDiv.classList.contains('sold')) {
+                        numDiv.classList.add('selected');
+                        selectedNumbers.push(num);
+                    }
+                });
+                document.getElementById('selected-numbers').textContent = selectedNumbers.length > 0 ? selectedNumbers.join(', ') : 'Nenhum';
+                document.getElementById('total-price').textContent = selectedNumbers.length * pricePerNumber;
+            }
+        } catch (error) {
+            console.error('Erro ao selecionar números aleatórios:', error);
+            alert('Erro ao carregar números disponíveis. Tente novamente.');
+        }
+    }
+
+    async function loadData() {
+        const maxRetries = 3;
+        let retries = 0;
+
+        while (retries < maxRetries) {
+            try {
+                console.log(`Tentativa ${retries + 1} de carregar números em ${new Date().toISOString()}...`);
+                const availableRes = await fetch('https://rifa-miguel.onrender.com/available_numbers', {
+                    method: 'GET',
+                    headers: { 'Content-Type': 'application/json' },
+                });
+                if (!availableRes.ok) throw new Error(`Erro HTTP: ${availableRes.status}`);
+                const availableNumbers = await availableRes.json();
+                console.log('Números disponíveis recebidos:', availableNumbers);
+
+                numberContainer.innerHTML = '';
+                for (let i = 1; i <= 100; i++) {
+                    const num = String(i).padStart(3, '0');
+                    const numDiv = document.createElement('div');
+                    numDiv.classList.add('number');
+                    numDiv.textContent = num;
+
+                    if (!availableNumbers.includes(num)) {
+                        numDiv.classList.add('sold');
+                    } else {
+                        numDiv.addEventListener('click', async () => {
+                            if (!numDiv.classList.contains('sold')) {
+                                const isSelected = numDiv.classList.contains('selected');
+                                if (!isSelected) {
+                                    if (await reserveNumbers([num])) {
+                                        numDiv.classList.add('selected');
+                                        selectedNumbers.push(num);
+                                    } else {
+                                        return;
+                                    }
+                                } else {
+                                    numDiv.classList.remove('selected');
+                                    const index = selectedNumbers.indexOf(num);
+                                    if (index > -1) selectedNumbers.splice(index, 1);
+                                }
+                                document.getElementById('selected-numbers').textContent = selectedNumbers.length > 0 ? selectedNumbers.join(', ') : 'Nenhum';
+                                document.getElementById('total-price').textContent = selectedNumbers.length * pricePerNumber;
+                            }
+                        });
+                    }
+
+                    numberContainer.appendChild(numDiv);
+                }
+
+                const progressRes = await fetch('https://rifa-miguel.onrender.com/progress', {
+                    method: 'GET',
+                    headers: { 'Content-Type': 'application/json' },
+                });
+                if (!progressRes.ok) throw new Error(`Erro HTTP: ${progressRes.status}`);
+                const { progress } = await progressRes.json();
+                const progressBar = document.getElementById('progress-bar');
+                progressBar.style.width = `${progress}%`;
+                progressBar.textContent = `${progress}% Arrecadado`;
+
+                console.log('Números carregados com sucesso em:', new Date().toISOString());
+                return;
+            } catch (error) {
+                console.error(`Erro na tentativa ${retries + 1} em ${new Date().toISOString()}:`, error.message, 'Stack:', error.stack);
+                retries++;
+                if (retries === maxRetries) {
+                    console.warn('Máximo de tentativas atingido, usando fallback...');
+                    numberContainer.innerHTML = '';
+                    for (let i = 1; i <= 100; i++) {
+                        const num = String(i).padStart(3, '0');
+                        const numDiv = document.createElement('div');
+                        numDiv.classList.add('number');
+                        numDiv.textContent = num;
+                        numDiv.addEventListener('click', async () => {
+                            if (!numDiv.classList.contains('sold')) {
+                                const isSelected = numDiv.classList.contains('selected');
+                                if (!isSelected) {
+                                    if (await reserveNumbers([num])) {
+                                        numDiv.classList.add('selected');
+                                        selectedNumbers.push(num);
+                                    } else {
+                                        return;
+                                    }
+                                } else {
+                                    numDiv.classList.remove('selected');
+                                    const index = selectedNumbers.indexOf(num);
+                                    if (index > -1) selectedNumbers.splice(index, 1);
+                                }
+                                document.getElementById('selected-numbers').textContent = selectedNumbers.length > 0 ? selectedNumbers.join(', ') : 'Nenhum';
+                                document.getElementById('total-price').textContent = selectedNumbers.length * pricePerNumber;
+                            }
+                        });
+                        numberContainer.appendChild(numDiv);
+                    }
+                    document.getElementById('progress-bar').style.width = '0%';
+                    document.getElementById('progress-bar').textContent = '0% Arrecadado';
+                } else {
+                    await new Promise(resolve => setTimeout(resolve, 2000));
+                }
+            }
+        }
+    }
+
+    async function checkReservation(numbers) {
+        try {
+            const response = await fetch('https://rifa-miguel.onrender.com/check_reservation', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ numbers, userId: localStorage.getItem('userId') })
+            });
+            if (!response.ok) throw new Error(`Erro HTTP: ${response.status}`);
+            const result = await response.json();
+            return result.valid;
+        } catch (error) {
+            console.error('Erro ao verificar reserva:', error);
+            return false;
+        }
+    }
+
+    async function sendPaymentRequest(data) {
+        const maxRetries = 3;
+        let retries = 0;
+
+        while (retries < maxRetries) {
+            try {
+                console.log(`Tentativa ${retries + 1} de enviar pagamento em ${new Date().toISOString()}...`, data);
+                if (!await checkReservation(data.numbers)) {
+                    alert('Um ou mais números selecionados já foram reservados ou vendidos por outra pessoa. Escolha outros números.');
+                    return;
+                }
+
+                const controller = new AbortController();
+                const timeoutId = setTimeout(() => controller.abort(), 10000);
+                const response = await fetch('https://rifa-miguel.onrender.com/create_preference', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(data),
+                    signal: controller.signal
+                });
+
+                clearTimeout(timeoutId);
+                console.log(`Status da resposta: ${response.status} em ${new Date().toISOString()}`);
+                const responseData = await response.json();
+                console.log('Resposta da API:', responseData);
+
+                if (responseData.init_point) {
+                    window.location.href = responseData.init_point;
+                } else {
+                    alert(responseData.error || 'Erro ao criar o pagamento. Tente novamente.');
+                }
+                return;
+            } catch (error) {
+                console.error(`Erro na tentativa ${retries + 1} em ${new Date().toISOString()}:`, error.message, 'Stack:', error.stack, 'Code:', error.code);
+                retries++;
+                if (retries === maxRetries) {
+                    alert('Erro ao conectar ao servidor após várias tentativas. Detalhes: ' + error.message + '\nCódigo: ' + (error.code || 'desconhecido') + '\nStatus: ' + (error.status || 'desconhecido'));
+                } else {
+                    await new Promise(resolve => setTimeout(resolve, 3000));
+                }
+            }
+        }
+    }
+
+    document.getElementById('payment-form').addEventListener('submit', async (event) => {
+        event.preventDefault();
+
+        const buyerName = document.getElementById('buyer-name').value;
+        const buyerPhone = document.getElementById('buyer-phone').value;
+        const quantity = selectedNumbers.length;
+
+        console.log('Números selecionados antes de enviar em:', new Date().toISOString(), selectedNumbers);
+        if (selectedNumbers.length === 0) {
+            console.warn('Nenhum número selecionado antes de enviar em:', new Date().toISOString());
+            alert('Por favor, selecione pelo menos um número.');
+            return;
+        }
+        if (!buyerName || !buyerPhone) {
+            alert('Por favor, preencha todos os campos.');
+            return;
+        }
+
+        localStorage.setItem('buyerName', buyerName);
+        localStorage.setItem('buyerPhone', buyerPhone);
+
+        const paymentData = {
+            quantity,
+            buyerName,
+            buyerPhone,
+            numbers: selectedNumbers
+        };
+        console.log('Enviando solicitação de pagamento em:', new Date().toISOString(), paymentData);
+
+        await sendPaymentRequest(paymentData);
+    });
+</script>
+
+</body>
+</html>
