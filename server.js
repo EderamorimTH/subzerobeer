@@ -1,13 +1,12 @@
-// server.js
 const express = require('express');
-const mercadopago = require('mercadopago');
+const MercadoPago = require('mercadopago').MercadoPago; // Updated for v2.5.17
 const app = express();
 
 app.use(express.json());
 
 // Configurar Mercado Pago
-mercadopago.configure({
-    access_token: process.env.MERCADO_PAGO_ACCESS_TOKEN
+const mercadoPagoClient = new MercadoPago({
+    accessToken: process.env.MERCADO_PAGO_ACCESS_TOKEN
 });
 
 // Endpoint para verificar a saúde do servidor
@@ -93,7 +92,7 @@ app.post('/create_preference', async (req, res) => {
             metadata: { numbers }
         };
 
-        const response = await mercadopago.preferences.create(preference);
+        const response = await mercadoPagoClient.preferences.create(preference);
         console.log(`[${new Date().toISOString()}] Preferência criada:`, response.body.id);
         res.json({ init_point: response.body.init_point });
     } catch (error) {
@@ -109,7 +108,7 @@ app.post('/webhook', async (req, res) => {
         console.log(`[${new Date().toISOString()}] Webhook recebido:`, req.body);
 
         if (type === 'payment' && action === 'payment.updated') {
-            const payment = await mercadopago.payment.get(data.id);
+            const payment = await mercadoPagoClient.payment.get(data.id);
             console.log(`[${new Date().toISOString()}] Detalhes do pagamento:`, payment.body);
             // Substitua por lógica para atualizar banco de dados
         }
