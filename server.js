@@ -1,10 +1,15 @@
 const express = require('express');
 const mongoose = require('mongoose');
+const cors = require('cors');
 const { MercadoPagoConfig, Preference, Payment } = require('mercadopago');
 require('dotenv').config();
 
 const app = express();
 app.use(express.json());
+app.use(cors({ origin: 'https://ederamorimth.github.io' }));
+
+// Configurar strictQuery para suprimir aviso de depreciação
+mongoose.set('strictQuery', false);
 
 mongoose.connect(process.env.MONGODB_URI, {
     useNewUrlParser: true,
@@ -90,7 +95,7 @@ app.post('/reserve_numbers', async (req, res) => {
             await session.commitTransaction();
             session.endSession();
             console.log(`[${new Date().toISOString()}] Números ${numbers.join(', ')} reservados com sucesso para userId: ${userId}`);
-            res.json({ message: 'Números reservados com sucesso' });
+            res.json({ message: 'Números reservados com sucesso', success: true });
         } catch (error) {
             await session.abortTransaction();
             session.endSession();
