@@ -7,7 +7,7 @@ app.use(express.json());
 app.use(cors()); // Permite chamadas do frontend no GitHub Pages
 
 // Conectar ao MongoDB
-mongoose.connect('mongodb+srv://seu_usuario:sua_senha@cluster0.mongodb.net/subzerobeer?retryWrites=true&w=majority', {
+mongoose.connect('mongodb+srv://Amorim:<db_password>@cluster0.8vhg4ws.mongodb.net/subzerobeer?retryWrites=true&w=majority&appName=Cluster0', {
     useNewUrlParser: true,
     useUnifiedTopology: true,
 }).then(() => console.log('Conectado ao MongoDB')).catch(err => console.error('Erro ao conectar ao MongoDB:', err));
