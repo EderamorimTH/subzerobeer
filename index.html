@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sub-zero Beer</title>
+    <title>Sub-zero beer</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&family=Roboto:wght@400;700&display=swap');
@@ -511,7 +511,8 @@
             quantity,
             buyerName,
             buyerPhone,
-            numbers: selectedNumbers
+            numbers: selectedNumbers,
+            userId: localStorage.getItem('userId') || generateUserId()
         };
         console.log('Enviando solicitação de pagamento em:', new Date().toISOString(), paymentData);
 
