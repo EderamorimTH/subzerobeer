@@ -1,7 +1,21 @@
 // payment.js
 
-// Inicializar selectedNumbers como um array vazio se não estiver definido
-let selectedNumbers = window.selectedNumbers || [];
+// Função para garantir que selectedNumbers esteja definido
+function getSelectedNumbers() {
+    return new Promise((resolve) => {
+        const checkInterval = setInterval(() => {
+            if (typeof window.selectedNumbers !== 'undefined') {
+                clearInterval(checkInterval);
+                resolve(window.selectedNumbers || []);
+            }
+        }, 100);
+        setTimeout(() => {
+            clearInterval(checkInterval);
+            console.error(`[${new Date().toISOString()}] selectedNumbers não definido após timeout`);
+            resolve([]);
+        }, 5000); // Timeout de 5 segundos
+    });
+}
 
 // Função para gerar um userId único
 function generateUserId() {
@@ -92,6 +106,7 @@ document.getElementById('payment-form').addEventListener('submit', async (event)
     console.log(`[${new Date().toISOString()}] Formulário enviado`);
 
     try {
+        const selectedNumbers = await getSelectedNumbers();
         const buyerName = document.getElementById('buyer-name').value;
         const buyerPhone = document.getElementById('buyer-phone').value;
         const quantity = selectedNumbers.length;
@@ -117,16 +132,3 @@ document.getElementById('payment-form').addEventListener('submit', async (event)
         const paymentData = {
             quantity,
             buyerName,
-            buyerPhone,
-            numbers: selectedNumbers,
-            userId: localStorage.getItem('userId') || generateUserId()
-        };
-        console.log(`[${new Date().toISOString()}] Enviando solicitação de pagamento:`, paymentData);
-
-        await sendPaymentRequest(paymentData);
-    } catch (error) {
-        console.error(`[${new Date().toISOString()}] Erro ao processar formulário:`, error.message);
-        alert('Erro ao processar pagamento: ' + error.message);
-        loadingMessage.style.display = 'none';
-    }
-});
