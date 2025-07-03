@@ -6,7 +6,7 @@ require('dotenv').config();
 
 const app = express();
 app.use(express.json());
-app.use(cors({ origin: 'https://ederamorimth.github.io' }));
+app.use(cors({ origin: 'https://ederamorimth.github.io', credentials: true }));
 
 mongoose.set('strictQuery', false);
 mongoose.connect(process.env.MONGODB_URI, {
@@ -95,6 +95,17 @@ app.get('/progress', async (req, res) => {
     } catch (error) {
         console.error(`[${new Date().toISOString()}] Erro ao calcular progresso:`, error);
         res.status(500).json({ error: 'Erro ao calcular progresso', details: error.message });
+    }
+});
+
+app.get('/health', async (req, res) => {
+    try {
+        await mongoose.connection.db.admin().ping();
+        const count = await Comprador.countDocuments();
+        res.status(200).json({ status: 'OK', message: 'Servidor e MongoDB estão funcionando', compradoresCount: count });
+    } catch (error) {
+        console.error(`[${new Date().toISOString()}] Erro no health check:`, error);
+        res.status(500).json({ status: 'ERROR', message: 'Erro no servidor ou MongoDB', details: error.message });
     }
 });
 
@@ -191,13 +202,13 @@ app.post('/create_preference', async (req, res) => {
                         currency_id: 'BRL'
                     })),
                     back_urls: {
-                        success: 'https://ederamorimth.github.io/subzerobeer/index.html',
-                        failure: 'https://ederamorimth.github.io/subzerobeer/index.html',
-                        pending: 'https://ederamorimth.github.io/subzerobeer/index.html'
+                        success: 'https://ederamorimth.github.io/subzerobeer/index.html?status=approved',
+                        failure: 'https://ederamorimth.github.io/subzerobeer/index.html?status=rejected',
+                        pending: 'https://ederamorimth.github.io/subzerobeer/index.html?status=pending'
                     },
                     auto_return: 'approved',
                     external_reference: JSON.stringify({ numbers, userId, buyerName, buyerPhone }),
-                    notification_url: `${process.env.SITE_URL}/webhook`
+                    notification_url: 'https://subzerobeer.onrender.com/webhook'
                 }
             });
             console.log(`[${new Date().toISOString()}] Preferência criada: preference_id=${response.id}, init_point=${response.init_point}`);
@@ -228,78 +239,76 @@ app.post('/webhook', async (req, res) => {
     const payment = req.body;
     console.log(`[${new Date().toISOString()}] Webhook recebido:`, JSON.stringify(payment, null, 2));
     try {
-        if (payment.type === 'payment') {
-            const paymentId = payment.data.id;
-            const paymentClient = new Payment(client);
-            const paymentDetails = await paymentClient.get({ id: paymentId });
-            console.log(`[${new Date().toISOString()}] Resposta da API do Mercado Pago:`, JSON.stringify(paymentDetails, null, 2));
+        if (payment.type !== 'payment') {
+            console.log(`[${new Date().toISOString()}] Ignorando webhook: tipo inválido (${payment.type})`);
+            return res.sendStatus(200);
+        }
 
-            if (paymentDetails.status === 'approved') {
-                let externalReference;
-                try {
-                    externalReference = JSON.parse(paymentDetails.external_reference || '{}');
-                } catch (e) {
-                    console.error(`[${new Date().toISOString()}] Erro ao parsear external_reference:`, e);
-                    return res.sendStatus(400);
-                }
-                const { numbers, userId, buyerName, buyerPhone } = externalReference;
+        const paymentId = payment.data.id;
+        const client = new MercadoPagoConfig({ accessToken: process.env.MERCADO_PAGO_ACCESS_TOKEN });
+        const paymentClient = new Payment(client);
+        const paymentDetails = await paymentClient.get({ id: paymentId });
+        console.log(`[${new Date().toISOString()}] Resposta da API do Mercado Pago:`, JSON.stringify(paymentDetails, null, 2));
 
-                const session = await mongoose.startSession();
-                session.startTransaction();
-                try {
-                    const validNumbers = await Comprador.find({
-                        number: { $in: numbers },
-                        status: 'reservado',
-                        userId,
-                    }).session(session);
-                    if (validNumbers.length !== numbers.length) {
-                        await session.abortTransaction();
-                        session.endSession();
-                        console.error(`[${new Date().toISOString()}] Números não estão reservados para userId: ${userId}`);
-                        return res.sendStatus(400);
-                    }
-
-                    const compradorResult = await Comprador.updateMany(
-                        { number: { $in: numbers }, status: 'reservado', userId },
-                        { $set: { status: 'vendido', userId: null, timestamp: null } },
-                        { session }
-                    );
-                    console.log(`[${new Date().toISOString()}] Compradores atualizados: ${compradorResult.modifiedCount}`);
-
-                    const purchaseResult = await Purchase.updateMany(
-                        { numbers: { $in: numbers }, status: 'pending' },
-                        { $set: { status: 'approved', paymentId, date_approved: new Date() } },
-                        { session }
-                    );
-                    console.log(`[${new Date().toISOString()}] Compras atualizadas: ${purchaseResult.modifiedCount}`);
-
-                    await session.commitTransaction();
-                    console.log(`[${new Date().toISOString()}] Pagamento ${paymentId} aprovado. Números ${numbers.join(', ')} marcados como vendido.`);
-                } catch (error) {
-                    await session.abortTransaction();
-                    throw error;
-                } finally {
-                    session.endSession();
-                }
-            } else {
-                console.log(`[${new Date().toISOString()}] Pagamento ${paymentId} não está aprovado. Status: ${paymentDetails.status}`);
+        if (paymentDetails.status === 'approved') {
+            let externalReference;
+            try {
+                externalReference = paymentDetails.external_reference ? JSON.parse(paymentDetails.external_reference) : {};
+            } catch (e) {
+                console.error(`[${new Date().toISOString()}] Erro ao parsear external_reference:`, e.message);
+                return res.status(400).json({ error: 'Invalid external_reference', details: e.message });
             }
+
+            const { numbers = [], userId, buyerName, buyerPhone } = externalReference;
+            if (!numbers.length || !userId) {
+                console.error(`[${new Date().toISOString()}] Dados incompletos em external_reference:`, externalReference);
+                return res.status(400).json({ error: 'Missing numbers or userId' });
+            }
+
+            const session = await mongoose.startSession();
+            session.startTransaction();
+            try {
+                const validNumbers = await Comprador.find({
+                    number: { $in: numbers },
+                    status: 'reservado',
+                    userId,
+                }).session(session);
+                if (validNumbers.length !== numbers.length) {
+                    await session.abortTransaction();
+                    session.endSession();
+                    console.error(`[${new Date().toISOString()}] Números não reservados para userId: ${userId}, números: ${numbers.join(', ')}`);
+                    return res.status(400).json({ error: 'Números não reservados' });
+                }
+
+                const compradorResult = await Comprador.updateMany(
+                    { number: { $in: numbers }, status: 'reservado', userId },
+                    { $set: { status: 'vendido', userId: null, timestamp: null } },
+                    { session }
+                );
+                console.log(`[${new Date().toISOString()}] Compradores atualizados: ${compradorResult.modifiedCount}`);
+
+                const purchaseResult = await Purchase.updateMany(
+                    { numbers: { $in: numbers }, status: 'pending' },
+                    { $set: { status: 'approved', paymentId, date_approved: new Date() } },
+                    { session }
+                );
+                console.log(`[${new Date().toISOString()}] Compras atualizadas: ${purchaseResult.modifiedCount}`);
+
+                await session.commitTransaction();
+                console.log(`[${new Date().toISOString()}] Pagamento ${paymentId} aprovado. Números ${numbers.join(', ')} marcados como vendido.`);
+            } catch (error) {
+                await session.abortTransaction();
+                throw error;
+            } finally {
+                session.endSession();
+            }
+        } else {
+            console.log(`[${new Date().toISOString()}] Pagamento ${paymentId} não aprovado. Status: ${paymentDetails.status}`);
         }
         res.sendStatus(200);
     } catch (error) {
-        console.error(`[${new Date().toISOString()}] Erro no webhook:`, error);
+        console.error(`[${new Date().toISOString()}] Erro no webhook:`, error.message, 'Stack:', error.stack);
         res.status(500).json({ error: 'Erro no webhook', details: error.message });
-    }
-});
-
-app.get('/health', async (req, res) => {
-    try {
-        await mongoose.connection.db.admin().ping();
-        const count = await Comprador.countDocuments();
-        res.status(200).json({ status: 'OK', message: 'Servidor e MongoDB estão funcionando', compradoresCount: count });
-    } catch (error) {
-        console.error(`[${new Date().toISOString()}] Erro no health check:`, error);
-        res.status(500).json({ status: 'ERROR', message: 'Erro no servidor ou MongoDB', details: error.message });
     }
 });
 
