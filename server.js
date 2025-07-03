@@ -1,18 +1,40 @@
+```javascript
 const express = require('express');
 const { MercadoPagoConfig, Preference, Payment } = require('mercadopago');
+const mongoose = require('mongoose');
+const cors = require('cors');
+require('dotenv').config();
+
 const app = express();
 
 app.use(express.json());
+app.use(cors()); // Adiciona CORS para permitir requisições do front-end
 
-// Configurar Mercado Pago
-const mercadoPagoClient = new MercadoPagoConfig({
-    accessToken: process.env.MERCADO_PAGO_ACCESS_TOKEN
+// Conectar ao MongoDB
+mongoose.connect(process.env.MONGODB_URI, {
+    useNewUrlParser: true,
+    useUnifiedTopology: true
+}).then(() => {
+    console.log(`[${new Date().toISOString()}] Conectado ao MongoDB`);
+}).catch((error) => {
+    console.error(`[${new Date().toISOString()}] Erro ao conectar ao MongoDB: ${error.message}`);
 });
+
+// Schema para números vendidos
+const NumberSchema = new mongoose.Schema({
+    number: { type: String, required: true, unique: true },
+    userId: { type: String, required: true },
+    buyerName: String,
+    buyerPhone: String,
+    status: { type: String, enum: ['reserved', 'sold'], default: 'reserved' }
+});
+
+const Number = mongoose.model('Number', NumberSchema);
 
 // Endpoint para verificar a saúde do servidor
 app.get('/health', async (req, res) => {
     try {
-        const compradoresCount = 100; // Substitua por lógica de banco de dados
+        const compradoresCount = await Number.countDocuments({ status: 'sold' });
         res.json({ status: 'OK', compradoresCount });
     } catch (error) {
         console.error(`[${new Date().toISOString()}] Erro no health check: ${error.message}`);
@@ -24,7 +46,7 @@ app.get('/health', async (req, res) => {
 app.get('/available_numbers', async (req, res) => {
     try {
         const allNumbers = Array.from({ length: 100 }, (_, i) => String(i + 1).padStart(3, '0'));
-        const soldNumbers = []; // Substitua por lógica de banco de dados
+        const soldNumbers = await Number.find({ status: 'sold' }).distinct('number');
         const availableNumbers = allNumbers.filter(num => !soldNumbers.includes(num));
         res.json(availableNumbers);
     } catch (error) {
@@ -41,6 +63,14 @@ app.post('/reserve_numbers', async (req, res) => {
             return res.status(400).json({ error: 'Números ou userId não fornecidos' });
         }
         console.log(`[${new Date().toISOString()}] Reservando números: ${JSON.stringify(numbers)} para userId: ${userId}`);
+        
+        const existingNumbers = await Number.find({ number: { $in: numbers } });
+        if (existingNumbers.length > 0) {
+            return res.status(400).json({ error: 'Alguns números já estão reservados ou vendidos' });
+        }
+
+        const numberDocs = numbers.map(num => ({ number: num, userId, status: 'reserved' }));
+        await Number.insertMany(numberDocs);
         res.json({ success: true });
     } catch (error) {
         console.error(`[${new Date().toISOString()}] Erro ao reservar números: ${error.message}`);
@@ -55,7 +85,8 @@ app.post('/check_reservation', async (req, res) => {
         if (!numbers || !userId) {
             return res.status(400).json({ error: 'Números ou userId não fornecidos' });
         }
-        const valid = true; // Substitua por lógica de banco de dados
+        const existingNumbers = await Number.find({ number: { $in: numbers }, userId: { $ne: userId } });
+        const valid = existingNumbers.length === 0;
         res.json({ valid });
     } catch (error) {
         console.error(`[${new Date().toISOString()}] Erro ao verificar reserva: ${error.message}`);
@@ -95,6 +126,13 @@ app.post('/create_preference', async (req, res) => {
 
         const response = await preference.create({ body: preferenceData });
         console.log(`[${new Date().toISOString()}] Preferência criada: ${response.id}`);
+        
+        // Atualizar números para 'reserved' com informações do comprador
+        await Number.updateMany(
+            { number: { $in: numbers }, userId },
+            { $set: { buyerName, buyerPhone, status: 'reserved' } }
+        );
+        
         res.json({ init_point: response.init_point });
     } catch (error) {
         console.error(`[${new Date().toISOString()}] Erro ao criar preferência: ${error.message} ${error.stack}`);
@@ -112,7 +150,13 @@ app.post('/webhook', async (req, res) => {
             const payment = new Payment(mercadoPagoClient);
             const paymentDetails = await payment.get({ id: data.id });
             console.log(`[${new Date().toISOString()}] Detalhes do pagamento: ${JSON.stringify(paymentDetails)}`);
-            // Substitua por lógica para atualizar banco de dados
+            
+            if (paymentDetails.status === 'approved') {
+                await Number.updateMany(
+                    { userId: paymentDetails.external_reference },
+                    { $set: { status: 'sold' } }
+                );
+            }
         }
         res.status(200).send('OK');
     } catch (error) {
@@ -124,7 +168,7 @@ app.post('/webhook', async (req, res) => {
 // Endpoint para progresso
 app.get('/progress', async (req, res) => {
     try {
-        const soldNumbers = 50; // Substitua por lógica de banco de dados
+        const soldNumbers = await Number.countDocuments({ status: 'sold' });
         const totalNumbers = 100;
         const progress = (soldNumbers / totalNumbers) * 100;
         res.json({ progress });
