@@ -1,10 +1,20 @@
 // payment.js
 
-// Verificar se selectedNumbers está definido (deve ser uma variável global do script inline no HTML)
-if (typeof selectedNumbers === 'undefined') {
-    console.error(`[${new Date().toISOString()}] Erro: selectedNumbers não definido`);
-    alert('Erro interno: Números selecionados não encontrados. Tente novamente.');
-    selectedNumbers = [];
+// Função para garantir que selectedNumbers esteja definido
+function getSelectedNumbers() {
+    return new Promise((resolve) => {
+        const checkInterval = setInterval(() => {
+            if (typeof window.selectedNumbers !== 'undefined') {
+                clearInterval(checkInterval);
+                resolve(window.selectedNumbers || []);
+            }
+        }, 100);
+        setTimeout(() => {
+            clearInterval(checkInterval);
+            console.error(`[${new Date().toISOString()}] selectedNumbers não definido após timeout`);
+            resolve([]);
+        }, 5000); // Timeout de 5 segundos
+    });
 }
 
 // Função para gerar um userId único
@@ -68,7 +78,7 @@ async function sendPaymentRequest(data) {
 
             if (responseData.init_point) {
                 console.log(`[${new Date().toISOString()}] Redirecionando para:`, responseData.init_point);
-                window.location.assign(responseData.init_point); // Usar assign para garantir redirecionamento
+                window.location.assign(responseData.init_point);
             } else {
                 console.warn(`[${new Date().toISOString()}] Resposta sem init_point:`, responseData);
                 alert(responseData.error || 'Erro ao criar o pagamento. Tente novamente.');
@@ -96,6 +106,7 @@ document.getElementById('payment-form').addEventListener('submit', async (event)
     console.log(`[${new Date().toISOString()}] Formulário enviado`);
 
     try {
+        const selectedNumbers = await getSelectedNumbers();
         const buyerName = document.getElementById('buyer-name').value;
         const buyerPhone = document.getElementById('buyer-phone').value;
         const quantity = selectedNumbers.length;
