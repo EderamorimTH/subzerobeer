@@ -24,7 +24,7 @@ const compradorSchema = new mongoose.Schema({
     timestamp: Date,
     buyerName: String,
     buyerPhone: String,
-    paymentId: String, // Para associar ao pagamento do Mercado Pago
+    paymentId: String,
 });
 const Comprador = mongoose.model('Comprador', compradorSchema, 'compradores');
 
@@ -37,7 +37,7 @@ async function initializeNumbers() {
                 status: 'disponível',
             }));
             await Comprador.insertMany(numbers);
-            console.log('Números de 001 a 100 inicializados na coleção compradores.');
+            console.log('Números de 001 a 100 inicializados.');
         }
     } catch (error) {
         console.error('Erro ao inicializar números:', error);
@@ -45,25 +45,24 @@ async function initializeNumbers() {
 }
 initializeNumbers();
 
-// Liberar números reservados após 5 minutos
 async function clearExpiredReservations() {
     try {
         const fiveMinutesAgo = new Date(Date.now() - 5 * 60 * 1000);
-        await Comprador.updateMany(
+        const result = await Comprador.updateMany(
             { status: 'reservado', timestamp: { $lt: fiveMinutesAgo } },
             { $set: { status: 'disponível', userId: null, timestamp: null } }
         );
-        console.log('Reservas expiradas liberadas.');
+        console.log(`Liberadas ${result.modifiedCount} reservas expiradas.`);
     } catch (error) {
         console.error('Erro ao liberar reservas expiradas:', error);
     }
 }
-// Executar a cada 5 minutos
 setInterval(clearExpiredReservations, 5 * 60 * 1000);
+clearExpiredReservations(); // Executar imediatamente ao iniciar
 
 app.get('/available_numbers', async (req, res) => {
     try {
-        await clearExpiredReservations(); // Limpar reservas expiradas antes de listar
+        await clearExpiredReservations();
         const numbers = await Comprador.find({ status: 'disponível' }).select('number');
         res.json(numbers.map(n => n.number));
     } catch (error) {
@@ -154,12 +153,11 @@ app.post('/create_preference', async (req, res) => {
                     pending: 'https://ederamorimth.github.io/subzerobeer/pending.html',
                 },
                 auto_return: 'approved',
-                external_reference: JSON.stringify({ numbers, userId, buyerName, buyerPhone }), // Armazenar dados para o webhook
+                external_reference: JSON.stringify({ numbers, userId, buyerName, buyerPhone }),
             };
             const response = await mercadopago.preferences.create(preference);
             const paymentLink = response.body.init_point;
 
-            // Não marcar como vendido aqui; esperar o webhook
             await session.commitTransaction();
             session.endSession();
             res.json({ init_point: paymentLink });
@@ -178,21 +176,33 @@ app.post('/webhook', async (req, res) => {
     const payment = req.body;
     console.log('Webhook recebido:', payment);
     try {
-        if (payment.action === 'payment.updated' && payment.data.status === 'approved') {
+        if (payment.type === 'payment' && payment.data.status === 'approved') {
             const paymentId = payment.data.id;
             const externalReference = JSON.parse(payment.data.external_reference || '{}');
-            const { numbers, buyerName, buyerPhone } = externalReference;
+            const { numbers, userId, buyerName, buyerPhone } = externalReference;
 
             const session = await mongoose.startSession();
             session.startTransaction();
             try {
+                const validNumbers = await Comprador.find({
+                    number: { $in: numbers },
+                    status: 'reservado',
+                    userId,
+                }).session(session);
+                if (validNumbers.length !== numbers.length) {
+                    await session.abortTransaction();
+                    session.endSession();
+                    console.error('Números não estão reservados para o usuário:', userId);
+                    return res.sendStatus(400);
+                }
+
                 await Comprador.updateMany(
-                    { number: { $in: numbers }, status: 'reservado' },
+                    { number: { $in: numbers }, status: 'reservado', userId },
                     { $set: { status: 'vendido', buyerName, buyerPhone, paymentId } },
                     { session }
                 );
                 await session.commitTransaction();
-                console.log(`Pagamento ${paymentId} aprovado. Números ${numbers} marcados como vendido.`);
+                console.log(`Pagamento ${paymentId} aprovado. Números ${numbers.join(', ')} marcados como vendido.`);
             } catch (error) {
                 await session.abortTransaction();
                 throw error;
