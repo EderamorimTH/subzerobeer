@@ -1,22 +1,16 @@
 const express = require('express');
 const mongoose = require('mongoose');
-const cors = require('cors');
 const { MercadoPagoConfig, Preference, Payment } = require('mercadopago');
+require('dotenv').config();
 
 const app = express();
 app.use(express.json());
-app.use(cors());
 
-// Configurar cliente do Mercado Pago
-const client = new MercadoPagoConfig({
-    accessToken: process.env.MERCADO_PAGO_ACCESS_TOKEN,
-});
-
-mongoose.set('strictQuery', false);
 mongoose.connect(process.env.MONGODB_URI, {
     useNewUrlParser: true,
-    useUnifiedTopology: true,
-}).then(() => console.log('Conectado ao MongoDB')).catch(err => console.error('Erro ao conectar ao MongoDB:', err));
+    useUnifiedTopology: true
+}).then(() => console.log('Conectado ao MongoDB'))
+  .catch(err => console.error('Erro ao conectar ao MongoDB:', err));
 
 const compradorSchema = new mongoose.Schema({
     number: { type: String, required: true, unique: true },
@@ -39,47 +33,34 @@ const purchaseSchema = new mongoose.Schema({
 const Comprador = mongoose.model('Comprador', compradorSchema, 'compradores');
 const Purchase = mongoose.model('Purchase', purchaseSchema, 'purchases');
 
-async function initializeNumbers() {
-    try {
-        const count = await Comprador.countDocuments();
-        if (count === 0) {
-            const numbers = Array.from({ length: 100 }, (_, i) => ({
-                number: String(i + 1).padStart(3, '0'),
-                status: 'disponível',
-            }));
-            await Comprador.insertMany(numbers);
-            console.log('Números de 001 a 100 inicializados na coleção compradores.');
-        }
-    } catch (error) {
-        console.error('Erro ao inicializar números:', error);
-    }
-}
-initializeNumbers();
-
-async function clearExpiredReservations() {
-    try {
-        const fiveMinutesAgo = new Date(Date.now() - 5 * 60 * 1000);
-        const expired = await Comprador.find({ status: 'reservado', timestamp: { $lt: fiveMinutesAgo } });
-        const result = await Comprador.updateMany(
-            { status: 'reservado', timestamp: { $lt: fiveMinutesAgo } },
-            { $set: { status: 'disponível', userId: null, timestamp: null } }
-        );
-        console.log(`[${new Date().toISOString()}] Liberadas ${result.modifiedCount} reservas expiradas. Números afetados: ${expired.map(n => n.number).join(', ')}`);
-    } catch (error) {
-        console.error(`[${new Date().toISOString()}] Erro ao liberar reservas expiradas:`, error);
-    }
-}
-setInterval(clearExpiredReservations, 5 * 60 * 1000);
-clearExpiredReservations();
+const client = new MercadoPagoConfig({ accessToken: process.env.MERCADO_PAGO_ACCESS_TOKEN });
 
 app.get('/available_numbers', async (req, res) => {
     try {
-        await clearExpiredReservations();
-        const numbers = await Comprador.find({ status: 'disponível' }).select('number');
-        res.json(numbers.map(n => n.number));
+        const fiveMinutesAgo = new Date(Date.now() - 5 * 60 * 1000);
+        await Comprador.updateMany(
+            { status: 'reservado', timestamp: { $lt: fiveMinutesAgo } },
+            { $set: { status: 'disponível', userId: null, timestamp: null } }
+        );
+        const compradores = await Comprador.find({ status: 'disponível' }).select('number');
+        console.log(`[${new Date().toISOString()}] Números disponíveis retornados:`, compradores.length);
+        res.json(compradores.map(c => c.number));
     } catch (error) {
-        console.error('Erro ao buscar números disponíveis:', error);
-        res.status(500).json([]);
+        console.error(`[${new Date().toISOString()}] Erro ao buscar números disponíveis:`, error);
+        res.status(500).json({ error: 'Erro ao buscar números disponíveis' });
+    }
+});
+
+app.get('/progress', async (req, res) => {
+    try {
+        const total = await Comprador.countDocuments();
+        const sold = await Comprador.countDocuments({ status: 'vendido' });
+        const progress = total ? (sold / total) * 100 : 0;
+        console.log(`[${new Date().toISOString()}] Progresso: ${progress}% (${sold}/${total})`);
+        res.json({ progress });
+    } catch (error) {
+        console.error(`[${new Date().toISOString()}] Erro ao calcular progresso:`, error);
+        res.status(500).json({ error: 'Erro ao calcular progresso' });
     }
 });
 
@@ -87,25 +68,29 @@ app.post('/reserve_numbers', async (req, res) => {
     const { numbers, userId } = req.body;
     console.log(`[${new Date().toISOString()}] Recebendo solicitação para reservar números: ${numbers}, userId: ${userId}`);
     try {
+        if (!numbers || !Array.isArray(numbers) || numbers.length === 0 || !userId) {
+            console.error(`[${new Date().toISOString()}] Dados incompletos na solicitação de reserva`);
+            return res.status(400).json({ error: 'Dados incompletos' });
+        }
         const session = await mongoose.startSession();
         session.startTransaction();
         try {
-            const availableNumbers = await Comprador.find({ number: { $in: numbers }, status: 'disponível' }).session(session);
-            if (availableNumbers.length !== numbers.length) {
+            const existingNumbers = await Comprador.find({ number: { $in: numbers }, status: 'disponível' }).session(session);
+            if (existingNumbers.length !== numbers.length) {
                 await session.abortTransaction();
                 session.endSession();
-                console.log(`[${new Date().toISOString()}] Falha na reserva: Alguns números não estão disponíveis: ${numbers}`);
-                return res.status(400).json({ success: false, message: 'Alguns números não estão disponíveis.' });
+                console.error(`[${new Date().toISOString()}] Alguns números não estão disponíveis`);
+                return res.status(400).json({ error: 'Alguns números não estão disponíveis' });
             }
-            await Comprador.updateMany(
-                { number: { $in: numbers } },
+            const result = await Comprador.updateMany(
+                { number: { $in: numbers }, status: 'disponível' },
                 { $set: { status: 'reservado', userId, timestamp: new Date() } },
                 { session }
             );
             await session.commitTransaction();
             session.endSession();
-            console.log(`[${new Date().toISOString()}] Números ${numbers} reservados com sucesso para userId: ${userId}`);
-            res.json({ success: true });
+            console.log(`[${new Date().toISOString()}] Números ${numbers.join(', ')} reservados com sucesso para userId: ${userId}`);
+            res.json({ message: 'Números reservados com sucesso' });
         } catch (error) {
             await session.abortTransaction();
             session.endSession();
@@ -113,7 +98,7 @@ app.post('/reserve_numbers', async (req, res) => {
         }
     } catch (error) {
         console.error(`[${new Date().toISOString()}] Erro ao reservar números:`, error);
-        res.status(500).json({ success: false, message: 'Erro ao reservar números.' });
+        res.status(500).json({ error: 'Erro ao reservar números' });
     }
 });
 
@@ -125,82 +110,64 @@ app.post('/check_reservation', async (req, res) => {
             number: { $in: numbers },
             status: 'reservado',
             userId,
-            timestamp: { $gt: fiveMinutesAgo },
+            timestamp: { $gte: fiveMinutesAgo }
         });
-        console.log(`[${new Date().toISOString()}] Verificação de reserva para números ${numbers}, userId: ${userId}, válida: ${validNumbers.length === numbers.length}`);
+        console.log(`[${new Date().toISOString()}] Verificação de reserva para números ${numbers.join(', ')}, userId: ${userId}, válida: ${validNumbers.length === numbers.length}`);
         res.json({ valid: validNumbers.length === numbers.length });
     } catch (error) {
-        console.error('Erro ao verificar reserva:', error);
-        res.status(500).json({ valid: false });
+        console.error(`[${new Date().toISOString()}] Erro ao verificar reserva:`, error);
+        res.status(500).json({ error: 'Erro ao verificar reserva' });
     }
 });
 
 app.post('/create_preference', async (req, res) => {
-    const { numbers, userId, buyerName, buyerPhone, quantity } = req.body;
-    console.log(`[${new Date().toISOString()}] Recebendo solicitação para criar preferência:`, { numbers, userId, buyerName, buyerPhone, quantity });
+    console.log(`[${new Date().toISOString()}] Recebendo solicitação para criar preferência:`, req.body);
     try {
-        const session = await mongoose.startSession();
-        session.startTransaction();
-        try {
-            const fiveMinutesAgo = new Date(Date.now() - 5 * 60 * 1000);
-            const validNumbers = await Comprador.find({
-                number: { $in: numbers },
-                status: 'reservado',
-                userId,
-                timestamp: { $gt: fiveMinutesAgo },
-            }).session(session);
-            if (validNumbers.length !== numbers.length) {
-                await session.abortTransaction();
-                session.endSession();
-                console.log(`[${new Date().toISOString()}] Falha na preferência: Números não estão reservados para userId: ${userId}`);
-                return res.status(400).json({ error: 'Números não estão mais reservados para você.' });
-            }
-
-            const preference = new Preference(client);
-            const response = await preference.create({
-                body: {
-                    items: [
-                        {
-                            title: 'Sorteio Sub-zero Beer',
-                            unit_price: quantity * 10,
-                            quantity: 1,
-                            currency_id: 'BRL',
-                        },
-                    ],
-                    back_urls: {
-                        success: 'https://ederamorimth.github.io/subzerobeer/success.html',
-                        failure: 'https://ederamorimth.github.io/subzerobeer/failure.html',
-                        pending: 'https://ederamorimth.github.io/subzerobeer/pending.html',
-                    },
-                    auto_return: 'approved',
-                    external_reference: JSON.stringify({ numbers, userId, buyerName, buyerPhone }),
-                }
-            });
-            console.log(`[${new Date().toISOString()}] Resposta do Mercado Pago:`, JSON.stringify(response, null, 2));
-            const paymentLink = response.init_point;
-            const preferenceId = response.id || 'Não encontrado';
-
-            await new Purchase({
-                buyerName,
-                buyerPhone,
-                numbers,
-                purchaseDate: new Date(),
-                preference_id: preferenceId,
-                status: 'pending',
-            }).save({ session });
-
-            await session.commitTransaction();
-            session.endSession();
-            console.log(`[${new Date().toISOString()}] Preferência criada com sucesso, preference_id: ${preferenceId}, números: ${numbers}`);
-            res.json({ init_point: paymentLink });
-        } catch (error) {
-            await session.abortTransaction();
-            session.endSession();
-            throw error;
+        const { numbers, userId, buyerName, buyerPhone } = req.body;
+        if (!numbers || !Array.isArray(numbers) || numbers.length === 0 || !userId || !buyerName || !buyerPhone) {
+            console.error(`[${new Date().toISOString()}] Dados incompletos na solicitação de preferência`);
+            return res.status(400).json({ error: 'Dados incompletos' });
         }
+
+        const validNumbers = await Comprador.find({ number: { $in: numbers }, status: 'reservado', userId });
+        if (validNumbers.length !== numbers.length) {
+            console.error(`[${new Date().toISOString()}] Números não estão reservados para o usuário: ${userId}`);
+            return res.status(400).json({ error: 'Números não estão reservados para este usuário' });
+        }
+
+        const preference = {
+            items: numbers.map(number => ({
+                title: `Número ${number}`,
+                quantity: 1,
+                unit_price: 10,
+            })),
+            back_urls: {
+                success: 'https://ederamorimth.github.io/subzerobeer',
+                failure: 'https://ederamorimth.github.io/subzerobeer',
+                pending: 'https://ederamorimth.github.io/subzerobeer',
+            },
+            auto_return: 'approved',
+            external_reference: JSON.stringify({ numbers, userId, buyerName, buyerPhone }),
+            notification_url: `${process.env.SITE_URL}/webhook`,
+        };
+
+        const client = new MercadoPagoConfig({ accessToken: process.env.MERCADO_PAGO_ACCESS_TOKEN });
+        const preferenceClient = new Preference(client);
+        const response = await preferenceClient.create({ body: preference });
+        console.log(`[${new Date().toISOString()}] Preferência criada com sucesso, preference_id: ${response.id}, números: ${numbers.join(', ')}`);
+
+        const purchase = new Purchase({
+            buyerName,
+            buyerPhone,
+            numbers,
+            preference_id: response.id,
+        });
+        await purchase.save();
+
+        res.json({ id: response.id });
     } catch (error) {
-        console.error(`[${new Date().toISOString()}] Erro ao processar preferência:`, error);
-        res.status(500).json({ error: 'Erro ao processar pagamento.' });
+        console.error(`[${new Date().toISOString()}] Erro ao criar preferência:`, error);
+        res.status(500).json({ error: 'Erro ao criar preferência' });
     }
 });
 
@@ -210,7 +177,6 @@ app.post('/webhook', async (req, res) => {
     try {
         if (payment.type === 'payment') {
             const paymentId = payment.data.id;
-            // Consultar a API do Mercado Pago para obter o status detalhado
             const paymentClient = new Payment(client);
             const paymentDetails = await paymentClient.get({ id: paymentId });
             console.log(`[${new Date().toISOString()}] Resposta da API do Mercado Pago:`, JSON.stringify(paymentDetails, null, 2));
@@ -273,16 +239,7 @@ app.post('/webhook', async (req, res) => {
     }
 });
 
-app.get('/progress', async (req, res) => {
-    try {
-        const total = await Comprador.countDocuments();
-        const sold = await Comprador.countDocuments({ status: 'vendido' });
-        const progress = (sold / total) * 100;
-        res.json({ progress });
-    } catch (error) {
-        console.error('Erro ao calcular progresso:', error);
-        res.status(500).json({ progress: 0 });
-    }
+const PORT = process.env.PORT || 3000;
+app.listen(PORT, () => {
+    console.log(`Servidor rodando na porta ${PORT}`);
 });
-
-app.listen(3000, () => console.log('Servidor rodando na porta 3000'));
