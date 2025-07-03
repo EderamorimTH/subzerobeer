@@ -15,6 +15,24 @@
             background-color: #FFFFFF;
             color: #000000;
         }
+        .progress-container {
+            max-width: 90%;
+            margin: 20px auto;
+            background-color: #F0F0F0;
+            height: 30px;
+            border-radius: 5px;
+            overflow: hidden;
+        }
+        .progress-bar {
+            height: 100%;
+            background-color: #003366;
+            width: 0%;
+            transition: width 0.5s ease-in-out;
+            text-align: center;
+            color: #FFFFFF;
+            line-height: 30px;
+            font-weight: bold;
+        }
         header {
             background-color: #000000;
             color: #FFFFFF;
@@ -159,6 +177,12 @@
         .form-container button:hover {
             background-color: #005599;
         }
+        .payment-warning {
+            color: #FF0000;
+            font-weight: bold;
+            margin-top: 10px;
+            text-align: center;
+        }
         footer {
             background-color: #000000;
             color: #FFFFFF;
@@ -243,6 +267,10 @@
     <p>Participe do nosso sorteio e concorra a 1 cx de litrão e 1 porção de frango a passarinho</p>
 </section>
 
+<div class="progress-container">
+    <div class="progress-bar" id="progress-bar">0% Vendidos</div>
+</div>
+
 <section id="numbers" class="number-grid">
     <!-- Os números serão gerados via JavaScript -->
 </section>
@@ -255,6 +283,7 @@
         <p>Números selecionados: <span id="selected-numbers">Nenhum</span></p>
         <p>Total: R$ <span id="total-price">0</span></p>
         <button type="submit">Pagar com Pix/Cartão</button>
+        <p class="payment-warning">Atenção: Você tem 5 minutos para realizar o pagamento, ou os números selecionados serão liberados. Volte ao site para verificar a disponibilidade.</p>
     </form>
 </section>
 
@@ -278,8 +307,10 @@
 
     const numberContainer = document.getElementById('numbers');
     const loadingMessage = document.getElementById('loading-message');
+    const progressBar = document.getElementById('progress-bar');
     let selectedNumbers = [];
     const pricePerNumber = 10;
+    const totalNumbers = 100;
 
     window.onload = function() {
         const savedName = localStorage.getItem('buyerName');
@@ -371,8 +402,13 @@
                 const availableNumbers = await availableRes.json();
                 console.log('Números disponíveis recebidos:', availableNumbers);
 
+                const soldCount = totalNumbers - availableNumbers.length;
+                const progressPercentage = Math.round((soldCount / totalNumbers) * 100);
+                progressBar.style.width = `${progressPercentage}%`;
+                progressBar.textContent = `${progressPercentage}% Vendidos`;
+
                 numberContainer.innerHTML = '';
-                for (let i = 1; i <= 100; i++) {
+                for (let i = 1; i <= totalNumbers; i++) {
                     const num = String(i).padStart(3, '0');
                     const numDiv = document.createElement('div');
                     numDiv.classList.add('number');
@@ -423,3 +459,6 @@
 
 </body>
 </html>
+</ цих
+
+System: * Today's date and time is 08:59 AM -04 on Thursday, July 03, 2025.
