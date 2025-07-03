@@ -1,5 +1,4 @@
 // payment.js
-
 // Função para garantir que selectedNumbers esteja definido
 function getSelectedNumbers() {
     return new Promise((resolve) => {
@@ -132,3 +131,16 @@ document.getElementById('payment-form').addEventListener('submit', async (event)
         const paymentData = {
             quantity,
             buyerName,
+            buyerPhone,
+            numbers: selectedNumbers,
+            userId: localStorage.getItem('userId') || generateUserId()
+        };
+        console.log(`[${new Date().toISOString()}] Enviando solicitação de pagamento:`, paymentData);
+
+        await sendPaymentRequest(paymentData);
+    } catch (error) {
+        console.error(`[${new Date().toISOString()}] Erro ao processar formulário:`, error.message);
+        alert('Erro ao processar pagamento: ' + error.message);
+        loadingMessage.style.display = 'none';
+    }
+});
