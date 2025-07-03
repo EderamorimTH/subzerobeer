@@ -1,4 +1,3 @@
-```javascript
 const express = require('express');
 const { MercadoPagoConfig, Preference, Payment } = require('mercadopago');
 const mongoose = require('mongoose');
@@ -8,16 +7,16 @@ require('dotenv').config();
 const app = express();
 
 app.use(express.json());
-app.use(cors()); // Adiciona CORS para permitir requisições do front-end
+app.use(cors());
 
 // Conectar ao MongoDB
 mongoose.connect(process.env.MONGODB_URI, {
     useNewUrlParser: true,
     useUnifiedTopology: true
 }).then(() => {
-    console.log(`[${new Date().toISOString()}] Conectado ao MongoDB`);
+    console.log('[' + new Date().toISOString() + '] Conectado ao MongoDB');
 }).catch((error) => {
-    console.error(`[${new Date().toISOString()}] Erro ao conectar ao MongoDB: ${error.message}`);
+    console.error('[' + new Date().toISOString() + '] Erro ao conectar ao MongoDB: ' + error.message);
 });
 
 // Schema para números vendidos
@@ -37,7 +36,7 @@ app.get('/health', async (req, res) => {
         const compradoresCount = await Number.countDocuments({ status: 'sold' });
         res.json({ status: 'OK', compradoresCount });
     } catch (error) {
-        console.error(`[${new Date().toISOString()}] Erro no health check: ${error.message}`);
+        console.error('[' + new Date().toISOString() + '] Erro no health check: ' + error.message);
         res.status(500).json({ error: 'Erro no servidor' });
     }
 });
@@ -50,7 +49,7 @@ app.get('/available_numbers', async (req, res) => {
         const availableNumbers = allNumbers.filter(num => !soldNumbers.includes(num));
         res.json(availableNumbers);
     } catch (error) {
-        console.error(`[${new Date().toISOString()}] Erro ao carregar números disponíveis: ${error.message}`);
+        console.error('[' + new Date().toISOString() + '] Erro ao carregar números disponíveis: ' + error.message);
         res.status(500).json({ error: 'Erro ao carregar números' });
     }
 });
@@ -62,7 +61,7 @@ app.post('/reserve_numbers', async (req, res) => {
         if (!numbers || !userId) {
             return res.status(400).json({ error: 'Números ou userId não fornecidos' });
         }
-        console.log(`[${new Date().toISOString()}] Reservando números: ${JSON.stringify(numbers)} para userId: ${userId}`);
+        console.log('[' + new Date().toISOString() + '] Reservando números: ' + JSON.stringify(numbers) + ' para userId: ' + userId);
         
         const existingNumbers = await Number.find({ number: { $in: numbers } });
         if (existingNumbers.length > 0) {
@@ -73,7 +72,7 @@ app.post('/reserve_numbers', async (req, res) => {
         await Number.insertMany(numberDocs);
         res.json({ success: true });
     } catch (error) {
-        console.error(`[${new Date().toISOString()}] Erro ao reservar números: ${error.message}`);
+        console.error('[' + new Date().toISOString() + '] Erro ao reservar números: ' + error.message);
         res.status(500).json({ error: 'Erro ao reservar números' });
     }
 });
@@ -89,7 +88,7 @@ app.post('/check_reservation', async (req, res) => {
         const valid = existingNumbers.length === 0;
         res.json({ valid });
     } catch (error) {
-        console.error(`[${new Date().toISOString()}] Erro ao verificar reserva: ${error.message}`);
+        console.error('[' + new Date().toISOString() + '] Erro ao verificar reserva: ' + error.message);
         res.status(500).json({ error: 'Erro ao verificar reserva' });
     }
 });
@@ -125,9 +124,8 @@ app.post('/create_preference', async (req, res) => {
         };
 
         const response = await preference.create({ body: preferenceData });
-        console.log(`[${new Date().toISOString()}] Preferência criada: ${response.id}`);
+        console.log('[' + new Date().toISOString() + '] Preferência criada: ' + response.id);
         
-        // Atualizar números para 'reserved' com informações do comprador
         await Number.updateMany(
             { number: { $in: numbers }, userId },
             { $set: { buyerName, buyerPhone, status: 'reserved' } }
@@ -135,7 +133,7 @@ app.post('/create_preference', async (req, res) => {
         
         res.json({ init_point: response.init_point });
     } catch (error) {
-        console.error(`[${new Date().toISOString()}] Erro ao criar preferência: ${error.message} ${error.stack}`);
+        console.error('[' + new Date().toISOString() + '] Erro ao criar preferência: ' + error.message + ' ' + error.stack);
         res.status(500).json({ error: 'Erro ao criar pagamento', details: error.message });
     }
 });
@@ -144,12 +142,12 @@ app.post('/create_preference', async (req, res) => {
 app.post('/webhook', async (req, res) => {
     try {
         const { action, data, type } = req.body;
-        console.log(`[${new Date().toISOString()}] Webhook recebido: ${JSON.stringify(req.body)}`);
+        console.log('[' + new Date().toISOString() + '] Webhook recebido: ' + JSON.stringify(req.body));
 
         if (type === 'payment' && action === 'payment.updated') {
             const payment = new Payment(mercadoPagoClient);
             const paymentDetails = await payment.get({ id: data.id });
-            console.log(`[${new Date().toISOString()}] Detalhes do pagamento: ${JSON.stringify(paymentDetails)}`);
+            console.log('[' + new Date().toISOString() + '] Detalhes do pagamento: ' + JSON.stringify(paymentDetails));
             
             if (paymentDetails.status === 'approved') {
                 await Number.updateMany(
@@ -160,7 +158,7 @@ app.post('/webhook', async (req, res) => {
         }
         res.status(200).send('OK');
     } catch (error) {
-        console.error(`[${new Date().toISOString()}] Erro no webhook: ${error.message}`);
+        console.error('[' + new Date().toISOString() + '] Erro no webhook: ' + error.message);
         res.status(500).json({ error: 'Erro ao processar webhook' });
     }
 });
@@ -173,10 +171,10 @@ app.get('/progress', async (req, res) => {
         const progress = (soldNumbers / totalNumbers) * 100;
         res.json({ progress });
     } catch (error) {
-        console.error(`[${new Date().toISOString()}] Erro ao carregar progresso: ${error.message}`);
+        console.error('[' + new Date().toISOString() + '] Erro ao carregar progresso: ' + error.message);
         res.status(500).json({ error: 'Erro ao carregar progresso' });
     }
 });
 
 const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => console.log(`[${new Date().toISOString()}] Servidor rodando na porta ${PORT}`));
+app.listen(PORT, () => console.log('[' + new Date().toISOString() + '] Servidor rodando na porta ' + PORT));
