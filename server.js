@@ -1,6 +1,7 @@
 const express = require('express');
 const { MercadoPagoConfig, Preference, Payment } = require('mercadopago');
 const mongoose = require('mongoose');
+mongoose.set('strictQuery', true);
 const cors = require('cors');
 require('dotenv').config();
 
@@ -34,6 +35,7 @@ const Number = mongoose.model('Number', NumberSchema);
 app.get('/health', async (req, res) => {
     try {
         const compradoresCount = await Number.countDocuments({ status: 'sold' });
+        console.log('[' + new Date().toISOString() + '] Health check: compradoresCount = ' + compradoresCount);
         res.json({ status: 'OK', compradoresCount });
     } catch (error) {
         console.error('[' + new Date().toISOString() + '] Erro no health check: ' + error.message);
@@ -46,7 +48,12 @@ app.get('/available_numbers', async (req, res) => {
     try {
         const allNumbers = Array.from({ length: 100 }, (_, i) => String(i + 1).padStart(3, '0'));
         const soldNumbers = await Number.find({ status: 'sold' }).distinct('number');
+        console.log('[' + new Date().toISOString() + '] Números vendidos: ' + JSON.stringify(soldNumbers));
         const availableNumbers = allNumbers.filter(num => !soldNumbers.includes(num));
+        console.log('[' + new Date().toISOString() + '] Números disponíveis: ' + JSON.stringify(availableNumbers));
+        if (availableNumbers.length === 0) {
+            console.warn('[' + new Date().toISOString() + '] Nenhum número disponível retornado');
+        }
         res.json(availableNumbers);
     } catch (error) {
         console.error('[' + new Date().toISOString() + '] Erro ao carregar números disponíveis: ' + error.message);
@@ -86,6 +93,7 @@ app.post('/check_reservation', async (req, res) => {
         }
         const existingNumbers = await Number.find({ number: { $in: numbers }, userId: { $ne: userId } });
         const valid = existingNumbers.length === 0;
+        console.log('[' + new Date().toISOString() + '] Verificação de reserva: valid = ' + valid);
         res.json({ valid });
     } catch (error) {
         console.error('[' + new Date().toISOString() + '] Erro ao verificar reserva: ' + error.message);
@@ -169,6 +177,7 @@ app.get('/progress', async (req, res) => {
         const soldNumbers = await Number.countDocuments({ status: 'sold' });
         const totalNumbers = 100;
         const progress = (soldNumbers / totalNumbers) * 100;
+        console.log('[' + new Date().toISOString() + '] Progresso: ' + progress + '%');
         res.json({ progress });
     } catch (error) {
         console.error('[' + new Date().toISOString() + '] Erro ao carregar progresso: ' + error.message);
