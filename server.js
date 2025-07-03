@@ -1,21 +1,18 @@
-// server.js
 const express = require('express');
-const mercadopago = require('mercadopago');
+const { MercadoPagoConfig, Preference, Payment } = require('@mercadopago/sdk-js');
 const app = express();
 
-// Middleware para parsing de JSON
 app.use(express.json());
 
 // Configurar Mercado Pago
-mercadopago.configure({
-    access_token: process.env.MERCADO_PAGO_ACCESS_TOKEN
+const mpClient = new MercadoPagoConfig({
+    accessToken: process.env.MERCADO_PAGO_ACCESS_TOKEN
 });
 
 // Endpoint para verificar a saúde do servidor
 app.get('/health', async (req, res) => {
     try {
-        // Simular verificação do banco de dados (substitua por sua lógica real)
-        const compradoresCount = 100; // Exemplo
+        const compradoresCount = 100; // Substitua por lógica de banco de dados
         res.json({ status: 'OK', compradoresCount });
     } catch (error) {
         console.error(`[${new Date().toISOString()}] Erro no health check:`, error.message);
@@ -23,12 +20,11 @@ app.get('/health', async (req, res) => {
     }
 });
 
-// Endpoint para verificar números disponíveis
+// Endpoint para números disponíveis
 app.get('/available_numbers', async (req, res) => {
     try {
-        // Simular números disponíveis (substitua por sua lógica de banco de dados)
         const allNumbers = Array.from({ length: 100 }, (_, i) => String(i + 1).padStart(3, '0'));
-        const soldNumbers = []; // Substitua por consulta ao banco de dados
+        const soldNumbers = []; // Substitua por lógica de banco de dados
         const availableNumbers = allNumbers.filter(num => !soldNumbers.includes(num));
         res.json(availableNumbers);
     } catch (error) {
@@ -44,7 +40,6 @@ app.post('/reserve_numbers', async (req, res) => {
         if (!numbers || !userId) {
             return res.status(400).json({ error: 'Números ou userId não fornecidos' });
         }
-        // Simular reserva no banco de dados (substitua por sua lógica)
         console.log(`[${new Date().toISOString()}] Reservando números:`, numbers, 'para userId:', userId);
         res.json({ success: true });
     } catch (error) {
@@ -60,8 +55,7 @@ app.post('/check_reservation', async (req, res) => {
         if (!numbers || !userId) {
             return res.status(400).json({ error: 'Números ou userId não fornecidos' });
         }
-        // Simular verificação de reserva (substitua por sua lógica de banco de dados)
-        const valid = true; // Verifique se os números estão disponíveis
+        const valid = true; // Substitua por lógica de banco de dados
         res.json({ valid });
     } catch (error) {
         console.error(`[${new Date().toISOString()}] Erro ao verificar reserva:`, error.message);
@@ -73,14 +67,12 @@ app.post('/check_reservation', async (req, res) => {
 app.post('/create_preference', async (req, res) => {
     try {
         const { quantity, buyerName, buyerPhone, numbers, userId } = req.body;
-
-        // Validação dos dados
         if (!quantity || !buyerName || !buyerPhone || !numbers || !userId) {
             return res.status(400).json({ error: 'Dados incompletos' });
         }
 
-        // Criar preferência de pagamento
-        const preference = {
+        const preference = new Preference(mpClient);
+        const prefData = {
             items: [{
                 title: 'Sorteio Sub-zero Beer',
                 quantity: parseInt(quantity),
@@ -101,27 +93,26 @@ app.post('/create_preference', async (req, res) => {
             metadata: { numbers }
         };
 
-        const response = await mercadopago.preferences.create(preference);
-        console.log(`[${new Date().toISOString()}] Preferência criada:`, response.body.id);
-        res.json({ init_point: response.body.init_point });
+        const response = await preference.create({ body: prefData });
+        console.log(`[${new Date().toISOString()}] Preferência criada:`, response.id);
+        res.json({ init_point: response.init_point });
     } catch (error) {
         console.error(`[${new Date().toISOString()}] Erro ao criar preferência:`, error.message, error.stack);
         res.status(500).json({ error: 'Erro ao criar pagamento', details: error.message });
     }
 });
 
-// Endpoint para webhooks do Mercado Pago
+// Endpoint para webhooks
 app.post('/webhook', async (req, res) => {
     try {
         const { action, data, type } = req.body;
         console.log(`[${new Date().toISOString()}] Webhook recebido:`, req.body);
 
         if (type === 'payment' && action === 'payment.updated') {
-            const paymentId = data.id;
-            const payment = await mercadopago.payment.get(paymentId);
-            console.log(`[${new Date().toISOString()}] Detalhes do pagamento:`, payment.body);
-            // Atualize o banco de dados com o status do pagamento
-            // Exemplo: if (payment.body.status === 'approved') { salvar números no banco }
+            const payment = new Payment(mpClient);
+            const paymentData = await payment.get({ id: data.id });
+            console.log(`[${new Date().toISOString()}] Detalhes do pagamento:`, paymentData);
+            // Substitua por lógica para atualizar banco de dados
         }
         res.status(200).send('OK');
     } catch (error) {
@@ -133,8 +124,7 @@ app.post('/webhook', async (req, res) => {
 // Endpoint para progresso
 app.get('/progress', async (req, res) => {
     try {
-        // Simular progresso (substitua por sua lógica de banco de dados)
-        const soldNumbers = 50; // Exemplo
+        const soldNumbers = 50; // Substitua por lógica de banco de dados
         const totalNumbers = 100;
         const progress = (soldNumbers / totalNumbers) * 100;
         res.json({ progress });
