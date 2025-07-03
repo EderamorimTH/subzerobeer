@@ -1,46 +1,3 @@
-// Função para carregar números disponíveis
-async function loadAvailableNumbers() {
-    try {
-        const response = await fetch('https://subzerobeer.onrender.com/available_numbers', {
-            method: 'GET',
-            headers: { 'Content-Type': 'application/json' }
-        });
-        if (!response.ok) {
-            throw new Error(`Erro HTTP: ${response.status}`);
-        }
-        const availableNumbers = await response.json();
-        console.log('[' + new Date().toISOString() + '] Números disponíveis recebidos: ' + JSON.stringify(availableNumbers));
-        
-        if (availableNumbers.length === 0) {
-            console.warn('[' + new Date().toISOString() + '] Nenhum número disponível retornado pelo servidor');
-            document.getElementById('numbers-list') ? 
-                document.getElementById('numbers-list').innerHTML = '<option>Nenhum número disponível</option>' :
-                console.error('[' + new Date().toISOString() + '] Elemento numbers-list não encontrado');
-            return [];
-        }
-
-        // Renderizar números no DOM (assumindo um <select id="numbers-list">)
-        if (document.getElementById('numbers-list')) {
-            document.getElementById('numbers-list').innerHTML = availableNumbers
-                .map(num => `<option value="${num}">${num}</option>`)
-                .join('');
-        } else {
-            console.error('[' + new Date().toISOString() + '] Elemento numbers-list não encontrado');
-        }
-        window.selectedNumbers = []; // Inicializar selectedNumbers
-        return availableNumbers;
-    } catch (error) {
-        console.error('[' + new Date().toISOString() + '] Erro ao carregar números disponíveis: ' + error.message);
-        alert('Erro ao conectar ao servidor. Tente novamente mais tarde.');
-        return [];
-    }
-}
-
-// Chamar ao carregar a página
-document.addEventListener('DOMContentLoaded', async () => {
-    await loadAvailableNumbers();
-});
-
 // Função para garantir que selectedNumbers esteja definido
 function getSelectedNumbers() {
     return new Promise((resolve) => {
@@ -77,7 +34,7 @@ async function checkReservation(numbers) {
         });
         if (!response.ok) {
             const errorData = await response.json();
-            throw new Error(`Erro HTTP: ${response.status} - ${errorData.error || 'Erro desconhecido'}`);
+            throw new Error('Erro HTTP ' + response.status + ': ' + (errorData.error || 'Erro desconhecido'));
         }
         const result = await response.json();
         console.log('[' + new Date().toISOString() + '] Resultado da verificação: ' + JSON.stringify(result));
@@ -185,11 +142,4 @@ document.getElementById('payment-form').addEventListener('submit', async (event)
         alert('Erro ao processar pagamento: ' + error.message);
         loadingMessage.style.display = 'none';
     }
-});
-
-// Adicionar evento para atualizar selectedNumbers quando o usuário seleciona números
-document.getElementById('numbers-list')?.addEventListener('change', (event) => {
-    const select = event.target;
-    window.selectedNumbers = Array.from(select.selectedOptions).map(option => option.value);
-    console.log('[' + new Date().toISOString() + '] Números selecionados: ' + JSON.stringify(window.selectedNumbers));
 });
