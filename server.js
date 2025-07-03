@@ -5,23 +5,18 @@ const mercadopago = require('mercadopago');
 
 const app = express();
 app.use(express.json());
-app.use(cors()); // Permite chamadas do frontend no GitHub Pages
+app.use(cors());
 
-// Configurar Mercado Pago
 mercadopago.configure({
     access_token: process.env.MERCADO_PAGO_ACCESS_TOKEN,
 });
 
-// Configurar strictQuery para evitar aviso de depreciação
 mongoose.set('strictQuery', false);
-
-// Conectar ao MongoDB usando MONGODB_URI
 mongoose.connect(process.env.MONGODB_URI, {
     useNewUrlParser: true,
     useUnifiedTopology: true,
 }).then(() => console.log('Conectado ao MongoDB')).catch(err => console.error('Erro ao conectar ao MongoDB:', err));
 
-// Esquema para a coleção compradores
 const compradorSchema = new mongoose.Schema({
     number: { type: String, required: true, unique: true },
     status: { type: String, default: 'disponível' },
@@ -32,7 +27,6 @@ const compradorSchema = new mongoose.Schema({
 });
 const Comprador = mongoose.model('Comprador', compradorSchema, 'compradores');
 
-// Inicializar números de 001 a 100 (executar uma vez)
 async function initializeNumbers() {
     try {
         const count = await Comprador.countDocuments();
@@ -50,7 +44,6 @@ async function initializeNumbers() {
 }
 initializeNumbers();
 
-// Rota para listar números disponíveis
 app.get('/available_numbers', async (req, res) => {
     try {
         const numbers = await Comprador.find({ status: 'disponível' }).select('number');
@@ -61,7 +54,6 @@ app.get('/available_numbers', async (req, res) => {
     }
 });
 
-// Rota para reservar números
 app.post('/reserve_numbers', async (req, res) => {
     const { numbers, userId } = req.body;
     try {
@@ -93,7 +85,6 @@ app.post('/reserve_numbers', async (req, res) => {
     }
 });
 
-// Rota para verificar reservas
 app.post('/check_reservation', async (req, res) => {
     const { numbers, userId } = req.body;
     try {
@@ -111,7 +102,6 @@ app.post('/check_reservation', async (req, res) => {
     }
 });
 
-// Rota para criar preferência de pagamento
 app.post('/create_preference', async (req, res) => {
     const { numbers, userId, buyerName, buyerPhone, quantity } = req.body;
     try {
@@ -131,7 +121,6 @@ app.post('/create_preference', async (req, res) => {
                 return res.status(400).json({ error: 'Números não estão mais reservados para você.' });
             }
 
-            // Criar preferência de pagamento no Mercado Pago
             const preference = {
                 items: [
                     {
@@ -150,7 +139,6 @@ app.post('/create_preference', async (req, res) => {
             const response = await mercadopago.preferences.create(preference);
             const paymentLink = response.body.init_point;
 
-            // Marcar números como vendido após criar a preferência
             await Comprador.updateMany(
                 { number: { $in: numbers } },
                 { $set: { status: 'vendido', buyerName, buyerPhone } },
@@ -170,7 +158,17 @@ app.post('/create_preference', async (req, res) => {
     }
 });
 
-// Rota para progresso
+app.post('/webhook', async (req, res) => {
+    const payment = req.body;
+    console.log('Webhook recebido:', payment);
+    if (payment.action === 'payment.updated' && payment.data.status === 'approved') {
+        const paymentId = payment.data.id;
+        console.log(`Pagamento ${paymentId} aprovado.`);
+        // Aqui você pode adicionar lógica para atualizar o banco, se necessário
+    }
+    res.sendStatus(200);
+});
+
 app.get('/progress', async (req, res) => {
     try {
         const total = await Comprador.countDocuments();
