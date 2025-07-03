@@ -1,13 +1,12 @@
-// server.js
 const express = require('express');
-const { MercadoPagoConfig, Preference, Payment } = require('@mercadopago/sdk-js');
+const mercadopago = require('mercadopago');
 const app = express();
 
 app.use(express.json());
 
 // Configurar Mercado Pago
-const mpClient = new MercadoPagoConfig({
-    accessToken: process.env.MERCADO_PAGO_ACCESS_TOKEN
+mercadopago.configure({
+    access_token: process.env.MERCADO_PAGO_ACCESS_TOKEN
 });
 
 // Endpoint para verificar a saúde do servidor
@@ -72,8 +71,7 @@ app.post('/create_preference', async (req, res) => {
             return res.status(400).json({ error: 'Dados incompletos' });
         }
 
-        const preference = new Preference(mpClient);
-        const prefData = {
+        const preference = {
             items: [{
                 title: 'Sorteio Sub-zero Beer',
                 quantity: parseInt(quantity),
@@ -94,9 +92,9 @@ app.post('/create_preference', async (req, res) => {
             metadata: { numbers }
         };
 
-        const response = await preference.create({ body: prefData });
-        console.log(`[${new Date().toISOString()}] Preferência criada:`, response.id);
-        res.json({ init_point: response.init_point });
+        const response = await mercadopago.preferences.create(preference);
+        console.log(`[${new Date().toISOString()}] Preferência criada:`, response.body.id);
+        res.json({ init_point: response.body.init_point });
     } catch (error) {
         console.error(`[${new Date().toISOString()}] Erro ao criar preferência:`, error.message, error.stack);
         res.status(500).json({ error: 'Erro ao criar pagamento', details: error.message });
@@ -110,9 +108,8 @@ app.post('/webhook', async (req, res) => {
         console.log(`[${new Date().toISOString()}] Webhook recebido:`, req.body);
 
         if (type === 'payment' && action === 'payment.updated') {
-            const payment = new Payment(mpClient);
-            const paymentData = await payment.get({ id: data.id });
-            console.log(`[${new Date().toISOString()}] Detalhes do pagamento:`, paymentData);
+            const payment = await mercadopago.payment.get(data.id);
+            console.log(`[${new Date().toISOString()}] Detalhes do pagamento:`, payment.body);
             // Substitua por lógica para atualizar banco de dados
         }
         res.status(200).send('OK');
