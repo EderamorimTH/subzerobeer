@@ -1,11 +1,12 @@
+```javascript
 const express = require('express');
-const MercadoPago = require('mercadopago').MercadoPago; // Updated for v2.5.17
+const { MercadoPagoConfig, Preference, Payment } = require('mercadopago');
 const app = express();
 
 app.use(express.json());
 
 // Configurar Mercado Pago
-const mercadoPagoClient = new MercadoPago({
+const mercadoPagoClient = new MercadoPagoConfig({
     accessToken: process.env.MERCADO_PAGO_ACCESS_TOKEN
 });
 
@@ -71,7 +72,8 @@ app.post('/create_preference', async (req, res) => {
             return res.status(400).json({ error: 'Dados incompletos' });
         }
 
-        const preference = {
+        const preference = new Preference(mercadoPagoClient);
+        const preferenceData = {
             items: [{
                 title: 'Sorteio Sub-zero Beer',
                 quantity: parseInt(quantity),
@@ -92,9 +94,9 @@ app.post('/create_preference', async (req, res) => {
             metadata: { numbers }
         };
 
-        const response = await mercadoPagoClient.preferences.create(preference);
-        console.log(`[${new Date().toISOString()}] Preferência criada:`, response.body.id);
-        res.json({ init_point: response.body.init_point });
+        const response = await preference.create({ body: preferenceData });
+        console.log(`[${new Date().toISOString()}] Preferência criada:`, response.id);
+        res.json({ init_point: response.init_point });
     } catch (error) {
         console.error(`[${new Date().toISOString()}] Erro ao criar preferência:`, error.message, error.stack);
         res.status(500).json({ error: 'Erro ao criar pagamento', details: error.message });
@@ -108,8 +110,9 @@ app.post('/webhook', async (req, res) => {
         console.log(`[${new Date().toISOString()}] Webhook recebido:`, req.body);
 
         if (type === 'payment' && action === 'payment.updated') {
-            const payment = await mercadoPagoClient.payment.get(data.id);
-            console.log(`[${new Date().toISOString()}] Detalhes do pagamento:`, payment.body);
+            const payment = new Payment(mercadoPagoClient);
+            const paymentDetails = await payment.get({ id: data.id });
+            console.log(`[${new Date().toISOString()}] Detalhes do pagamento:`, paymentDetails);
             // Substitua por lógica para atualizar banco de dados
         }
         res.status(200).send('OK');
@@ -134,3 +137,18 @@ app.get('/progress', async (req, res) => {
 
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => console.log(`[${new Date().toISOString()}] Servidor rodando na porta ${PORT}`));
+```
+
+**Mudanças**:
+1. Alterado `require('mercadopago').MercadoPago` para `require('mercadopago').MercadoPagoConfig, Preference, Payment`.
+2. Configuração agora usa `MercadoPagoConfig` com `accessToken`.
+3. Para criar preferências, usa `new Preference(mercadoPagoClient)` e `preference.create({ body: preferenceData })`.
+4. Para pagamentos, usa `new Payment(mercadoPagoClient)` e `payment.get({ id: data.id })`.
+
+**Ações**:
+- Substitua o `server.js` pelo código acima.
+- Verifique se `package.json` já está com `"mercadopago": "^2.5.17"`.
+- Execute ` DIMENSION npm install` e redeploy no Render.com.
+- Confirme que `MERCADO_PAGO_ACCESS_TOKEN` está configurado no ambiente do Render.
+
+Isso corrige o erro e alinha o código com a versão 2.5.17 do Mercado Pago.
