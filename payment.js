@@ -1,15 +1,20 @@
 async function checkReservation(numbers) {
     try {
+        console.log(`[${new Date().toISOString()}] Verificando reserva para números: ${numbers}`);
         const response = await fetch('https://subzerobeer.onrender.com/check_reservation', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ numbers, userId: localStorage.getItem('userId') })
         });
-        if (!response.ok) throw new Error(`Erro HTTP: ${response.status}`);
+        if (!response.ok) {
+            const errorData = await response.json();
+            throw new Error(`Erro HTTP ${response.status}: ${errorData.error || 'Erro desconhecido'}`);
+        }
         const result = await response.json();
+        console.log(`[${new Date().toISOString()}] Resultado da verificação de reserva:`, result);
         return result.valid;
     } catch (error) {
-        console.error('Erro ao verificar reserva:', error);
+        console.error(`[${new Date().toISOString()}] Erro ao verificar reserva:`, error.message);
         return false;
     }
 }
@@ -20,7 +25,7 @@ async function sendPaymentRequest(data) {
 
     while (retries < maxRetries) {
         try {
-            console.log(`Tentativa ${retries + 1} de enviar pagamento em ${new Date().toISOString()}...`, data);
+            console.log(`[${new Date().toISOString()}] Tentativa ${retries + 1} de enviar pagamento:`, data);
             if (!await checkReservation(data.numbers)) {
                 alert('Um ou mais números selecionados já foram reservados ou vendidos por outra pessoa. Escolha outros números.');
                 return;
@@ -38,9 +43,9 @@ async function sendPaymentRequest(data) {
             });
 
             clearTimeout(timeoutId);
-            console.log(`Status da resposta: ${response.status} em ${new Date().toISOString()}`);
+            console.log(`[${new Date().toISOString()}] Status da resposta: ${response.status}`);
             const responseData = await response.json();
-            console.log('Resposta da API:', responseData);
+            console.log(`[${new Date().toISOString()}] Resposta da API:`, responseData);
 
             if (responseData.init_point) {
                 window.location.href = responseData.init_point;
@@ -49,10 +54,10 @@ async function sendPaymentRequest(data) {
             }
             return;
         } catch (error) {
-            console.error(`Erro na tentativa ${retries + 1} em ${new Date().toISOString()}:`, error.message, 'Stack:', error.stack, 'Code:', error.code);
+            console.error(`[${new Date().toISOString()}] Erro na tentativa ${retries + 1}:`, error.message, 'Stack:', error.stack, 'Code:', error.code);
             retries++;
             if (retries === maxRetries) {
-                alert('Erro ao conectar ao servidor após várias tentativas. Detalhes: ' + error.message + '\nCódigo: ' + (error.code || 'desconhecido') + '\nStatus: ' + (error.status || 'desconhecido'));
+                alert('Erro ao conectar ao servidor após várias tentativas. Detalhes: ' + error.message + '\nCódigo: ' + (error.code || 'desconhecido'));
             } else {
                 await new Promise(resolve => setTimeout(resolve, 3000));
             }
@@ -65,15 +70,16 @@ document.getElementById('payment-form').addEventListener('submit', async (event)
 
     const buyerName = document.getElementById('buyer-name').value;
     const buyerPhone = document.getElementById('buyer-phone').value;
-    const quantity = selectedNumbers.length;
+    const quantity = window.selectedNumbers.length;
 
-    console.log('Números selecionados antes de enviar em:', new Date().toISOString(), selectedNumbers);
-    if (selectedNumbers.length === 0) {
-        console.warn('Nenhum número selecionado antes de enviar em:', new Date().toISOString());
+    console.log(`[${new Date().toISOString()}] Números selecionados antes de enviar:`, window.selectedNumbers);
+    if (window.selectedNumbers.length === 0) {
+        console.warn(`[${new Date().toISOString()}] Nenhum número selecionado`);
         alert('Por favor, selecione pelo menos um número.');
         return;
     }
     if (!buyerName || !buyerPhone) {
+        console.warn(`[${new Date().toISOString()}] Campos de nome ou telefone não preenchidos`);
         alert('Por favor, preencha todos os campos.');
         return;
     }
@@ -85,10 +91,10 @@ document.getElementById('payment-form').addEventListener('submit', async (event)
         quantity,
         buyerName,
         buyerPhone,
-        numbers: selectedNumbers,
+        numbers: window.selectedNumbers,
         userId: localStorage.getItem('userId') || generateUserId()
     };
-    console.log('Enviando solicitação de pagamento em:', new Date().toISOString(), paymentData);
+    console.log(`[${new Date().toISOString()}] Enviando solicitação de pagamento:`, paymentData);
 
     await sendPaymentRequest(paymentData);
 });
