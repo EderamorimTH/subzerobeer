@@ -1,3 +1,4 @@
+// server.js
 const express = require('express');
 const { MercadoPagoConfig, Preference, Payment } = require('@mercadopago/sdk-js');
 const app = express();
