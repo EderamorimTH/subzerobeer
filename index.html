@@ -275,7 +275,7 @@
 
     async function reserveNumbers(numbers) {
         try {
-            const response = await fetch('https://rifa-miguel.onrender.com/reserve_numbers', {
+            const response = await fetch('https://subzero-backend.onrender.com/reserve_numbers', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ numbers, userId: localStorage.getItem('userId') || generateUserId() })
@@ -301,7 +301,7 @@
 
     async function selectRandomNumbers() {
         try {
-            const availableRes = await fetch('https://rifa-miguel.onrender.com/available_numbers', {
+            const availableRes = await fetch('https://subzero-backend.onrender.com/available_numbers', {
                 method: 'GET',
                 headers: { 'Content-Type': 'application/json' },
             });
@@ -341,7 +341,7 @@
         while (retries < maxRetries) {
             try {
                 console.log(`Tentativa ${retries + 1} de carregar números em ${new Date().toISOString()}...`);
-                const availableRes = await fetch('https://rifa-miguel.onrender.com/available_numbers', {
+                const availableRes = await fetch('https://subzero-backend.onrender.com/available_numbers', {
                     method: 'GET',
                     headers: { 'Content-Type': 'application/json' },
                 });
@@ -383,16 +383,6 @@
                     numberContainer.appendChild(numDiv);
                 }
 
-                const progressRes = await fetch('https://rifa-miguel.onrender.com/progress', {
-                    method: 'GET',
-                    headers: { 'Content-Type': 'application/json' },
-                });
-                if (!progressRes.ok) throw new Error(`Erro HTTP: ${progressRes.status}`);
-                const { progress } = await progressRes.json();
-                const progressBar = document.getElementById('progress-bar');
-                progressBar.style.width = `${progress}%`;
-                progressBar.textContent = `${progress}% Arrecadado`;
-
                 console.log('Números carregados com sucesso em:', new Date().toISOString());
                 return;
             } catch (error) {
@@ -427,8 +417,6 @@
                         });
                         numberContainer.appendChild(numDiv);
                     }
-                    document.getElementById('progress-bar').style.width = '0%';
-                    document.getElementById('progress-bar').textContent = '0% Arrecadado';
                 } else {
                     await new Promise(resolve => setTimeout(resolve, 2000));
                 }
@@ -438,7 +426,7 @@
 
     async function checkReservation(numbers) {
         try {
-            const response = await fetch('https://rifa-miguel.onrender.com/check_reservation', {
+            const response = await fetch('https://subzero-backend.onrender.com/check_reservation', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ numbers, userId: localStorage.getItem('userId') })
@@ -466,7 +454,7 @@
 
                 const controller = new AbortController();
                 const timeoutId = setTimeout(() => controller.abort(), 10000);
-                const response = await fetch('https://rifa-miguel.onrender.com/create_preference', {
+                const response = await fetch('https://subzero-backend.onrender.com/create_preference', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json'
