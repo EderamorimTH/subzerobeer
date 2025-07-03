@@ -1,10 +1,16 @@
 const express = require('express');
 const mongoose = require('mongoose');
 const cors = require('cors');
+const mercadopago = require('mercadopago');
 
 const app = express();
 app.use(express.json());
 app.use(cors()); // Permite chamadas do frontend no GitHub Pages
+
+// Configurar Mercado Pago
+mercadopago.configure({
+    access_token: process.env.MERCADO_PAGO_ACCESS_TOKEN,
+});
 
 // Configurar strictQuery para evitar aviso de depreciação
 mongoose.set('strictQuery', false);
@@ -124,8 +130,27 @@ app.post('/create_preference', async (req, res) => {
                 session.endSession();
                 return res.status(400).json({ error: 'Números não estão mais reservados para você.' });
             }
-            // Aqui você integraria com um gateway de pagamento (ex.: Mercado Pago)
-            const paymentLink = 'https://payment-gateway.com/init'; // Substitua pela integração real
+
+            // Criar preferência de pagamento no Mercado Pago
+            const preference = {
+                items: [
+                    {
+                        title: 'Sorteio Sub-zero Beer',
+                        unit_price: quantity * 10,
+                        quantity: 1,
+                    },
+                ],
+                back_urls: {
+                    success: 'https://ederamorimth.github.io/subzerobeer/success.html',
+                    failure: 'https://ederamorimth.github.io/subzerobeer/failure.html',
+                    pending: 'https://ederamorimth.github.io/subzerobeer/pending.html',
+                },
+                auto_return: 'approved',
+            };
+            const response = await mercadopago.preferences.create(preference);
+            const paymentLink = response.body.init_point;
+
+            // Marcar números como vendido após criar a preferência
             await Comprador.updateMany(
                 { number: { $in: numbers } },
                 { $set: { status: 'vendido', buyerName, buyerPhone } },
