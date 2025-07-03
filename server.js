@@ -5,9 +5,7 @@ const app = express();
 app.use(express.json());
 
 // Configurar Mercado Pago
-mercadopago.configure({
-    access_token: process.env.MERCADO_PAGO_ACCESS_TOKEN
-});
+mercadopago.configurations.setAccessToken(process.env.MERCADO_PAGO_ACCESS_TOKEN);
 
 // Endpoint para verificar a saúde do servidor
 app.get('/health', async (req, res) => {
