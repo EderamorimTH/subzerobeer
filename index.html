@@ -228,6 +228,13 @@
             z-index: 1000;
             display: none;
         }
+        .error-message {
+            text-align: center;
+            color: #FF0000;
+            font-weight: bold;
+            margin: 20px auto;
+            max-width: 600px;
+        }
         @keyframes fadeIn {
             from { opacity: 0; }
             to { opacity: 1; }
@@ -356,6 +363,7 @@
     }
 
     window.onload = async function() {
+        console.log(`[${new Date().toISOString()}] Inicializando frontend`);
         const savedName = localStorage.getItem('buyerName');
         const savedPhone = localStorage.getItem('buyerPhone');
         if (savedName) document.getElementById('buyer-name').value = savedName;
@@ -367,6 +375,7 @@
     function generateUserId() {
         const userId = Math.random().toString(36).substr(2, 9);
         localStorage.setItem('userId', userId);
+        console.log(`[${new Date().toISOString()}] Novo userId gerado: ${userId}`);
         return userId;
     }
 
@@ -411,7 +420,7 @@
                 throw new Error(`Erro HTTP ${availableRes.status}: ${errorData.error || 'Erro desconhecido'}`);
             }
             const availableNumbers = await availableRes.json();
-            console.log(`[${new Date().toISOString()}] Números disponíveis:`, availableNumbers);
+            console.log(`[${new Date().toISOString()}] Números disponíveis: ${availableNumbers.length}`, availableNumbers);
 
             selectedNumbers.forEach(num => {
                 const numDiv = Array.from(numberContainer.children).find(div => div.textContent === num);
@@ -421,6 +430,7 @@
 
             if (availableNumbers.length === 0) {
                 console.warn(`[${new Date().toISOString()}] Nenhum número disponível para seleção aleatória`);
+                numberContainer.innerHTML = '<p class="error-message">Nenhum número disponível para compra no momento.</p>';
                 alert('Nenhum número disponível para seleção. Tente novamente mais tarde.');
                 return;
             }
@@ -442,6 +452,7 @@
             }
         } catch (error) {
             console.error(`[${new Date().toISOString()}] Erro ao selecionar números aleatórios:`, error.message);
+            numberContainer.innerHTML = '<p class="error-message">Erro ao carregar números disponíveis. Tente novamente.</p>';
             alert(error.message || 'Erro ao carregar números disponíveis. Tente novamente.');
         } finally {
             loadingMessage.style.display = 'none';
@@ -464,9 +475,14 @@
             }
             const healthData = await healthRes.json();
             console.log(`[${new Date().toISOString()}] Health check:`, healthData);
+            if (healthData.compradoresCount === 0) {
+                console.warn(`[${new Date().toISOString()}] Coleção compradores vazia`);
+                numberContainer.innerHTML = '<p class="error-message">Nenhum número disponível. Banco de dados vazio.</p>';
+                return;
+            }
         } catch (error) {
             console.error(`[${new Date().toISOString()}] Erro no health check:`, error.message);
-            numberContainer.innerHTML = '<p>Erro ao conectar ao servidor. Tente novamente mais tarde.</p>';
+            numberContainer.innerHTML = '<p class="error-message">Erro ao conectar ao servidor. Tente novamente mais tarde.</p>';
             return;
         }
 
@@ -498,12 +514,12 @@
                     throw new Error(`Erro HTTP ${availableRes.status}: ${errorData.error || 'Erro ao carregar números disponíveis'}`);
                 }
                 const availableNumbers = await availableRes.json();
-                console.log(`[${new Date().toISOString()}] Números disponíveis recebidos:`, availableNumbers);
+                console.log(`[${new Date().toISOString()}] Números disponíveis recebidos: ${availableNumbers.length}`, availableNumbers);
 
                 numberContainer.innerHTML = '';
                 if (availableNumbers.length === 0) {
                     console.warn(`[${new Date().toISOString()}] Nenhum número disponível retornado`);
-                    numberContainer.innerHTML = '<p>Nenhum número disponível para compra no momento.</p>';
+                    numberContainer.innerHTML = '<p class="error-message">Nenhum número disponível para compra no momento.</p>';
                     return;
                 }
 
@@ -542,13 +558,13 @@
 
                 console.log(`[${new Date().toISOString()}] Números carregados com sucesso`);
                 return;
-            } rollout catch (error) {
+            } catch (error) {
                 console.error(`[${new Date().toISOString()}] Erro na tentativa ${retries + 1}:`, error.message, 'Stack:', error.stack);
                 retries++;
                 if (retries === maxRetries) {
                     console.error(`[${new Date().toISOString()}] Falha ao carregar dados após ${maxRetries} tentativas`);
+                    numberContainer.innerHTML = '<p class="error-message">Erro ao carregar números. Tente novamente mais tarde.</p>';
                     alert('Erro ao carregar números disponíveis. Verifique sua conexão e tente novamente.');
-                    numberContainer.innerHTML = '<p>Erro ao carregar números. Tente novamente mais tarde.</p>';
                 } else {
                     console.log(`[${new Date().toISOString()}] Aguardando 2 segundos antes da próxima tentativa`);
                     await new Promise(resolve => setTimeout(resolve, 2000));
