@@ -23,11 +23,21 @@ const compradorSchema = new mongoose.Schema({
     status: { type: String, default: 'disponível' },
     userId: String,
     timestamp: Date,
-    buyerName: String,
-    buyerPhone: String,
-    paymentId: String,
 });
+
+const purchaseSchema = new mongoose.Schema({
+    buyerName: { type: String, required: true },
+    buyerPhone: { type: String, required: true },
+    numbers: { type: [String], required: true },
+    purchaseDate: { type: Date, default: Date.now },
+    paymentId: String,
+    status: { type: String, default: 'pending' },
+    date_approved: Date,
+    preference_id: String,
+});
+
 const Comprador = mongoose.model('Comprador', compradorSchema, 'compradores');
+const Purchase = mongoose.model('Purchase', purchaseSchema, 'purchases');
 
 async function initializeNumbers() {
     try {
@@ -38,7 +48,7 @@ async function initializeNumbers() {
                 status: 'disponível',
             }));
             await Comprador.insertMany(numbers);
-            console.log('Números de 001 a 100 inicializados.');
+            console.log('Números de 001 a 100 inicializados na coleção compradores.');
         }
     } catch (error) {
         console.error('Erro ao inicializar números:', error);
@@ -49,13 +59,14 @@ initializeNumbers();
 async function clearExpiredReservations() {
     try {
         const fiveMinutesAgo = new Date(Date.now() - 5 * 60 * 1000);
+        const expired = await Comprador.find({ status: 'reservado', timestamp: { $lt: fiveMinutesAgo } });
         const result = await Comprador.updateMany(
             { status: 'reservado', timestamp: { $lt: fiveMinutesAgo } },
             { $set: { status: 'disponível', userId: null, timestamp: null } }
         );
-        console.log(`Liberadas ${result.modifiedCount} reservas expiradas em ${new Date().toISOString()}.`);
+        console.log(`[${new Date().toISOString()}] Liberadas ${result.modifiedCount} reservas expiradas. Números afetados: ${expired.map(n => n.number).join(', ')}`);
     } catch (error) {
-        console.error('Erro ao liberar reservas expiradas:', error);
+        console.error(`[${new Date().toISOString()}] Erro ao liberar reservas expiradas:`, error);
     }
 }
 setInterval(clearExpiredReservations, 5 * 60 * 1000);
@@ -160,6 +171,16 @@ app.post('/create_preference', async (req, res) => {
                 }
             });
             const paymentLink = response.init_point;
+            const preferenceId = response.body.id || 'Não encontrado';
+
+            await new Purchase({
+                buyerName,
+                buyerPhone,
+                numbers,
+                purchaseDate: new Date(),
+                preference_id: preferenceId,
+                status: 'pending',
+            }).save({ session });
 
             await session.commitTransaction();
             session.endSession();
@@ -187,6 +208,7 @@ app.post('/webhook', async (req, res) => {
             const session = await mongoose.startSession();
             session.startTransaction();
             try {
+                // Verificar números reservados
                 const validNumbers = await Comprador.find({
                     number: { $in: numbers },
                     status: 'reservado',
@@ -199,11 +221,20 @@ app.post('/webhook', async (req, res) => {
                     return res.sendStatus(400);
                 }
 
+                // Atualizar coleção compradores
                 await Comprador.updateMany(
                     { number: { $in: numbers }, status: 'reservado', userId },
-                    { $set: { status: 'vendido', buyerName, buyerPhone, paymentId } },
+                    { $set: { status: 'vendido', userId: null, timestamp: null } },
                     { session }
                 );
+
+                // Atualizar coleção purchases
+                await Purchase.updateMany(
+                    { numbers: { $in: numbers }, status: 'pending' },
+                    { $set: { status: 'approved', paymentId, date_approved: new Date() } },
+                    { session }
+                );
+
                 await session.commitTransaction();
                 console.log(`Pagamento ${paymentId} aprovado. Números ${numbers.join(', ')} marcados como vendido.`);
             } catch (error) {
