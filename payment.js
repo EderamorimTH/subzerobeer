@@ -1,5 +1,4 @@
-```javascript
-// Adicionar ao início de payment.js
+// Função para carregar números disponíveis
 async function loadAvailableNumbers() {
     try {
         const response = await fetch('https://subzerobeer.onrender.com/available_numbers', {
@@ -10,12 +9,28 @@ async function loadAvailableNumbers() {
             throw new Error(`Erro HTTP: ${response.status}`);
         }
         const availableNumbers = await response.json();
-        console.log(`[${new Date().toISOString()}] Números disponíveis: ${JSON.stringify(availableNumbers)}`);
-        // Atualize o DOM com os números disponíveis, ex.:
-        // document.getElementById('numbers-list').innerHTML = availableNumbers.map(num => `<option>${num}</option>`).join('');
+        console.log('[' + new Date().toISOString() + '] Números disponíveis recebidos: ' + JSON.stringify(availableNumbers));
+        
+        if (availableNumbers.length === 0) {
+            console.warn('[' + new Date().toISOString() + '] Nenhum número disponível retornado pelo servidor');
+            document.getElementById('numbers-list') ? 
+                document.getElementById('numbers-list').innerHTML = '<option>Nenhum número disponível</option>' :
+                console.error('[' + new Date().toISOString() + '] Elemento numbers-list não encontrado');
+            return [];
+        }
+
+        // Renderizar números no DOM (assumindo um <select id="numbers-list">)
+        if (document.getElementById('numbers-list')) {
+            document.getElementById('numbers-list').innerHTML = availableNumbers
+                .map(num => `<option value="${num}">${num}</option>`)
+                .join('');
+        } else {
+            console.error('[' + new Date().toISOString() + '] Elemento numbers-list não encontrado');
+        }
+        window.selectedNumbers = []; // Inicializar selectedNumbers
         return availableNumbers;
     } catch (error) {
-        console.error(`[${new Date().toISOString()}] Erro ao carregar números disponíveis: ${error.message}`);
+        console.error('[' + new Date().toISOString() + '] Erro ao carregar números disponíveis: ' + error.message);
         alert('Erro ao conectar ao servidor. Tente novamente mais tarde.');
         return [];
     }
@@ -26,7 +41,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     await loadAvailableNumbers();
 });
 
-// Restante do payment.js (sem alterações)
+// Função para garantir que selectedNumbers esteja definido
 function getSelectedNumbers() {
     return new Promise((resolve) => {
         const checkInterval = setInterval(() => {
@@ -37,22 +52,24 @@ function getSelectedNumbers() {
         }, 100);
         setTimeout(() => {
             clearInterval(checkInterval);
-            console.error(`[${new Date().toISOString()}] selectedNumbers não definido após timeout`);
+            console.error('[' + new Date().toISOString() + '] selectedNumbers não definido após timeout');
             resolve([]);
         }, 5000); // Timeout de 5 segundos
     });
 }
 
+// Função para gerar um userId único
 function generateUserId() {
     const userId = Math.random().toString(36).substr(2, 9);
     localStorage.setItem('userId', userId);
-    console.log(`[${new Date().toISOString()}] Novo userId gerado: ${userId}`);
+    console.log('[' + new Date().toISOString() + '] Novo userId gerado: ' + userId);
     return userId;
 }
 
+// Função para verificar a reserva dos números
 async function checkReservation(numbers) {
     try {
-        console.log(`[${new Date().toISOString()}] Verificando reserva dos números:`, numbers);
+        console.log('[' + new Date().toISOString() + '] Verificando reserva dos números: ' + JSON.stringify(numbers));
         const response = await fetch('https://subzerobeer.onrender.com/check_reservation', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
@@ -63,23 +80,24 @@ async function checkReservation(numbers) {
             throw new Error(`Erro HTTP: ${response.status} - ${errorData.error || 'Erro desconhecido'}`);
         }
         const result = await response.json();
-        console.log(`[${new Date().toISOString()}] Resultado da verificação:`, result);
+        console.log('[' + new Date().toISOString() + '] Resultado da verificação: ' + JSON.stringify(result));
         return result.valid;
     } catch (error) {
-        console.error(`[${new Date().toISOString()}] Erro ao verificar reserva:`, error.message);
+        console.error('[' + new Date().toISOString() + '] Erro ao verificar reserva: ' + error.message);
         return false;
     }
 }
 
+// Função para enviar a solicitação de pagamento
 async function sendPaymentRequest(data) {
     const maxRetries = 3;
     let retries = 0;
 
     while (retries < maxRetries) {
         try {
-            console.log(`[${new Date().toISOString()}] Tentativa ${retries + 1} de enviar pagamento:`, data);
+            console.log('[' + new Date().toISOString() + '] Tentativa ' + (retries + 1) + ' de enviar pagamento: ' + JSON.stringify(data));
             if (!await checkReservation(data.numbers)) {
-                console.warn(`[${new Date().toISOString()}] Números inválidos ou já reservados`);
+                console.warn('[' + new Date().toISOString() + '] Números inválidos ou já reservados');
                 alert('Um ou mais números selecionados já foram reservados ou vendidos por outra pessoa. Escolha outros números.');
                 document.getElementById('loading-message').style.display = 'none';
                 return;
@@ -95,21 +113,21 @@ async function sendPaymentRequest(data) {
             });
 
             clearTimeout(timeoutId);
-            console.log(`[${new Date().toISOString()}] Status da resposta: ${response.status}`);
+            console.log('[' + new Date().toISOString() + '] Status da resposta: ' + response.status);
             const responseData = await response.json();
-            console.log(`[${new Date().toISOString()}] Resposta da API:`, responseData);
+            console.log('[' + new Date().toISOString() + '] Resposta da API: ' + JSON.stringify(responseData));
 
             if (responseData.init_point) {
-                console.log(`[${new Date().toISOString()}] Redirecionando para:`, responseData.init_point);
+                console.log('[' + new Date().toISOString() + '] Redirecionando para: ' + responseData.init_point);
                 window.location.assign(responseData.init_point);
             } else {
-                console.warn(`[${new Date().toISOString()}] Resposta sem init_point:`, responseData);
+                console.warn('[' + new Date().toISOString() + '] Resposta sem init_point: ' + JSON.stringify(responseData));
                 alert(responseData.error || 'Erro ao criar o pagamento. Tente novamente.');
             }
             document.getElementById('loading-message').style.display = 'none';
             return;
         } catch (error) {
-            console.error(`[${new Date().toISOString()}] Erro na tentativa ${retries + 1}:`, error.message, 'Stack:', error.stack, 'Code:', error.code);
+            console.error('[' + new Date().toISOString() + '] Erro na tentativa ' + (retries + 1) + ': ' + error.message + ' Stack: ' + error.stack + ' Code: ' + (error.code || 'desconhecido'));
             retries++;
             if (retries === maxRetries) {
                 alert('Erro ao conectar ao servidor após várias tentativas. Detalhes: ' + error.message + '\nCódigo: ' + (error.code || 'desconhecido') + '\nStatus: ' + (error.status || 'desconhecido'));
@@ -121,11 +139,12 @@ async function sendPaymentRequest(data) {
     }
 }
 
+// Manipulador de submissão do formulário
 document.getElementById('payment-form').addEventListener('submit', async (event) => {
     event.preventDefault();
     const loadingMessage = document.getElementById('loading-message');
     loadingMessage.style.display = 'block';
-    console.log(`[${new Date().toISOString()}] Formulário enviado`);
+    console.log('[' + new Date().toISOString() + '] Formulário enviado');
 
     try {
         const selectedNumbers = await getSelectedNumbers();
@@ -133,16 +152,16 @@ document.getElementById('payment-form').addEventListener('submit', async (event)
         const buyerPhone = document.getElementById('buyer-phone').value;
         const quantity = selectedNumbers.length;
 
-        console.log(`[${new Date().toISOString()}] Dados do formulário:`, { buyerName, buyerPhone, selectedNumbers, quantity });
+        console.log('[' + new Date().toISOString() + '] Dados do formulário: ' + JSON.stringify({ buyerName, buyerPhone, selectedNumbers, quantity }));
 
         if (selectedNumbers.length === 0) {
-            console.warn(`[${new Date().toISOString()}] Nenhum número selecionado`);
+            console.warn('[' + new Date().toISOString() + '] Nenhum número selecionado');
             alert('Por favor, selecione pelo menos um número.');
             loadingMessage.style.display = 'none';
             return;
         }
         if (!buyerName || !buyerPhone) {
-            console.warn(`[${new Date().toISOString()}] Campos obrigatórios não preenchidos`);
+            console.warn('[' + new Date().toISOString() + '] Campos obrigatórios não preenchidos');
             alert('Por favor, preencha todos os campos.');
             loadingMessage.style.display = 'none';
             return;
@@ -158,56 +177,19 @@ document.getElementById('payment-form').addEventListener('submit', async (event)
             numbers: selectedNumbers,
             userId: localStorage.getItem('userId') || generateUserId()
         };
-        console.log(`[${new Date().toISOString()}] Enviando solicitação de pagamento:`, paymentData);
+        console.log('[' + new Date().toISOString() + '] Enviando solicitação de pagamento: ' + JSON.stringify(paymentData));
 
         await sendPaymentRequest(paymentData);
     } catch (error) {
-        console.error(`[${new Date().toISOString()}] Erro ao processar formulário:`, error.message);
+        console.error('[' + new Date().toISOString() + '] Erro ao processar formulário: ' + error.message);
         alert('Erro ao processar pagamento: ' + error.message);
         loadingMessage.style.display = 'none';
     }
 });
-```
 
-#### Mudanças em `payment.js`
-1. **Função `loadAvailableNumbers`**:
-   - Adicionada para fazer uma requisição `GET` ao endpoint `/available_numbers`.
-   - Exibe os números disponíveis no console e pode ser adaptada para atualizar o DOM (exemplo comentado).
-2. **Evento `DOMContentLoaded`**:
-   - Chama `loadAvailableNumbers` quando a página carrega.
-3. **Sem alterações no restante**: O código original foi mantido, pois já está correto para as outras funcionalidades.
-
-#### 3. Configuração no Render
-1. **Adicionar MongoDB URI**:
-   - Configure a variável de ambiente `MONGODB_URI` no painel do Render (Settings > Environment Variables). Exemplo: `mongodb+srv://user:password@cluster.mongodb.net/subzerobeer?retryWrites=true&w=majority`.
-   - Certifique-se de que o MongoDB está acessível (e.g., MongoDB Atlas ou outro serviço).
-2. **Verificar `MERCADO_PAGO_ACCESS_TOKEN`**:
-   - Confirme que a variável de ambiente `MERCADO_PAGO_ACCESS_TOKEN` está configurada corretamente no Render.
-3. **Atualizar Dependências**:
-   - O `package.json` já inclui `mongoose`, `cors`, e `dotenv`. Execute `yarn install` (ou `npm install`) após atualizar os arquivos.
-4. **Redeploy**:
-   - Faça push das alterações para o repositório GitHub (`https://github.com/EderamorimTH/subzerobeer`).
-   - O Render detectará o commit e redeployará automaticamente.
-
-#### 4. Debugging do Erro de Conexão
-O erro "Erro ao conectar ao servidor" pode ser causado por:
-- **CORS**: O `cors` foi adicionado ao `server.js` para permitir requisições do front-end.
-- **Timeout**: O `payment.js` já tem um timeout de 10 segundos nas requisições. Verifique se o servidor responde dentro desse tempo.
-- **URL do Servidor**: Confirme que `https://subzerobeer.onrender.com` está correto no `payment.js`. Se o front-end está hospedado em outro domínio, certifique-se de que não há bloqueios de rede.
-- **Logs do Servidor**: Acesse os logs no Render para verificar se há erros no endpoint `/available_numbers` ou outros.
-
-#### 5. Testes
-1. **Carregar Números**:
-   - Acesse `https://subzerobeer.onrender.com/available_numbers` diretamente no navegador ou via `curl` para verificar se retorna um array de números.
-   - No console do navegador, veja os logs de `loadAvailableNumbers` para confirmar que os números são recebidos.
-2. **Formulário**:
-   - Teste o formulário de pagamento para garantir que as reservas e o redirecionamento ao Mercado Pago funcionam.
-3. **MongoDB**:
-   - Verifique no MongoDB (e.g., MongoDB Atlas) se os documentos estão sendo criados na coleção `numbers`.
-
-Se o problema persistir (e.g., números ainda não aparecem ou erro de conexão), compartilhe:
-- Os logs do console do navegador.
-- Os logs do servidor no Render.
-- O trecho do HTML/JS que renderiza os números na interface.
-
-Isso permitirá identificar se o problema está no front-end, servidor, ou banco de dados.
+// Adicionar evento para atualizar selectedNumbers quando o usuário seleciona números
+document.getElementById('numbers-list')?.addEventListener('change', (event) => {
+    const select = event.target;
+    window.selectedNumbers = Array.from(select.selectedOptions).map(option => option.value);
+    console.log('[' + new Date().toISOString() + '] Números selecionados: ' + JSON.stringify(window.selectedNumbers));
+});
