@@ -6,8 +6,11 @@ const app = express();
 app.use(express.json());
 app.use(cors()); // Permite chamadas do frontend no GitHub Pages
 
+// Configurar strictQuery para evitar aviso de depreciação
+mongoose.set('strictQuery', false);
+
 // Conectar ao MongoDB
-mongoose.connect('mongodb+srv://Amorim:<db_password>@cluster0.8vhg4ws.mongodb.net/subzerobeer?retryWrites=true&w=majority&appName=Cluster0', {
+mongoose.connect(`mongodb+srv://Amorim:${process.env.MONGO_PASSWORD}@cluster0.8vhg4ws.mongodb.net/subzerobeer?retryWrites=true&w=majority&appName=Cluster0`, {
     useNewUrlParser: true,
     useUnifiedTopology: true,
 }).then(() => console.log('Conectado ao MongoDB')).catch(err => console.error('Erro ao conectar ao MongoDB:', err));
@@ -25,14 +28,18 @@ const Comprador = mongoose.model('Comprador', compradorSchema, 'compradores');
 
 // Inicializar números de 001 a 100 (executar uma vez)
 async function initializeNumbers() {
-    const count = await Comprador.countDocuments();
-    if (count === 0) {
-        const numbers = Array.from({ length: 100 }, (_, i) => ({
-            number: String(i + 1).padStart(3, '0'),
-            status: 'disponível',
-        }));
-        await Comprador.insertMany(numbers);
-        console.log('Números de 001 a 100 inicializados na coleção compradores.');
+    try {
+        const count = await Comprador.countDocuments();
+        if (count === 0) {
+            const numbers = Array.from({ length: 100 }, (_, i) => ({
+                number: String(i + 1).padStart(3, '0'),
+                status: 'disponível',
+            }));
+            await Comprador.insertMany(numbers);
+            console.log('Números de 001 a 100 inicializados na coleção compradores.');
+        }
+    } catch (error) {
+        console.error('Erro ao inicializar números:', error);
     }
 }
 initializeNumbers();
