@@ -48,7 +48,7 @@ app.get('/available_numbers', async (req, res) => {
             { $set: { status: 'disponível', userId: null, timestamp: null } }
         );
         const compradores = await Comprador.find({ status: 'disponível' }).select('number');
-        console.log(`[${new Date().toISOString()}] Números disponíveis retornados:`, compradores.length);
+        console.log(`[${new Date().toISOString()}] Números disponíveis retornados: ${compradores.length}`);
         res.json(compradores.map(c => c.number));
     } catch (error) {
         console.error(`[${new Date().toISOString()}] Erro ao buscar números disponíveis:`, error);
@@ -159,7 +159,7 @@ app.post('/create_preference', async (req, res) => {
         const client = new MercadoPagoConfig({ accessToken: process.env.MERCADO_PAGO_ACCESS_TOKEN });
         const preferenceClient = new Preference(client);
         const response = await preferenceClient.create({ body: preference });
-        console.log(`[${new Date().toISOString()}] Preferência criada com sucesso, preference_id: ${response.id}, números: ${numbers.join(', ')}`);
+        console.log(`[${new Date().toISOString()}] Preferência criada com sucesso, preference_id: ${response.id}, init_point: ${response.init_point}, números: ${numbers.join(', ')}`);
 
         const purchase = new Purchase({
             buyerName,
@@ -169,7 +169,7 @@ app.post('/create_preference', async (req, res) => {
         });
         await purchase.save();
 
-        res.json({ id: response.id });
+        res.json({ id: response.id, init_point: response.init_point });
     } catch (error) {
         console.error(`[${new Date().toISOString()}] Erro ao criar preferência:`, error);
         res.status(500).json({ error: 'Erro ao criar preferência' });
@@ -240,7 +240,17 @@ app.post('/webhook', async (req, res) => {
         res.sendStatus(200);
     } catch (error) {
         console.error(`[${new Date().toISOString()}] Erro no webhook:`, error);
-        res.sendStatus(500);
+        res.status(500).json({ error: 'Erro no webhook' });
+    }
+});
+
+app.get('/health', async (req, res) => {
+    try {
+        await mongoose.connection.db.admin().ping();
+        res.status(200).json({ status: 'OK', message: 'Servidor e MongoDB estão funcionando' });
+    } catch (error) {
+        console.error(`[${new Date().toISOString()}] Erro no health check:`, error);
+        res.status(500).json({ status: 'ERROR', message: 'Erro no servidor ou MongoDB' });
     }
 });
 
