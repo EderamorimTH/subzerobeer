@@ -1,134 +1,146 @@
-const express = require('express');
-const mercadopago = require('mercadopago');
-const app = express();
+// payment.js
+// Função para garantir que selectedNumbers esteja definido
+function getSelectedNumbers() {
+    return new Promise((resolve) => {
+        const checkInterval = setInterval(() => {
+            if (typeof window.selectedNumbers !== 'undefined') {
+                clearInterval(checkInterval);
+                resolve(window.selectedNumbers || []);
+            }
+        }, 100);
+        setTimeout(() => {
+            clearInterval(checkInterval);
+            console.error(`[${new Date().toISOString()}] selectedNumbers não definido após timeout`);
+            resolve([]);
+        }, 5000); // Timeout de 5 segundos
+    });
+}
 
-app.use(express.json());
+// Função para gerar um userId único
+function generateUserId() {
+    const userId = Math.random().toString(36).substr(2, 9);
+    localStorage.setItem('userId', userId);
+    console.log(`[${new Date().toISOString()}] Novo userId gerado: ${userId}`);
+    return userId;
+}
 
-// Configurar Mercado Pago
-mercadopago.configurations.setAccessToken(process.env.MERCADO_PAGO_ACCESS_TOKEN);
-
-// Endpoint para verificar a saúde do servidor
-app.get('/health', async (req, res) => {
+// Função para verificar a reserva dos números
+async function checkReservation(numbers) {
     try {
-        const compradoresCount = 100; // Substitua por lógica de banco de dados
-        res.json({ status: 'OK', compradoresCount });
-    } catch (error) {
-        console.error(`[${new Date().toISOString()}] Erro no health check:`, error.message);
-        res.status(500).json({ error: 'Erro no servidor' });
-    }
-});
-
-// Endpoint para números disponíveis
-app.get('/available_numbers', async (req, res) => {
-    try {
-        const allNumbers = Array.from({ length: 100 }, (_, i) => String(i + 1).padStart(3, '0'));
-        const soldNumbers = []; // Substitua por lógica de banco de dados
-        const availableNumbers = allNumbers.filter(num => !soldNumbers.includes(num));
-        res.json(availableNumbers);
-    } catch (error) {
-        console.error(`[${new Date().toISOString()}] Erro ao carregar números disponíveis:`, error.message);
-        res.status(500).json({ error: 'Erro ao carregar números' });
-    }
-});
-
-// Endpoint para reservar números
-app.post('/reserve_numbers', async (req, res) => {
-    try {
-        const { numbers, userId } = req.body;
-        if (!numbers || !userId) {
-            return res.status(400).json({ error: 'Números ou userId não fornecidos' });
+        console.log(`[${new Date().toISOString()}] Verificando reserva dos números:`, numbers);
+        const response = await fetch('https://subzerobeer.onrender.com/check_reservation', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ numbers, userId: localStorage.getItem('userId') })
+        });
+        if (!response.ok) {
+            const errorData = await response.json();
+            throw new Error(`Erro HTTP: ${response.status} - ${errorData.error || 'Erro desconhecido'}`);
         }
-        console.log(`[${new Date().toISOString()}] Reservando números:`, numbers, 'para userId:', userId);
-        res.json({ success: true });
-    } catch (error) {
-        console.error(`[${new Date().toISOString()}] Erro ao reservar números:`, error.message);
-        res.status(500).json({ error: 'Erro ao reservar números' });
-    }
-});
-
-// Endpoint para verificar reserva
-app.post('/check_reservation', async (req, res) => {
-    try {
-        const { numbers, userId } = req.body;
-        if (!numbers || !userId) {
-            return res.status(400).json({ error: 'Números ou userId não fornecidos' });
-        }
-        const valid = true; // Substitua por lógica de banco de dados
-        res.json({ valid });
+        const result = await response.json();
+        console.log(`[${new Date().toISOString()}] Resultado da verificação:`, result);
+        return result.valid;
     } catch (error) {
         console.error(`[${new Date().toISOString()}] Erro ao verificar reserva:`, error.message);
-        res.status(500).json({ error: 'Erro ao verificar reserva' });
+        return false;
     }
-});
+}
 
-// Endpoint para criar preferência de pagamento
-app.post('/create_preference', async (req, res) => {
+// Função para enviar a solicitação de pagamento
+async function sendPaymentRequest(data) {
+    const maxRetries = 3;
+    let retries = 0;
+
+    while (retries < maxRetries) {
+        try {
+            console.log(`[${new Date().toISOString()}] Tentativa ${retries + 1} de enviar pagamento:`, data);
+            if (!await checkReservation(data.numbers)) {
+                console.warn(`[${new Date().toISOString()}] Números inválidos ou já reservados`);
+                alert('Um ou mais números selecionados já foram reservados ou vendidos por outra pessoa. Escolha outros números.');
+                document.getElementById('loading-message').style.display = 'none';
+                return;
+            }
+
+            const controller = new AbortController();
+            const timeoutId = setTimeout(() => controller.abort(), 10000);
+            const response = await fetch('https://subzerobeer.onrender.com/create_preference', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(data),
+                signal: controller.signal
+            });
+
+            clearTimeout(timeoutId);
+            console.log(`[${new Date().toISOString()}] Status da resposta: ${response.status}`);
+            const responseData = await response.json();
+            console.log(`[${new Date().toISOString()}] Resposta da API:`, responseData);
+
+            if (responseData.init_point) {
+                console.log(`[${new Date().toISOString()}] Redirecionando para:`, responseData.init_point);
+                window.location.assign(responseData.init_point);
+            } else {
+                console.warn(`[${new Date().toISOString()}] Resposta sem init_point:`, responseData);
+                alert(responseData.error || 'Erro ao criar o pagamento. Tente novamente.');
+            }
+            document.getElementById('loading-message').style.display = 'none';
+            return;
+        } catch (error) {
+            console.error(`[${new Date().toISOString()}] Erro na tentativa ${retries + 1}:`, error.message, 'Stack:', error.stack, 'Code:', error.code);
+            retries++;
+            if (retries === maxRetries) {
+                alert('Erro ao conectar ao servidor após várias tentativas. Detalhes: ' + error.message + '\nCódigo: ' + (error.code || 'desconhecido') + '\nStatus: ' + (error.status || 'desconhecido'));
+                document.getElementById('loading-message').style.display = 'none';
+            } else {
+                await new Promise(resolve => setTimeout(resolve, 3000));
+            }
+        }
+    }
+}
+
+// Manipulador de submissão do formulário
+document.getElementById('payment-form').addEventListener('submit', async (event) => {
+    event.preventDefault();
+    const loadingMessage = document.getElementById('loading-message');
+    loadingMessage.style.display = 'block';
+    console.log(`[${new Date().toISOString()}] Formulário enviado`);
+
     try {
-        const { quantity, buyerName, buyerPhone, numbers, userId } = req.body;
-        if (!quantity || !buyerName || !buyerPhone || !numbers || !userId) {
-            return res.status(400).json({ error: 'Dados incompletos' });
+        const selectedNumbers = await getSelectedNumbers();
+        const buyerName = document.getElementById('buyer-name').value;
+        const buyerPhone = document.getElementById('buyer-phone').value;
+        const quantity = selectedNumbers.length;
+
+        console.log(`[${new Date().toISOString()}] Dados do formulário:`, { buyerName, buyerPhone, selectedNumbers, quantity });
+
+        if (selectedNumbers.length === 0) {
+            console.warn(`[${new Date().toISOString()}] Nenhum número selecionado`);
+            alert('Por favor, selecione pelo menos um número.');
+            loadingMessage.style.display = 'none';
+            return;
+        }
+        if (!buyerName || !buyerPhone) {
+            console.warn(`[${new Date().toISOString()}] Campos obrigatórios não preenchidos`);
+            alert('Por favor, preencha todos os campos.');
+            loadingMessage.style.display = 'none';
+            return;
         }
 
-        const preference = {
-            items: [{
-                title: 'Sorteio Sub-zero Beer',
-                quantity: parseInt(quantity),
-                unit_price: 10.0,
-                currency_id: 'BRL'
-            }],
-            payer: {
-                name: buyerName,
-                phone: { number: buyerPhone }
-            },
-            external_reference: userId,
-            back_urls: {
-                success: 'https://subzerobeer.onrender.com/sorteio.html?status=approved',
-                failure: 'https://subzerobeer.onrender.com/sorteio.html?status=rejected',
-                pending: 'https://subzerobeer.onrender.com/sorteio.html?status=pending'
-            },
-            auto_return: 'approved',
-            metadata: { numbers }
+        localStorage.setItem('buyerName', buyerName);
+        localStorage.setItem('buyerPhone', buyerPhone);
+
+        const paymentData = {
+            quantity,
+            buyerName,
+            buyerPhone,
+            numbers: selectedNumbers,
+            userId: localStorage.getItem('userId') || generateUserId()
         };
+        console.log(`[${new Date().toISOString()}] Enviando solicitação de pagamento:`, paymentData);
 
-        const response = await mercadopago.preferences.create(preference);
-        console.log(`[${new Date().toISOString()}] Preferência criada:`, response.body.id);
-        res.json({ init_point: response.body.init_point });
+        await sendPaymentRequest(paymentData);
     } catch (error) {
-        console.error(`[${new Date().toISOString()}] Erro ao criar preferência:`, error.message, error.stack);
-        res.status(500).json({ error: 'Erro ao criar pagamento', details: error.message });
+        console.error(`[${new Date().toISOString()}] Erro ao processar formulário:`, error.message);
+        alert('Erro ao processar pagamento: ' + error.message);
+        loadingMessage.style.display = 'none';
     }
 });
-
-// Endpoint para webhooks
-app.post('/webhook', async (req, res) => {
-    try {
-        const { action, data, type } = req.body;
-        console.log(`[${new Date().toISOString()}] Webhook recebido:`, req.body);
-
-        if (type === 'payment' && action === 'payment.updated') {
-            const payment = await mercadopago.payment.get(data.id);
-            console.log(`[${new Date().toISOString()}] Detalhes do pagamento:`, payment.body);
-            // Substitua por lógica para atualizar banco de dados
-        }
-        res.status(200).send('OK');
-    } catch (error) {
-        console.error(`[${new Date().toISOString()}] Erro no webhook:`, error.message);
-        res.status(500).json({ error: 'Erro ao processar webhook' });
-    }
-});
-
-// Endpoint para progresso
-app.get('/progress', async (req, res) => {
-    try {
-        const soldNumbers = 50; // Substitua por lógica de banco de dados
-        const totalNumbers = 100;
-        const progress = (soldNumbers / totalNumbers) * 100;
-        res.json({ progress });
-    } catch (error) {
-        console.error(`[${new Date().toISOString()}] Erro ao carregar progresso:`, error.message);
-        res.status(500).json({ error: 'Erro ao carregar progresso' });
-    }
-});
-
-const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => console.log(`[${new Date().toISOString()}] Servidor rodando na porta ${PORT}`));
