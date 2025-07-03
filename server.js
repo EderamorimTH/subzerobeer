@@ -142,9 +142,9 @@ app.post('/create_preference', async (req, res) => {
                 unit_price: 10,
             })),
             back_urls: {
-                success: 'https://ederamorimth.github.io/subzerobeer',
-                failure: 'https://ederamorimth.github.io/subzerobeer',
-                pending: 'https://ederamorimth.github.io/subzerobeer',
+                success: 'https://ederamorimth.github.io/subzerobeer/index.html',
+                failure: 'https://ederamorimth.github.io/subzerobeer/index.html',
+                pending: 'https://ederamorimth.github.io/subzerobeer/index.html',
             },
             auto_return: 'approved',
             external_reference: JSON.stringify({ numbers, userId, buyerName, buyerPhone }),
