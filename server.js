@@ -1,14 +1,15 @@
 const express = require('express');
 const mongoose = require('mongoose');
 const cors = require('cors');
-const mercadopago = require('mercadopago');
+const { MercadoPagoConfig, Preference } = require('mercadopago');
 
 const app = express();
 app.use(express.json());
 app.use(cors());
 
-mercadopago.configure({
-    access_token: process.env.MERCADO_PAGO_ACCESS_TOKEN,
+// Configurar cliente do Mercado Pago
+const client = new MercadoPagoConfig({
+    accessToken: process.env.MERCADO_PAGO_ACCESS_TOKEN,
 });
 
 mongoose.set('strictQuery', false);
@@ -52,13 +53,13 @@ async function clearExpiredReservations() {
             { status: 'reservado', timestamp: { $lt: fiveMinutesAgo } },
             { $set: { status: 'disponível', userId: null, timestamp: null } }
         );
-        console.log(`Liberadas ${result.modifiedCount} reservas expiradas.`);
+        console.log(`Liberadas ${result.modifiedCount} reservas expiradas em ${new Date().toISOString()}.`);
     } catch (error) {
         console.error('Erro ao liberar reservas expiradas:', error);
     }
 }
 setInterval(clearExpiredReservations, 5 * 60 * 1000);
-clearExpiredReservations(); // Executar imediatamente ao iniciar
+clearExpiredReservations();
 
 app.get('/available_numbers', async (req, res) => {
     try {
@@ -138,25 +139,27 @@ app.post('/create_preference', async (req, res) => {
                 return res.status(400).json({ error: 'Números não estão mais reservados para você.' });
             }
 
-            const preference = {
-                items: [
-                    {
-                        title: 'Sorteio Sub-zero Beer',
-                        unit_price: quantity * 10,
-                        quantity: 1,
-                        currency_id: 'BRL',
+            const preference = new Preference(client);
+            const response = await preference.create({
+                body: {
+                    items: [
+                        {
+                            title: 'Sorteio Sub-zero Beer',
+                            unit_price: quantity * 10,
+                            quantity: 1,
+                            currency_id: 'BRL',
+                        },
+                    ],
+                    back_urls: {
+                        success: 'https://ederamorimth.github.io/subzerobeer/success.html',
+                        failure: 'https://ederamorimth.github.io/subzerobeer/failure.html',
+                        pending: 'https://ederamorimth.github.io/subzerobeer/pending.html',
                     },
-                ],
-                back_urls: {
-                    success: 'https://ederamorimth.github.io/subzerobeer/success.html',
-                    failure: 'https://ederamorimth.github.io/subzerobeer/failure.html',
-                    pending: 'https://ederamorimth.github.io/subzerobeer/pending.html',
-                },
-                auto_return: 'approved',
-                external_reference: JSON.stringify({ numbers, userId, buyerName, buyerPhone }),
-            };
-            const response = await mercadopago.preferences.create(preference);
-            const paymentLink = response.body.init_point;
+                    auto_return: 'approved',
+                    external_reference: JSON.stringify({ numbers, userId, buyerName, buyerPhone }),
+                }
+            });
+            const paymentLink = response.init_point;
 
             await session.commitTransaction();
             session.endSession();
@@ -174,7 +177,7 @@ app.post('/create_preference', async (req, res) => {
 
 app.post('/webhook', async (req, res) => {
     const payment = req.body;
-    console.log('Webhook recebido:', payment);
+    console.log('Webhook recebido:', JSON.stringify(payment, null, 2));
     try {
         if (payment.type === 'payment' && payment.data.status === 'approved') {
             const paymentId = payment.data.id;
