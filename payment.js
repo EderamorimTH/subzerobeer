@@ -8,7 +8,7 @@ async function checkReservation(numbers) {
         });
         if (!response.ok) {
             const errorData = await response.json();
-            throw new Error(`Erro HTTP ${response.status}: ${errorData.error || 'Erro desconhecido'}`);
+            throw new Error(`Erro HTTP ${response.status}: ${errorData.message || 'Erro desconhecido'}`);
         }
         const result = await response.json();
         console.log(`[${new Date().toISOString()}] Resultado da verificação de reserva:`, result);
@@ -58,7 +58,7 @@ async function sendPaymentRequest(data) {
             console.error(`[${new Date().toISOString()}] Erro na tentativa ${retries + 1}:`, error.message, 'Stack:', error.stack, 'Code:', error.code || 'desconhecido');
             retries++;
             if (retries === maxRetries) {
-                alert('Erro ao conectar ao servidor após várias tentativas. Detalhes: ' + error.message + '\nCódigo: ' + (error.code || 'desconhecido'));
+                alert('Erro ao conectar ao servidor após várias tentativas. Detalhes: ' + error.message);
             } else {
                 await new Promise(resolve => setTimeout(resolve, 3000));
             }
