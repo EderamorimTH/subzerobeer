@@ -6,7 +6,7 @@ require('dotenv').config();
 
 const app = express();
 app.use(express.json());
-app.use(cors({ origin: 'https://ederamorimth.github.io' }));
+app.use(cors({ origin: 'https://ederamorimth.github.io', methods: ['GET', 'POST'], allowedHeaders: ['Content-Type'] }));
 
 // Configurar strictQuery para suprimir aviso de depreciação
 mongoose.set('strictQuery', false);
@@ -14,8 +14,8 @@ mongoose.set('strictQuery', false);
 mongoose.connect(process.env.MONGODB_URI, {
     useNewUrlParser: true,
     useUnifiedTopology: true
-}).then(() => console.log('Conectado ao MongoDB'))
-  .catch(err => console.error('Erro ao conectar ao MongoDB:', err));
+}).then(() => console.log(`[${new Date().toISOString()}] Conectado ao MongoDB`))
+  .catch(err => console.error(`[${new Date().toISOString()}] Erro ao conectar ao MongoDB:`, err));
 
 const compradorSchema = new mongoose.Schema({
     number: { type: String, required: true, unique: true },
@@ -247,14 +247,15 @@ app.post('/webhook', async (req, res) => {
 app.get('/health', async (req, res) => {
     try {
         await mongoose.connection.db.admin().ping();
-        res.status(200).json({ status: 'OK', message: 'Servidor e MongoDB estão funcionando' });
+        const count = await Comprador.countDocuments();
+        res.status(200).json({ status: 'OK', message: 'Servidor e MongoDB estão funcionando', compradoresCount: count });
     } catch (error) {
         console.error(`[${new Date().toISOString()}] Erro no health check:`, error);
-        res.status(500).json({ status: 'ERROR', message: 'Erro no servidor ou MongoDB' });
+        res.status(500).json({ status: 'ERROR', message: 'Erro no servidor ou MongoDB', error: error.message });
     }
 });
 
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
-    console.log(`Servidor rodando na porta ${PORT}`);
+    console.log(`[${new Date().toISOString()}] Servidor rodando na porta ${PORT}`);
 });
