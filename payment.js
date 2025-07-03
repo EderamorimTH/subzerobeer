@@ -1,5 +1,32 @@
-// payment.js
-// Função para garantir que selectedNumbers esteja definido
+```javascript
+// Adicionar ao início de payment.js
+async function loadAvailableNumbers() {
+    try {
+        const response = await fetch('https://subzerobeer.onrender.com/available_numbers', {
+            method: 'GET',
+            headers: { 'Content-Type': 'application/json' }
+        });
+        if (!response.ok) {
+            throw new Error(`Erro HTTP: ${response.status}`);
+        }
+        const availableNumbers = await response.json();
+        console.log(`[${new Date().toISOString()}] Números disponíveis: ${JSON.stringify(availableNumbers)}`);
+        // Atualize o DOM com os números disponíveis, ex.:
+        // document.getElementById('numbers-list').innerHTML = availableNumbers.map(num => `<option>${num}</option>`).join('');
+        return availableNumbers;
+    } catch (error) {
+        console.error(`[${new Date().toISOString()}] Erro ao carregar números disponíveis: ${error.message}`);
+        alert('Erro ao conectar ao servidor. Tente novamente mais tarde.');
+        return [];
+    }
+}
+
+// Chamar ao carregar a página
+document.addEventListener('DOMContentLoaded', async () => {
+    await loadAvailableNumbers();
+});
+
+// Restante do payment.js (sem alterações)
 function getSelectedNumbers() {
     return new Promise((resolve) => {
         const checkInterval = setInterval(() => {
@@ -16,7 +43,6 @@ function getSelectedNumbers() {
     });
 }
 
-// Função para gerar um userId único
 function generateUserId() {
     const userId = Math.random().toString(36).substr(2, 9);
     localStorage.setItem('userId', userId);
@@ -24,7 +50,6 @@ function generateUserId() {
     return userId;
 }
 
-// Função para verificar a reserva dos números
 async function checkReservation(numbers) {
     try {
         console.log(`[${new Date().toISOString()}] Verificando reserva dos números:`, numbers);
@@ -46,7 +71,6 @@ async function checkReservation(numbers) {
     }
 }
 
-// Função para enviar a solicitação de pagamento
 async function sendPaymentRequest(data) {
     const maxRetries = 3;
     let retries = 0;
@@ -97,7 +121,6 @@ async function sendPaymentRequest(data) {
     }
 }
 
-// Manipulador de submissão do formulário
 document.getElementById('payment-form').addEventListener('submit', async (event) => {
     event.preventDefault();
     const loadingMessage = document.getElementById('loading-message');
@@ -144,3 +167,47 @@ document.getElementById('payment-form').addEventListener('submit', async (event)
         loadingMessage.style.display = 'none';
     }
 });
+```
+
+#### Mudanças em `payment.js`
+1. **Função `loadAvailableNumbers`**:
+   - Adicionada para fazer uma requisição `GET` ao endpoint `/available_numbers`.
+   - Exibe os números disponíveis no console e pode ser adaptada para atualizar o DOM (exemplo comentado).
+2. **Evento `DOMContentLoaded`**:
+   - Chama `loadAvailableNumbers` quando a página carrega.
+3. **Sem alterações no restante**: O código original foi mantido, pois já está correto para as outras funcionalidades.
+
+#### 3. Configuração no Render
+1. **Adicionar MongoDB URI**:
+   - Configure a variável de ambiente `MONGODB_URI` no painel do Render (Settings > Environment Variables). Exemplo: `mongodb+srv://user:password@cluster.mongodb.net/subzerobeer?retryWrites=true&w=majority`.
+   - Certifique-se de que o MongoDB está acessível (e.g., MongoDB Atlas ou outro serviço).
+2. **Verificar `MERCADO_PAGO_ACCESS_TOKEN`**:
+   - Confirme que a variável de ambiente `MERCADO_PAGO_ACCESS_TOKEN` está configurada corretamente no Render.
+3. **Atualizar Dependências**:
+   - O `package.json` já inclui `mongoose`, `cors`, e `dotenv`. Execute `yarn install` (ou `npm install`) após atualizar os arquivos.
+4. **Redeploy**:
+   - Faça push das alterações para o repositório GitHub (`https://github.com/EderamorimTH/subzerobeer`).
+   - O Render detectará o commit e redeployará automaticamente.
+
+#### 4. Debugging do Erro de Conexão
+O erro "Erro ao conectar ao servidor" pode ser causado por:
+- **CORS**: O `cors` foi adicionado ao `server.js` para permitir requisições do front-end.
+- **Timeout**: O `payment.js` já tem um timeout de 10 segundos nas requisições. Verifique se o servidor responde dentro desse tempo.
+- **URL do Servidor**: Confirme que `https://subzerobeer.onrender.com` está correto no `payment.js`. Se o front-end está hospedado em outro domínio, certifique-se de que não há bloqueios de rede.
+- **Logs do Servidor**: Acesse os logs no Render para verificar se há erros no endpoint `/available_numbers` ou outros.
+
+#### 5. Testes
+1. **Carregar Números**:
+   - Acesse `https://subzerobeer.onrender.com/available_numbers` diretamente no navegador ou via `curl` para verificar se retorna um array de números.
+   - No console do navegador, veja os logs de `loadAvailableNumbers` para confirmar que os números são recebidos.
+2. **Formulário**:
+   - Teste o formulário de pagamento para garantir que as reservas e o redirecionamento ao Mercado Pago funcionam.
+3. **MongoDB**:
+   - Verifique no MongoDB (e.g., MongoDB Atlas) se os documentos estão sendo criados na coleção `numbers`.
+
+Se o problema persistir (e.g., números ainda não aparecem ou erro de conexão), compartilhe:
+- Os logs do console do navegador.
+- Os logs do servidor no Render.
+- O trecho do HTML/JS que renderiza os números na interface.
+
+Isso permitirá identificar se o problema está no front-end, servidor, ou banco de dados.
