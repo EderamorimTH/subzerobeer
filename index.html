@@ -162,8 +162,7 @@
         footer {
             background-color: #000000;
             color: #FFFFFF;
-            text-align: center;
-            padding: 20px;
+            text-align: center25px 0px 0px center;
         }
         footer a {
             color: #003366;
@@ -184,6 +183,18 @@
         }
         .social-icons a:hover {
             color: #005599;
+        }
+        .loading-message {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background-color: rgba(0, 0, 0, 0.8);
+            color: #FFFFFF;
+            padding: 15px 30px;
+            border-radius: 5px;
+            z-index: 1000;
+            display: none;
         }
         @keyframes fadeIn {
             from { opacity: 0; }
@@ -246,6 +257,8 @@
     </form>
 </section>
 
+<div id="loading-message" class="loading-message">Aguarde um momento, o número está sendo marcado...</div>
+
 <footer>
     <p>Contato:</p>
     <p>Siga-nos no Instagram: <a href="https://www.instagram.com/Subzerobeercba">@Subzerobeercba</a></p>
@@ -256,12 +269,14 @@
     <p>© 2025 Sub-zero Beer</p>
 </footer>
 
+<script src="payment.js"></script>
 <script>
     function scrollToNumbers() {
         document.getElementById('numbers').scrollIntoView({ behavior: 'smooth' });
     }
 
     const numberContainer = document.getElementById('numbers');
+    const loadingMessage = document.getElementById('loading-message');
     let selectedNumbers = [];
     const pricePerNumber = 10;
 
@@ -273,8 +288,15 @@
         loadData();
     };
 
+    function generateUserId() {
+        const userId = Math.random().toString(36).substr(2, 9);
+        localStorage.setItem('userId', userId);
+        return userId;
+    }
+
     async function reserveNumbers(numbers) {
         try {
+            loadingMessage.style.display = 'block';
             const response = await fetch('https://subzerobeer.onrender.com/reserve_numbers', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
@@ -290,17 +312,14 @@
             console.error('Erro ao reservar números:', error);
             alert(error.message || 'Erro ao reservar números. Tente novamente.');
             return false;
+        } finally {
+            loadingMessage.style.display = 'none';
         }
-    }
-
-    function generateUserId() {
-        const userId = Math.random().toString(36).substr(2, 9);
-        localStorage.setItem('userId', userId);
-        return userId;
     }
 
     async function selectRandomNumbers() {
         try {
+            loadingMessage.style.display = 'block';
             const availableRes = await fetch('https://subzerobeer.onrender.com/available_numbers', {
                 method: 'GET',
                 headers: { 'Content-Type': 'application/json' },
@@ -331,6 +350,8 @@
         } catch (error) {
             console.error('Erro ao selecionar números aleatórios:', error);
             alert('Erro ao carregar números disponíveis. Tente novamente.');
+        } finally {
+            loadingMessage.style.display = 'none';
         }
     }
 
@@ -389,135 +410,14 @@
                 console.error(`Erro na tentativa ${retries + 1} em ${new Date().toISOString()}:`, error.message, 'Stack:', error.stack);
                 retries++;
                 if (retries === maxRetries) {
-                    console.warn('Máximo de tentativas atingido, usando fallback...');
-                    numberContainer.innerHTML = '';
-                    for (let i = 1; i <= 100; i++) {
-                        const num = String(i).padStart(3, '0');
-                        const numDiv = document.createElement('div');
-                        numDiv.classList.add('number');
-                        numDiv.textContent = num;
-                        numDiv.addEventListener('click', async () => {
-                            if (!numDiv.classList.contains('sold')) {
-                                const isSelected = numDiv.classList.contains('selected');
-                                if (!isSelected) {
-                                    if (await reserveNumbers([num])) {
-                                        numDiv.classList.add('selected');
-                                        selectedNumbers.push(num);
-                                    } else {
-                                        return;
-                                    }
-                                } else {
-                                    numDiv.classList.remove('selected');
-                                    const index = selectedNumbers.indexOf(num);
-                                    if (index > -1) selectedNumbers.splice(index, 1);
-                                }
-                                document.getElementById('selected-numbers').textContent = selectedNumbers.length > 0 ? selectedNumbers.join(', ') : 'Nenhum';
-                                document.getElementById('total-price').textContent = selectedNumbers.length * pricePerNumber;
-                            }
-                        });
-                        numberContainer.appendChild(numDiv);
-                    }
+                    console.error('Falha ao carregar números após várias tentativas.');
+                    alert('Erro ao carregar números do servidor. Verifique sua conexão e tente novamente.');
                 } else {
                     await new Promise(resolve => setTimeout(resolve, 2000));
                 }
             }
         }
     }
-
-    async function checkReservation(numbers) {
-        try {
-            const response = await fetch('https://subzerobeer.onrender.com/check_reservation', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ numbers, userId: localStorage.getItem('userId') })
-            });
-            if (!response.ok) throw new Error(`Erro HTTP: ${response.status}`);
-            const result = await response.json();
-            return result.valid;
-        } catch (error) {
-            console.error('Erro ao verificar reserva:', error);
-            return false;
-        }
-    }
-
-    async function sendPaymentRequest(data) {
-        const maxRetries = 3;
-        let retries = 0;
-
-        while (retries < maxRetries) {
-            try {
-                console.log(`Tentativa ${retries + 1} de enviar pagamento em ${new Date().toISOString()}...`, data);
-                if (!await checkReservation(data.numbers)) {
-                    alert('Um ou mais números selecionados já foram reservados ou vendidos por outra pessoa. Escolha outros números.');
-                    return;
-                }
-
-                const controller = new AbortController();
-                const timeoutId = setTimeout(() => controller.abort(), 10000);
-                const response = await fetch('https://subzerobeer.onrender.com/create_preference', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify(data),
-                    signal: controller.signal
-                });
-
-                clearTimeout(timeoutId);
-                console.log(`Status da resposta: ${response.status} em ${new Date().toISOString()}`);
-                const responseData = await response.json();
-                console.log('Resposta da API:', responseData);
-
-                if (responseData.init_point) {
-                    window.location.href = responseData.init_point;
-                } else {
-                    alert(responseData.error || 'Erro ao criar o pagamento. Tente novamente.');
-                }
-                return;
-            } catch (error) {
-                console.error(`Erro na tentativa ${retries + 1} em ${new Date().toISOString()}:`, error.message, 'Stack:', error.stack, 'Code:', error.code);
-                retries++;
-                if (retries === maxRetries) {
-                    alert('Erro ao conectar ao servidor após várias tentativas. Detalhes: ' + error.message + '\nCódigo: ' + (error.code || 'desconhecido') + '\nStatus: ' + (error.status || 'desconhecido'));
-                } else {
-                    await new Promise(resolve => setTimeout(resolve, 3000));
-                }
-            }
-        }
-    }
-
-    document.getElementById('payment-form').addEventListener('submit', async (event) => {
-        event.preventDefault();
-
-        const buyerName = document.getElementById('buyer-name').value;
-        const buyerPhone = document.getElementById('buyer-phone').value;
-        const quantity = selectedNumbers.length;
-
-        console.log('Números selecionados antes de enviar em:', new Date().toISOString(), selectedNumbers);
-        if (selectedNumbers.length === 0) {
-            console.warn('Nenhum número selecionado antes de enviar em:', new Date().toISOString());
-            alert('Por favor, selecione pelo menos um número.');
-            return;
-        }
-        if (!buyerName || !buyerPhone) {
-            alert('Por favor, preencha todos os campos.');
-            return;
-        }
-
-        localStorage.setItem('buyerName', buyerName);
-        localStorage.setItem('buyerPhone', buyerPhone);
-
-        const paymentData = {
-            quantity,
-            buyerName,
-            buyerPhone,
-            numbers: selectedNumbers,
-            userId: localStorage.getItem('userId') || generateUserId()
-        };
-        console.log('Enviando solicitação de pagamento em:', new Date().toISOString(), paymentData);
-
-        await sendPaymentRequest(paymentData);
-    });
 </script>
 
 </body>
