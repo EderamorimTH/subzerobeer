@@ -355,13 +355,13 @@
         window.history.replaceState({}, document.title, window.location.pathname);
     }
 
-    window.onload = function() {
+    window.onload = async function() {
         const savedName = localStorage.getItem('buyerName');
         const savedPhone = localStorage.getItem('buyerPhone');
         if (savedName) document.getElementById('buyer-name').value = savedName;
         if (savedPhone) document.getElementById('buyer-phone').value = savedPhone;
         handlePaymentStatus();
-        loadData();
+        await loadData();
     };
 
     function generateUserId() {
@@ -419,6 +419,12 @@
             });
             selectedNumbers = [];
 
+            if (availableNumbers.length === 0) {
+                console.warn(`[${new Date().toISOString()}] Nenhum número disponível para seleção aleatória`);
+                alert('Nenhum número disponível para seleção. Tente novamente mais tarde.');
+                return;
+            }
+
             const shuffled = availableNumbers.sort(() => 0.5 - Math.random());
             const randomNumbers = shuffled.slice(0, Math.min(5, availableNumbers.length));
 
@@ -445,6 +451,24 @@
     async function loadData() {
         const maxRetries = 3;
         let retries = 0;
+
+        // Verificar saúde do servidor
+        try {
+            console.log(`[${new Date().toISOString()}] Verificando saúde do servidor`);
+            const healthRes = await fetch('https://subzerobeer.onrender.com/health', {
+                method: 'GET',
+                headers: { 'Content-Type': 'application/json' },
+            });
+            if (!healthRes.ok) {
+                throw new Error(`Erro no health check: ${healthRes.status}`);
+            }
+            const healthData = await healthRes.json();
+            console.log(`[${new Date().toISOString()}] Health check:`, healthData);
+        } catch (error) {
+            console.error(`[${new Date().toISOString()}] Erro no health check:`, error.message);
+            numberContainer.innerHTML = '<p>Erro ao conectar ao servidor. Tente novamente mais tarde.</p>';
+            return;
+        }
 
         while (retries < maxRetries) {
             try {
@@ -518,7 +542,7 @@
 
                 console.log(`[${new Date().toISOString()}] Números carregados com sucesso`);
                 return;
-            } catch (error) {
+            } rollout catch (error) {
                 console.error(`[${new Date().toISOString()}] Erro na tentativa ${retries + 1}:`, error.message, 'Stack:', error.stack);
                 retries++;
                 if (retries === maxRetries) {
