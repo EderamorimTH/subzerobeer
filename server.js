@@ -85,6 +85,7 @@ app.get('/available_numbers', async (req, res) => {
 
 app.post('/reserve_numbers', async (req, res) => {
     const { numbers, userId } = req.body;
+    console.log(`[${new Date().toISOString()}] Recebendo solicitação para reservar números: ${numbers}, userId: ${userId}`);
     try {
         const session = await mongoose.startSession();
         session.startTransaction();
@@ -93,6 +94,7 @@ app.post('/reserve_numbers', async (req, res) => {
             if (availableNumbers.length !== numbers.length) {
                 await session.abortTransaction();
                 session.endSession();
+                console.log(`[${new Date().toISOString()}] Falha na reserva: Alguns números não estão disponíveis: ${numbers}`);
                 return res.status(400).json({ success: false, message: 'Alguns números não estão disponíveis.' });
             }
             await Comprador.updateMany(
@@ -102,6 +104,7 @@ app.post('/reserve_numbers', async (req, res) => {
             );
             await session.commitTransaction();
             session.endSession();
+            console.log(`[${new Date().toISOString()}] Números ${numbers} reservados com sucesso para userId: ${userId}`);
             res.json({ success: true });
         } catch (error) {
             await session.abortTransaction();
@@ -109,7 +112,7 @@ app.post('/reserve_numbers', async (req, res) => {
             throw error;
         }
     } catch (error) {
-        console.error('Erro ao reservar números:', error);
+        console.error(`[${new Date().toISOString()}] Erro ao reservar números:`, error);
         res.status(500).json({ success: false, message: 'Erro ao reservar números.' });
     }
 });
@@ -124,6 +127,7 @@ app.post('/check_reservation', async (req, res) => {
             userId,
             timestamp: { $gt: fiveMinutesAgo },
         });
+        console.log(`[${new Date().toISOString()}] Verificação de reserva para números ${numbers}, userId: ${userId}, válida: ${validNumbers.length === numbers.length}`);
         res.json({ valid: validNumbers.length === numbers.length });
     } catch (error) {
         console.error('Erro ao verificar reserva:', error);
@@ -133,6 +137,7 @@ app.post('/check_reservation', async (req, res) => {
 
 app.post('/create_preference', async (req, res) => {
     const { numbers, userId, buyerName, buyerPhone, quantity } = req.body;
+    console.log(`[${new Date().toISOString()}] Recebendo solicitação para criar preferência:`, { numbers, userId, buyerName, buyerPhone, quantity });
     try {
         const session = await mongoose.startSession();
         session.startTransaction();
@@ -147,6 +152,7 @@ app.post('/create_preference', async (req, res) => {
             if (validNumbers.length !== numbers.length) {
                 await session.abortTransaction();
                 session.endSession();
+                console.log(`[${new Date().toISOString()}] Falha na preferência: Números não estão reservados para userId: ${userId}`);
                 return res.status(400).json({ error: 'Números não estão mais reservados para você.' });
             }
 
@@ -170,8 +176,9 @@ app.post('/create_preference', async (req, res) => {
                     external_reference: JSON.stringify({ numbers, userId, buyerName, buyerPhone }),
                 }
             });
+            console.log(`[${new Date().toISOString()}] Resposta do Mercado Pago:`, JSON.stringify(response, null, 2));
             const paymentLink = response.init_point;
-            const preferenceId = response.body.id || 'Não encontrado';
+            const preferenceId = response.id || 'Não encontrado';
 
             await new Purchase({
                 buyerName,
@@ -184,6 +191,7 @@ app.post('/create_preference', async (req, res) => {
 
             await session.commitTransaction();
             session.endSession();
+            console.log(`[${new Date().toISOString()}] Preferência criada com sucesso, preference_id: ${preferenceId}, números: ${numbers}`);
             res.json({ init_point: paymentLink });
         } catch (error) {
             await session.abortTransaction();
@@ -191,14 +199,14 @@ app.post('/create_preference', async (req, res) => {
             throw error;
         }
     } catch (error) {
-        console.error('Erro ao processar preferência:', error);
+        console.error(`[${new Date().toISOString()}] Erro ao processar preferência:`, error);
         res.status(500).json({ error: 'Erro ao processar pagamento.' });
     }
 });
 
 app.post('/webhook', async (req, res) => {
     const payment = req.body;
-    console.log('Webhook recebido:', JSON.stringify(payment, null, 2));
+    console.log(`[${new Date().toISOString()}] Webhook recebido:`, JSON.stringify(payment, null, 2));
     try {
         if (payment.type === 'payment' && payment.data.status === 'approved') {
             const paymentId = payment.data.id;
@@ -208,7 +216,6 @@ app.post('/webhook', async (req, res) => {
             const session = await mongoose.startSession();
             session.startTransaction();
             try {
-                // Verificar números reservados
                 const validNumbers = await Comprador.find({
                     number: { $in: numbers },
                     status: 'reservado',
@@ -217,18 +224,16 @@ app.post('/webhook', async (req, res) => {
                 if (validNumbers.length !== numbers.length) {
                     await session.abortTransaction();
                     session.endSession();
-                    console.error('Números não estão reservados para o usuário:', userId);
+                    console.error(`[${new Date().toISOString()}] Números não estão reservados para o usuário: ${userId}`);
                     return res.sendStatus(400);
                 }
 
-                // Atualizar coleção compradores
                 await Comprador.updateMany(
                     { number: { $in: numbers }, status: 'reservado', userId },
                     { $set: { status: 'vendido', userId: null, timestamp: null } },
                     { session }
                 );
 
-                // Atualizar coleção purchases
                 await Purchase.updateMany(
                     { numbers: { $in: numbers }, status: 'pending' },
                     { $set: { status: 'approved', paymentId, date_approved: new Date() } },
@@ -236,7 +241,7 @@ app.post('/webhook', async (req, res) => {
                 );
 
                 await session.commitTransaction();
-                console.log(`Pagamento ${paymentId} aprovado. Números ${numbers.join(', ')} marcados como vendido.`);
+                console.log(`[${new Date().toISOString()}] Pagamento ${paymentId} aprovado. Números ${numbers.join(', ')} marcados como vendido.`);
             } catch (error) {
                 await session.abortTransaction();
                 throw error;
@@ -246,7 +251,7 @@ app.post('/webhook', async (req, res) => {
         }
         res.sendStatus(200);
     } catch (error) {
-        console.error('Erro no webhook:', error);
+        console.error(`[${new Date().toISOString()}] Erro no webhook:`, error);
         res.sendStatus(500);
     }
 });
