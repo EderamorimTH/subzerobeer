@@ -394,18 +394,25 @@
         while (retries < maxRetries) {
             try {
                 console.log(`Tentativa ${retries + 1} de carregar números em ${new Date().toISOString()}...`);
+                
+                // Carregar progresso de números vendidos
+                const progressRes = await fetch('https://subzerobeer.onrender.com/progress', {
+                    method: 'GET',
+                    headers: { 'Content-Type': 'application/json' },
+                });
+                if (!progressRes.ok) throw new Error(`Erro HTTP ao carregar progresso: ${progressRes.status}`);
+                const { progress } = await progressRes.json();
+                progressBar.style.width = `${progress}%`;
+                progressBar.textContent = `${Math.round(progress)}% Vendidos`;
+
+                // Carregar números disponíveis
                 const availableRes = await fetch('https://subzerobeer.onrender.com/available_numbers', {
                     method: 'GET',
                     headers: { 'Content-Type': 'application/json' },
                 });
-                if (!availableRes.ok) throw new Error(`Erro HTTP: ${availableRes.status}`);
+                if (!availableRes.ok) throw new Error(`Erro HTTP ao carregar números: ${availableRes.status}`);
                 const availableNumbers = await availableRes.json();
                 console.log('Números disponíveis recebidos:', availableNumbers);
-
-                const soldCount = totalNumbers - availableNumbers.length;
-                const progressPercentage = Math.round((soldCount / totalNumbers) * 100);
-                progressBar.style.width = `${progressPercentage}%`;
-                progressBar.textContent = `${progressPercentage}% Vendidos`;
 
                 numberContainer.innerHTML = '';
                 for (let i = 1; i <= totalNumbers; i++) {
@@ -447,8 +454,8 @@
                 console.error(`Erro na tentativa ${retries + 1} em ${new Date().toISOString()}:`, error.message, 'Stack:', error.stack);
                 retries++;
                 if (retries === maxRetries) {
-                    console.error('Falha ao carregar números após várias tentativas.');
-                    alert('Erro ao carregar números do servidor. Verifique sua conexão e tente novamente.');
+                    console.error('Falha ao carregar dados após várias tentativas.');
+                    alert('Erro ao carregar dados do servidor. Verifique sua conexão e tente novamente.');
                 } else {
                     await new Promise(resolve => setTimeout(resolve, 2000));
                 }
@@ -459,6 +466,3 @@
 
 </body>
 </html>
-</ цих
-
-System: * Today's date and time is 08:59 AM -04 on Thursday, July 03, 2025.
