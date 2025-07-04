@@ -31,7 +31,7 @@
         header .highlight {
             font-weight: 700;
             font-size: clamp(16px, 4vw, 18px);
-            color: #ffffff; /* Changed to white */
+            color: #ffffff; /* Texto em branco conforme solicitado */
         }
         nav {
             margin-top: 10px;
@@ -91,7 +91,7 @@
             font-size: clamp(12px, 3vw, 14px);
         }
         .number.available {
-            background-color: #00ff00;
+            background-color: #00ff00; /* Verde para números disponíveis */
             color: #000000;
         }
         .number.selected {
@@ -99,7 +99,7 @@
             color: white;
         }
         .number.reserved, .number.sold {
-            background-color: #ff0000;
+            background-color: #ff0000; /* Vermelho para números pagos/reservados */
             color: #ffffff;
             cursor: not-allowed;
         }
@@ -154,7 +154,7 @@
         }
         .success-message {
             background-color: #333333;
-            border-left: 4px solid #8b0000;
+            border-left: 4px-solid #8b0000;
         }
         .error-message, .number-error {
             background-color: #ff4040;
@@ -252,11 +252,11 @@
     </section>
 
     <section class="number-error" id="number-error">
-        <h3>Erro ao carregar números.</h3>
-        <p>Não foi possível carregar os números disponíveis. Tente novamente mais tarde ou entre em contato via Instagram.</p>
+        <h3>Erro ao carregar números</h3>
+        <p id="error-details">Não foi possível carregar os números disponíveis. Tente novamente mais tarde ou entre em contato via Instagram.</p>
     </section>
 
-    <div class="loading-message" id="loading-message">Aguarde um momento, o número está sendo marcado...</div>
+    <div class="loading-message" id="loading-message">Aguarde um momento, os números estão sendo carregados...</div>
 
     <div class="numbers-grid" id="numbers-grid"></div>
 
@@ -290,7 +290,7 @@
                     method: 'GET',
                     headers: { 'Content-Type': 'application/json' }
                 });
-                if (!response.ok) throw new Error(`HTTP error: ${response.status}`);
+                if (!response.ok) throw new Error(`Erro HTTP: ${response.status}`);
                 console.log('Backend está ativo:', await response.json());
                 return true;
             } catch (error) {
@@ -303,6 +303,7 @@
             const numbersGrid = document.getElementById('numbers-grid');
             const loadingMessage = document.getElementById('loading-message');
             const numberError = document.getElementById('number-error');
+            const errorDetails = document.getElementById('error-details');
             numbersGrid.style.display = 'grid';
             numberError.style.display = 'none';
             loadingMessage.style.display = 'block';
@@ -323,15 +324,16 @@
                     });
                     clearTimeout(timeoutId);
 
-                    if (!response.ok) throw new Error(`HTTP error: ${response.status}`);
+                    if (!response.ok) {
+                        throw new Error(`Erro HTTP: ${response.status}`);
+                    }
                     availableNumbers = await response.json();
-                    console.log('Números disponíveis carregados:',EOF
-
-:', availableNumbers);
+                    console.log('Números disponíveis carregados:', availableNumbers);
 
                     if (availableNumbers.length === 0) {
-                        numberError.innerHTML = '<p>Todos os números estão reservados no momento.</p>';
+                        errorDetails.innerHTML = '<p>Todos os números estão reservados no momento. Tente novamente mais tarde.</p>';
                         numberError.style.display = 'block';
+                        numbersGrid.style.display = 'none';
                         return;
                     }
 
@@ -344,9 +346,7 @@
                     });
 
                     const allNumbers = Array.from({ length: 150 }, (_, i) => String(i + 1).padStart(3, '0'));
-                    const reservedNumbers = allNumbers.filterайте
-
-(n => !availableNumbers.includes(n));
+                    const reservedNumbers = allNumbers.filter(n => !availableNumbers.includes(n));
                     reservedNumbers.forEach(number => {
                         const div = document.createElement('div');
                         div.className = 'number reserved';
@@ -359,15 +359,9 @@
                     console.error(`Erro na tentativa ${retries + 1} em ${new Date().toISOString()}:`, error.message);
                     retries++;
                     if (retries === maxRetries) {
-                        numberError.innerHTML = '<p>Erro ao carregar números. Verifique sua conexão ou tente novamente mais tarde.</p>';
+                        errorDetails.innerHTML = `<p>Erro ao carregar números: ${error.message}. Verifique sua conexão ou tente novamente mais tarde.</p>`;
                         numberError.style.display = 'block';
-                        const allNumbers = Array.from({ length: 150 }, (_, i) => String(i + 1).padStart(3, '0'));
-                        allNumbers.forEach(number => {
-                            const div = document.createElement('div');
-                            div.className = 'number reserved';
-                            div.textContent = number;
-                            numbersGrid.appendChild(div);
-                        });
+                        numbersGrid.style.display = 'none';
                     } else {
                         await new Promise(resolve => setTimeout(resolve, 2000));
                     }
@@ -439,7 +433,7 @@
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ numbers: selectedNumbers, userId })
                 });
-                if (!reserveResponse.ok) throw new Error(`HTTP error: ${reserveResponse.status}`);
+                if (!reserveResponse.ok) throw new Error(`Erro HTTP: ${reserveResponse.status}`);
                 const reserveData = await reserveResponse.json();
                 if (!reserveData.success) throw new Error(reserveData.message);
 
@@ -454,7 +448,7 @@
                         quantity: selectedNumbers.length
                     })
                 });
-                if (!preferenceResponse.ok) throw new Error(`HTTP error: ${preferenceResponse.status}`);
+                if (!preferenceResponse.ok) throw new Error(`Erro HTTP: ${preferenceResponse.status}`);
                 const preferenceData = await preferenceResponse.json();
                 window.location.href = preferenceData.init_point;
             } catch (error) {
@@ -470,8 +464,9 @@
             const backendOk = await checkBackendHealth();
             if (!backendOk) {
                 document.getElementById('number-error').style.display = 'block';
+                document.getElementById('error-details').innerHTML = '<p>Não foi possível conectar ao servidor. Verifique sua conexão ou tente novamente mais tarde.</p>';
             }
-            loadNumbers();
+            openNumberSelection(); // Chama a função para exibir os números automaticamente
             const urlParams = new URLSearchParams(window.location.search);
             const status = urlParams.get('status');
             if (status === 'approved') {
