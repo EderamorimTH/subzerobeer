@@ -14,9 +14,10 @@
             background: linear-gradient(135deg, #1a3c6e, #ffca28);
             min-height: 100vh;
             display: flex;
-            flex-direction: column;
-            justify-content: space-between;
-            color: #333;
+            justify-content: center;
+            align-items: center;
+            overflow: hidden;
+            position: relative;
         }
         body::before {
             content: '';
@@ -27,35 +28,6 @@
             opacity: 0.1;
             z-index: 0;
         }
-        header {
-            background-color: #1a3c6e;
-            color: white;
-            padding: 15px;
-            text-align: center;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
-        }
-        header h1 {
-            margin: 0;
-            font-size: clamp(24px, 5vw, 28px);
-        }
-        header p {
-            margin: 8px 0;
-            font-size: clamp(14px, 3vw, 15px);
-        }
-        nav {
-            margin-top: 10px;
-        }
-        nav a {
-            color: white;
-            margin: 0 10px;
-            text-decoration: none;
-            font-weight: 700;
-            font-size: clamp(14px, 3vw, 16px);
-            transition: color 0.3s;
-        }
-        nav a:hover {
-            color: #ffca28;
-        }
         .container {
             background: rgba(255, 255, 255, 0.95);
             padding: 20px;
@@ -64,7 +36,6 @@
             text-align: center;
             width: 90%;
             max-width: 600px;
-            margin: 15px auto;
             animation: bounceIn 1s ease-out;
             position: relative;
             z-index: 1;
@@ -176,39 +147,20 @@
             transform: translateY(-2px);
             background: linear-gradient(90deg, #0e2449, #e0a800);
         }
-        footer {
-            background-color: #1a3c6e;
-            color: white;
-            text-align: center;
-            padding: 15px;
-            box-shadow: 0 -2px 4px rgba(0,0,0,0.2);
+        .snowflake {
+            position: absolute;
+            color: #fff;
+            font-size: 1em;
+            font-family: Arial, sans-serif;
+            text-shadow: 0 0 5px rgba(255, 255, 255, 0.8);
+            pointer-events: none;
+            z-index: 2;
         }
-        .instagram-button, .share-button {
-            background-color: #ffca28;
-            color: #1a3c6e;
-            padding: 10px 20px;
-            border: none;
-            border-radius: 5px;
-            text-decoration: none;
-            display: inline-block;
-            font-weight: 700;
-            font-size: clamp(14px, 3vw, 16px);
-            margin: 5px;
-            transition: background-color 0.3s;
-        }
-        .instagram-button:hover {
-            background-color: #e0a800;
-        }
-        .share-button {
-            background-color: #25d366;
-        }
-        .share-button:hover {
-            background-color: #1ebe5a;
+        @keyframes fall {
+            0% { top: -10%; opacity: 1; }
+            100% { top: 100%; opacity: 0; }
         }
         @media (max-width: 600px) {
-            header {
-                padding: 10px;
-            }
             .container {
                 margin: 10px;
                 padding: 15px;
@@ -224,18 +176,6 @@
     </style>
 </head>
 <body>
-    <header>
-        <h1>Sub-zero Beer</h1>
-        <p>A distribuidora mais gelada de Cuiabá!</p>
-        <p>Cervejas artesanais, ambiente descontraído e promoções incríveis estão na Sub-zero</p>
-        <p>Participe do nosso sorteio e concorra a 1 caixa de litrão e 1 porção de frango a passarinho!</p>
-        <nav>
-            <a href="/subzerobeer/index.html">Início</a>
-            <a href="/subzerobeer/sorteio.html">Sorteio</a>
-            <a href="/subzerobeer/ganhadores.html">Ganhadores</a>
-        </nav>
-    </header>
-
     <div class="container">
         <h1>Sorteio ao Vivo</h1>
         <div class="draw-section">
@@ -245,15 +185,24 @@
         </div>
     </div>
 
-    <footer>
-        <p>Contato: <a href="https://instagram.com/Subzerobeercba" class="instagram-button">@Subzerobeercba</a></p>
-        <p><a href="https://wa.me/?text=Participe%20do%20sorteio%20do%20Sub-zero%20Beer!%20Compre%20números%20por%20R$%2010%20e%20concorra%20a%201%20caixa%20de%20litrão%20e%201%20porção%20de%20frango%20a%20passarinho:%20https://ederamorimth.github.io/subzerobeer/index.html" class="share-button">Compartilhar no WhatsApp</a></p>
-        <p>© 2025 Sub-zero Beer</p>
-    </footer>
-
     <script>
         let purchasesData = [];
         let currentWinner = null;
+
+        // Função para criar flocos de neve
+        function createSnowflake() {
+            const snowflake = document.createElement('div');
+            snowflake.className = 'snowflake';
+            snowflake.innerHTML = '❄️';
+            snowflake.style.left = Math.random() * 100 + 'vw';
+            snowflake.style.fontSize = Math.random() * 10 + 10 + 'px';
+            snowflake.style.animation = `fall ${Math.random() * 5 + 5}s linear`;
+            document.body.appendChild(snowflake);
+            setTimeout(() => snowflake.remove(), 10000);
+        }
+
+        // Gerar flocos de neve continuamente
+        setInterval(createSnowflake, 200);
 
         async function loadPurchases() {
             const maxRetries = 3;
