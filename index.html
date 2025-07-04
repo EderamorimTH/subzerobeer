@@ -16,23 +16,27 @@
         header {
             background-color: #1a3c6e;
             color: white;
-            padding: 20px;
+            padding: 15px;
             text-align: center;
             box-shadow: 0 2px 4px rgba(0,0,0,0.2);
         }
         header h1 {
             margin: 0;
-            font-size: 32px;
+            font-size: clamp(24px, 5vw, 28px);
         }
         header p {
-            margin: 10px 0;
-            font-size: 16px;
+            margin: 8px 0;
+            font-size: clamp(14px, 3vw, 15px);
+        }
+        nav {
+            margin-top: 10px;
         }
         nav a {
             color: white;
-            margin: 0 15px;
+            margin: 0 10px;
             text-decoration: none;
             font-weight: 700;
+            font-size: clamp(14px, 3vw, 16px);
             transition: color 0.3s;
         }
         nav a:hover {
@@ -40,62 +44,99 @@
         }
         .hero {
             text-align: center;
-            padding: 50px 20px;
+            padding: 30px 15px;
             background-color: #ffffff;
             border-radius: 10px;
-            margin: 20px auto;
+            margin: 15px auto;
             max-width: 1000px;
             box-shadow: 0 4px 8px rgba(0,0,0,0.1);
         }
         .hero h2 {
             color: #1a3c6e;
-            font-size: 28px;
-            margin-bottom: 20px;
+            font-size: clamp(20px, 5vw, 24px);
+            margin-bottom: 15px;
+        }
+        .hero p {
+            font-size: clamp(14px, 3vw, 16px);
         }
         .hero-buttons {
-            margin: 20px 0;
+            margin: 15px 0;
         }
         .hero-buttons button {
             background-color: #1a3c6e;
             color: white;
-            padding: 12px 24px;
+            padding: 10px 20px;
             border: none;
             border-radius: 5px;
             cursor: pointer;
             margin: 5px;
             font-weight: 700;
+            font-size: clamp(14px, 3vw, 16px);
             transition: background-color 0.3s;
         }
         .hero-buttons button:hover {
             background-color: #ffca28;
             color: #1a3c6e;
         }
+        .numbers-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(40px, 1fr));
+            gap: 5px;
+            max-width: 90%;
+            margin: 15px auto;
+        }
+        .number {
+            padding: 8px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            text-align: center;
+            cursor: pointer;
+            font-size: clamp(12px, 3vw, 14px);
+        }
+        .number.available {
+            background-color: #f0f4fa;
+        }
+        .number.selected {
+            background-color: #1a3c6e;
+            color: white;
+        }
+        .number.reserved, .number.sold {
+            background-color: #ccc;
+            cursor: not-allowed;
+        }
         .payment-form {
-            max-width: 500px;
-            margin: 20px auto;
-            padding: 20px;
+            max-width: 90%;
+            margin: 15px auto;
+            padding: 15px;
             background-color: white;
             border-radius: 10px;
             box-shadow: 0 4px 8px rgba(0,0,0,0.1);
             display: block;
         }
+        .payment-form h2 {
+            font-size: clamp(18px, 4vw, 20px);
+        }
+        .payment-form p {
+            font-size: clamp(14px, 3vw, 15px);
+        }
         .payment-form input {
-            padding: 12px;
-            margin: 10px 0;
-            width: calc(100% - 24px);
+            padding: 10px;
+            margin: 8px 0;
+            width: calc(100% - 20px);
             border: 1px solid #ccc;
             border-radius: 5px;
-            font-size: 16px;
+            font-size: clamp(14px, 3vw, 16px);
         }
         .payment-form button {
             background-color: #1a3c6e;
             color: white;
-            padding: 12px 24px;
+            padding: 10px 20px;
             border: none;
             border-radius: 5px;
             cursor: pointer;
             width: 100%;
             font-weight: 700;
+            font-size: clamp(14px, 3vw, 16px);
             transition: background-color 0.3s;
         }
         .payment-form button:hover {
@@ -103,9 +144,9 @@
             color: #1a3c6e;
         }
         .success-message, .error-message, .pending-message, .number-error {
-            max-width: 500px;
-            margin: 20px auto;
-            padding: 20px;
+            max-width: 90%;
+            margin: 15px auto;
+            padding: 15px;
             border-radius: 10px;
             text-align: center;
             display: none;
@@ -122,38 +163,13 @@
             background-color: #fff3cd;
             border-left: 4px solid #ffca28;
         }
-        .numbers-grid {
-            display: grid;
-            grid-template-columns: repeat(10, 1fr);
-            gap: 5px;
-            max-width: 600px;
-            margin: 20px auto;
-        }
-        .number {
-            padding: 10px;
-            border: 1px solid #ccc;
-            border-radius: 5px;
-            text-align: center;
-            cursor: pointer;
-            font-size: 14px;
-        }
-        .number.available {
-            background-color: #f0f4fa;
-        }
-        .number.selected {
-            background-color: #1a3c6e;
-            color: white;
-        }
-        .number.reserved, .number.sold {
-            background-color: #ccc;
-            cursor: not-allowed;
-        }
         .loading-message {
             text-align: center;
-            margin: 20px;
+            margin: 15px;
             display: none;
             color: #1a3c6e;
             font-weight: 700;
+            font-size: clamp(14px, 3vw, 16px);
         }
         footer {
             background-color: #1a3c6e;
@@ -162,7 +178,7 @@
             padding: 15px;
             box-shadow: 0 -2px 4px rgba(0,0,0,0.2);
         }
-        .instagram-button {
+        .instagram-button, .share-button {
             background-color: #ffca28;
             color: #1a3c6e;
             padding: 10px 20px;
@@ -171,8 +187,8 @@
             text-decoration: none;
             display: inline-block;
             font-weight: 700;
-            font-size: 16px;
-            margin: 5px 0;
+            font-size: clamp(14px, 3vw, 16px);
+            margin: 5px;
             transition: background-color 0.3s;
         }
         .instagram-button:hover {
@@ -180,19 +196,25 @@
         }
         .share-button {
             background-color: #25d366;
-            color: white;
-            padding: 10px 20px;
-            border: none;
-            border-radius: 5px;
-            text-decoration: none;
-            display: inline-block;
-            font-weight: 700;
-            font-size: 14px;
-            margin: 5px 0;
-            transition: background-color 0.3s;
         }
         .share-button:hover {
             background-color: #1ebe5a;
+        }
+        @media (max-width: 600px) {
+            header {
+                padding: 10px;
+            }
+            .hero {
+                padding: 20px 10px;
+                margin: 10px;
+            }
+            .numbers-grid {
+                grid-template-columns: repeat(auto-fit, minmax(35px, 1fr));
+                gap: 4px;
+            }
+            .payment-form {
+                padding: 10px;
+            }
         }
     </style>
 </head>
@@ -206,7 +228,6 @@
             <a href="/subzerobeer/index.html">Início</a>
             <a href="/subzerobeer/sorteio.html">Sorteio</a>
             <a href="/subzerobeer/ganhadores.html">Ganhadores</a>
-            <a href="/subzerobeer/sorteio-ao-vivo.html">Sorteio ao Vivo</a>
         </nav>
     </header>
 
@@ -239,6 +260,10 @@
         <p>Não foi possível carregar os números disponíveis. Tente novamente mais tarde ou entre em contato via Instagram.</p>
     </section>
 
+    <div class="loading-message" id="loading-message">Aguarde um momento, o número está sendo marcado...</div>
+
+    <div class="numbers-grid" id="numbers-grid"></div>
+
     <section class="payment-form" id="payment-form-section">
         <h2>Finalize sua compra</h2>
         <p>Preencha os dados abaixo e clique em "Pagar com Pix/Cartão" para ser redirecionado ao Mercado Pago.</p>
@@ -251,10 +276,6 @@
             <p>Atenção: Você tem 5 minutos para realizar o pagamento, ou os números selecionados serão liberados. Volte ao site para verificar a disponibilidade.</p>
         </form>
     </section>
-
-    <div class="loading-message" id="loading-message">Aguarde um momento, o número está sendo marcado...</div>
-
-    <div class="numbers-grid" id="numbers-grid"></div>
 
     <footer>
         <p>Contato: <a href="https://instagram.com/Subzerobeercba" class="instagram-button">@Subzerobeercba</a></p>
