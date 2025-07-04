@@ -51,12 +51,12 @@ async function initializeNumbers() {
     try {
         const count = await Comprador.countDocuments();
         if (count === 0) {
-            const numbers = Array.from({ length: 100 }, (_, i) => ({
+            const numbers = Array.from({ length: 150 }, (_, i) => ({
                 number: String(i + 1).padStart(3, '0'),
                 status: 'disponível',
             }));
             await Comprador.insertMany(numbers);
-            console.log(`[${new Date().toISOString()}] Números de 001 a 100 inicializados na coleção compradores.`);
+            console.log(`[${new Date().toISOString()}] Números de 001 a 150 inicializados na coleção compradores.`);
         } else {
             console.log(`[${new Date().toISOString()}] Coleção compradores já contém ${count} documentos.`);
         }
