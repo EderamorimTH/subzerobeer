@@ -2,6 +2,7 @@ const express = require('express');
 const mongoose = require('mongoose');
 const cors = require('cors');
 const { MercadoPagoConfig, Preference, Payment } = require('mercadopago');
+const crypto = require('crypto');
 require('dotenv').config();
 
 const app = express();
@@ -33,8 +34,18 @@ const purchaseSchema = new mongoose.Schema({
     preference_id: String,
 });
 
+const winnerSchema = new mongoose.Schema({
+    buyerName: { type: String, required: true },
+    buyerPhone: { type: String, required: true },
+    winningNumber: { type: String, required: true },
+    numbers: { type: [String], required: true },
+    drawDate: { type: Date, default: Date.now },
+    photoUrl: { type: String, default: '' }
+});
+
 const Comprador = mongoose.model('Comprador', compradorSchema, 'compradores');
 const Purchase = mongoose.model('Purchase', purchaseSchema, 'purchases');
+const Winner = mongoose.model('Winner', winnerSchema, 'winners');
 
 async function initializeNumbers() {
     try {
@@ -106,6 +117,77 @@ app.get('/health', async (req, res) => {
     } catch (error) {
         console.error(`[${new Date().toISOString()}] Erro no health check:`, error);
         res.status(500).json({ status: 'ERROR', message: 'Erro no servidor ou MongoDB', details: error.message });
+    }
+});
+
+app.get('/get-page-password', (req, res) => {
+    const requestId = Math.random().toString(36).substr(2, 9);
+    console.log(`[${new Date().toISOString()}] [${requestId}] Solicitação para obter hash da senha`);
+    const password = process.env.PAGE_PASSWORD;
+    if (!password) {
+        console.error(`[${new Date().toISOString()}] [${requestId}] Senha não configurada no servidor`);
+        return res.status(500).json({ error: 'Senha não configurada no servidor' });
+    }
+    const hash = crypto.createHash('sha256').update(password).digest('hex');
+    res.json({ passwordHash: hash });
+});
+
+app.post('/save_winner', async (req, res) => {
+    const { buyerName, buyerPhone, winningNumber, numbers, drawDate } = req.body;
+    console.log(`[${new Date().toISOString()}] Recebendo solicitação para salvar ganhador:`, { buyerName, winningNumber, numbers, drawDate });
+    try {
+        if (!buyerName || !buyerPhone || !winningNumber || !numbers || !drawDate) {
+            console.error(`[${new Date().toISOString()}] Dados incompletos para salvar ganhador`);
+            return res.status(400).json({ error: 'Dados incompletos' });
+        }
+        const winner = new Winner({
+            buyerName,
+            buyerPhone,
+            winningNumber,
+            numbers,
+            drawDate: new Date(drawDate)
+        });
+        await winner.save();
+        console.log(`[${new Date().toISOString()}] Ganhador salvo com sucesso: ${buyerName}, número: ${winningNumber}`);
+        res.json({ success: true });
+    } catch (error) {
+        console.error(`[${new Date().toISOString()}] Erro ao salvar ganhador:`, error);
+        res.status(500).json({ error: 'Erro ao salvar ganhador', details: error.message });
+    }
+});
+
+app.get('/get_winners', async (req, res) => {
+    try {
+        const winners = await Winner.find().sort({ drawDate: -1 });
+        console.log(`[${new Date().toISOString()}] Retornando ${winners.length} ganhadores`);
+        res.json(winners);
+    } catch (error) {
+        console.error(`[${new Date().toISOString()}] Erro ao buscar ganhadores:`, error);
+        res.status(500).json({ error: 'Erro ao buscar ganhadores', details: error.message });
+    }
+});
+
+app.post('/upload_winner_photo', async (req, res) => {
+    const { winnerId, photoUrl } = req.body;
+    console.log(`[${new Date().toISOString()}] Recebendo solicitação para atualizar foto do ganhador:`, { winnerId, photoUrl });
+    try {
+        if (!winnerId || !photoUrl) {
+            console.error(`[${new Date().toISOString()}] Dados incompletos para atualizar foto`);
+            return res.status(400).json({ error: 'Dados incompletos' });
+        }
+        const result = await Winner.updateOne(
+            { _id: winnerId },
+            { $set: { photoUrl } }
+        );
+        if (result.modifiedCount === 0) {
+            console.error(`[${new Date().toISOString()}] Ganhador não encontrado: ${winnerId}`);
+            return res.status(404).json({ error: 'Ganhador não encontrado' });
+        }
+        console.log(`[${new Date().toISOString()}] Foto atualizada para ganhador: ${winnerId}`);
+        res.json({ success: true });
+    } catch (error) {
+        console.error(`[${new Date().toISOString()}] Erro ao atualizar foto:`, error);
+        res.status(500).json({ error: 'Erro ao atualizar foto', details: error.message });
     }
 });
 
