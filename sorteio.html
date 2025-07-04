@@ -16,53 +16,58 @@
         header {
             background-color: #1a3c6e;
             color: white;
-            padding: 20px;
+            padding: 15px;
             text-align: center;
             box-shadow: 0 2px 4px rgba(0,0,0,0.2);
         }
         header h1 {
             margin: 0;
-            font-size: 32px;
+            font-size: clamp(24px, 5vw, 28px);
         }
         header p {
-            margin: 10px 0;
-            font-size: 16px;
+            margin: 8px 0;
+            font-size: clamp(14px, 3vw, 15px);
+        }
+        nav {
+            margin-top: 10px;
         }
         nav a {
             color: white;
-            margin: 0 15px;
+            margin: 0 10px;
             text-decoration: none;
             font-weight: 700;
+            font-size: clamp(14px, 3vw, 16px);
             transition: color 0.3s;
         }
         nav a:hover {
             color: #ffca28;
         }
         .password-container {
-            max-width: 400px;
-            margin: 50px auto;
-            padding: 20px;
+            max-width: 90%;
+            margin: 30px auto;
+            padding: 15px;
             background-color: white;
             border-radius: 10px;
             box-shadow: 0 4px 8px rgba(0,0,0,0.1);
             text-align: center;
         }
         .password-container input {
-            padding: 12px;
-            margin: 10px 0;
-            width: 80%;
+            padding: 10px;
+            margin: 8px 0;
+            width: calc(100% - 20px);
             border: 1px solid #ccc;
             border-radius: 5px;
-            font-size: 16px;
+            font-size: clamp(14px, 3vw, 16px);
         }
         .password-container button {
             background-color: #1a3c6e;
             color: white;
-            padding: 12px 24px;
+            padding: 10px 20px;
             border: none;
             border-radius: 5px;
             cursor: pointer;
             font-weight: 700;
+            font-size: clamp(14px, 3vw, 16px);
             transition: background-color 0.3s;
         }
         .password-container button:hover {
@@ -71,27 +76,31 @@
         }
         .password-error {
             color: #dc3545;
-            margin-top: 10px;
+            margin-top: 8px;
             display: none;
-            font-size: 14px;
+            font-size: clamp(12px, 3vw, 14px);
         }
         .content {
-            max-width: 1000px;
-            margin: 20px auto;
-            padding: 20px;
+            max-width: 90%;
+            margin: 15px auto;
+            padding: 15px;
             background-color: white;
             border-radius: 10px;
             box-shadow: 0 4px 8px rgba(0,0,0,0.1);
             display: none;
         }
+        .content h2 {
+            font-size: clamp(18px, 4vw, 20px);
+        }
         table {
             width: 100%;
             border-collapse: collapse;
-            margin-top: 20px;
+            margin-top: 15px;
+            font-size: clamp(12px, 3vw, 14px);
         }
         th, td {
             border: 1px solid #ddd;
-            padding: 12px;
+            padding: 8px;
             text-align: left;
         }
         th {
@@ -99,31 +108,30 @@
             color: white;
             font-weight: 700;
         }
+        .error, .no-data {
+            text-align: center;
+            margin: 15px 0;
+            font-size: clamp(14px, 3vw, 16px);
+        }
         .error {
             color: #dc3545;
-            text-align: center;
-            margin: 20px 0;
-            font-size: 16px;
         }
         .no-data {
-            text-align: center;
             color: #555;
-            margin: 20px 0;
-            font-size: 16px;
         }
         .draw-section {
-            margin: 20px 0;
+            margin: 15px 0;
             text-align: center;
         }
         .draw-button {
             background-color: #ffca28;
             color: #1a3c6e;
-            padding: 12px 24px;
+            padding: 10px 20px;
             border: none;
             border-radius: 5px;
             cursor: pointer;
             font-weight: 700;
-            font-size: 16px;
+            font-size: clamp(14px, 3vw, 16px);
             transition: background-color 0.3s;
         }
         .draw-button:hover {
@@ -132,12 +140,13 @@
         .view-phone-button {
             background-color: #1a3c6e;
             color: white;
-            padding: 10px 20px;
+            padding: 8px 16px;
             border: none;
             border-radius: 5px;
             cursor: pointer;
-            margin-top: 10px;
+            margin-top: 8px;
             font-weight: 700;
+            font-size: clamp(12px, 3vw, 14px);
             transition: background-color 0.3s;
         }
         .view-phone-button:hover {
@@ -146,16 +155,16 @@
         }
         .winner {
             background-color: #f0f4fa;
-            padding: 20px;
+            padding: 15px;
             border-left: 4px solid #1a3c6e;
-            margin: 20px 0;
-            text-align: center;
+            margin: 15px 0;
             border-radius: 5px;
+            text-align: center;
         }
         .countdown {
-            font-size: 24px;
+            font-size: clamp(20px, 5vw, 22px);
             font-weight: 700;
-            margin: 20px 0;
+            margin: 15px 0;
             color: #1a3c6e;
         }
         footer {
@@ -166,7 +175,7 @@
             box-shadow: 0 -2px 4px rgba(0,0,0,0.2);
             display: none;
         }
-        .instagram-button {
+        .instagram-button, .share-button {
             background-color: #ffca28;
             color: #1a3c6e;
             padding: 10px 20px;
@@ -175,8 +184,8 @@
             text-decoration: none;
             display: inline-block;
             font-weight: 700;
-            font-size: 16px;
-            margin: 5px 0;
+            font-size: clamp(14px, 3vw, 16px);
+            margin: 5px;
             transition: background-color 0.3s;
         }
         .instagram-button:hover {
@@ -184,19 +193,24 @@
         }
         .share-button {
             background-color: #25d366;
-            color: white;
-            padding: 10px 20px;
-            border: none;
-            border-radius: 5px;
-            text-decoration: none;
-            display: inline-block;
-            font-weight: 700;
-            font-size: 14px;
-            margin: 5px 0;
-            transition: background-color 0.3s;
         }
         .share-button:hover {
             background-color: #1ebe5a;
+        }
+        @media (max-width: 600px) {
+            header {
+                padding: 10px;
+            }
+            .password-container, .content {
+                margin: 10px;
+                padding: 10px;
+            }
+            table {
+                font-size: clamp(10px, 2.5vw, 12px);
+            }
+            th, td {
+                padding: 6px;
+            }
         }
     </style>
 </head>
@@ -204,10 +218,11 @@
     <header id="header">
         <h1>Sub-zero Beer</h1>
         <p>A distribuidora mais gelada de Cuiabá!</p>
-        <p>Cervejas artesanais, ambiente descontraído e promoções incríveis estão na Sub-zero Beer.</p>
+        <p>Cervejas artesanais, ambiente descontraído e promoções incríveis estão na Sub-zero</p>
         <p>Participe do nosso sorteio e concorra a 1 caixa de litrão e 1 porção de frango a passarinho!</p>
         <nav id="nav">
             <a href="/subzerobeer/index.html">Início</a>
+            <a href="/subzerobeer/sorteio-ao-vivo.html">Sorteio ao Vivo</a>
         </nav>
     </header>
 
@@ -288,8 +303,7 @@
                     footer.style.display = 'block';
                     nav.innerHTML = `
                         <a href="/subzerobeer/index.html">Início</a>
-                        <a href="/subzerobeer/sorteio.html">Sorteio</a>
-                        <a href="/subzerobeer/ganhadores.html">Ganhadores</a>
+                        <a href="/subzerobeer/sorteio-ao-vivo.html">Sorteio ao Vivo</a>
                     `;
                     loadPurchases();
                 } else {
