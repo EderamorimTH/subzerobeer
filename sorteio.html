@@ -10,11 +10,11 @@
             font-family: 'Roboto', sans-serif;
             margin: 0;
             padding: 0;
-            background-color: #f5f5f5;
-            color: #333;
+            background-color: #000000;
+            color: #ffffff;
         }
         header {
-            background-color: #1a3c6e;
+            background-color: #8b0000;
             color: white;
             padding: 15px;
             text-align: center;
@@ -28,6 +28,11 @@
             margin: 8px 0;
             font-size: clamp(14px, 3vw, 15px);
         }
+        header .highlight {
+            font-weight: 700;
+            font-size: clamp(16px, 4vw, 18px);
+            color: #ffffff;
+        }
         nav {
             margin-top: 10px;
         }
@@ -40,13 +45,13 @@
             transition: color 0.3s;
         }
         nav a:hover {
-            color: #ffca28;
+            color: #ff4040;
         }
         .password-container {
             max-width: 90%;
             margin: 30px auto;
             padding: 15px;
-            background-color: white;
+            background-color: #1a1a1a;
             border-radius: 10px;
             box-shadow: 0 4px 8px rgba(0,0,0,0.1);
             text-align: center;
@@ -58,9 +63,11 @@
             border: 1px solid #ccc;
             border-radius: 5px;
             font-size: clamp(14px, 3vw, 16px);
+            background-color: #333333;
+            color: #ffffff;
         }
         .password-container button {
-            background-color: #1a3c6e;
+            background-color: #8b0000;
             color: white;
             padding: 10px 20px;
             border: none;
@@ -71,11 +78,11 @@
             transition: background-color 0.3s;
         }
         .password-container button:hover {
-            background-color: #ffca28;
-            color: #1a3c6e;
+            background-color: #ff4040;
+            color: #ffffff;
         }
         .password-error {
-            color: #dc3545;
+            color: #ff4040;
             margin-top: 8px;
             display: none;
             font-size: clamp(12px, 3vw, 14px);
@@ -84,7 +91,7 @@
             max-width: 90%;
             margin: 15px auto;
             padding: 15px;
-            background-color: white;
+            background-color: #1a1a1a;
             border-radius: 10px;
             box-shadow: 0 4px 8px rgba(0,0,0,0.1);
             display: none;
@@ -99,12 +106,12 @@
             font-size: clamp(12px, 3vw, 14px);
         }
         th, td {
-            border: 1px solid #ddd;
+            border: 1px solid #ccc;
             padding: 8px;
             text-align: left;
         }
         th {
-            background-color: #1a3c6e;
+            background-color: #8b0000;
             color: white;
             font-weight: 700;
         }
@@ -114,18 +121,18 @@
             font-size: clamp(14px, 3vw, 16px);
         }
         .error {
-            color: #dc3545;
+            color: #ff4040;
         }
         .no-data {
-            color: #555;
+            color: #ffffff;
         }
         .draw-section {
             margin: 15px 0;
             text-align: center;
         }
         .draw-button {
-            background-color: #ffca28;
-            color: #1a3c6e;
+            background-color: #ff4040;
+            color: #ffffff;
             padding: 10px 20px;
             border: none;
             border-radius: 5px;
@@ -135,10 +142,10 @@
             transition: background-color 0.3s;
         }
         .draw-button:hover {
-            background-color: #e0a800;
+            background-color: #cc0000;
         }
         .view-phone-button {
-            background-color: #1a3c6e;
+            background-color: #8b0000;
             color: white;
             padding: 8px 16px;
             border: none;
@@ -150,13 +157,13 @@
             transition: background-color 0.3s;
         }
         .view-phone-button:hover {
-            background-color: #ffca28;
-            color: #1a3c6e;
+            background-color: #ff4040;
+            color: #ffffff;
         }
         .winner {
-            background-color: #f0f4fa;
+            background-color: #333333;
             padding: 15px;
-            border-left: 4px solid #1a3c6e;
+            border-left: 4px solid #8b0000;
             margin: 15px 0;
             border-radius: 5px;
             text-align: center;
@@ -165,10 +172,10 @@
             font-size: clamp(20px, 5vw, 22px);
             font-weight: 700;
             margin: 15px 0;
-            color: #1a3c6e;
+            color: #ff4040;
         }
         footer {
-            background-color: #1a3c6e;
+            background-color: #8b0000;
             color: white;
             text-align: center;
             padding: 15px;
@@ -176,8 +183,8 @@
             display: none;
         }
         .instagram-button, .share-button {
-            background-color: #ffca28;
-            color: #1a3c6e;
+            background-color: #ff4040;
+            color: #ffffff;
             padding: 10px 20px;
             border: none;
             border-radius: 5px;
@@ -189,7 +196,7 @@
             transition: background-color 0.3s;
         }
         .instagram-button:hover {
-            background-color: #e0a800;
+            background-color: #cc0000;
         }
         .share-button {
             background-color: #25d366;
@@ -217,12 +224,11 @@
 <body>
     <header id="header">
         <h1>Sub-zero Beer</h1>
-        <p>A distribuidora mais gelada de Cuiabá!</p>
-        <p>Cervejas artesanais, ambiente descontraído e promoções incríveis estão na Sub-zero</p>
-        <p>Participe do nosso sorteio e concorra a 1 caixa de litrão e 1 porção de frango a passarinho!</p>
+        <p class="highlight">Participe do nosso sorteio e concorra a 1 caixa de litrão e 1 porção de frango a passarinho!</p>
         <nav id="nav">
             <a href="/subzerobeer/index.html">Início</a>
-            <a href="/subzerobeer/sorteio-ao-vivo.html">Sorteio ao Vivo</a>
+            <a href="/subzerobeer/sorteio.html">Sorteio</a>
+            <a href="/subzerobeer/ganhadores.html">Ganhadores</a>
         </nav>
     </header>
 
@@ -303,7 +309,8 @@
                     footer.style.display = 'block';
                     nav.innerHTML = `
                         <a href="/subzerobeer/index.html">Início</a>
-                        <a href="/subzerobeer/sorteio-ao-vivo.html">Sorteio ao Vivo</a>
+                        <a href="/subzerobeer/sorteio.html">Sorteio</a>
+                        <a href="/subzerobeer/ganhadores.html">Ganhadores</a>
                     `;
                     loadPurchases();
                 } else {
