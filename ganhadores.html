@@ -16,66 +16,74 @@
         header {
             background-color: #1a3c6e;
             color: white;
-            padding: 20px;
+            padding: 15px;
             text-align: center;
             box-shadow: 0 2px 4px rgba(0,0,0,0.2);
         }
         header h1 {
             margin: 0;
-            font-size: 32px;
+            font-size: clamp(24px, 5vw, 28px);
         }
         header p {
-            margin: 10px 0;
-            font-size: 16px;
+            margin: 8px 0;
+            font-size: clamp(14px, 3vw, 15px);
+        }
+        nav {
+            margin-top: 10px;
         }
         nav a {
             color: white;
-            margin: 0 15px;
+            margin: 0 10px;
             text-decoration: none;
             font-weight: 700;
+            font-size: clamp(14px, 3vw, 16px);
             transition: color 0.3s;
         }
         nav a:hover {
             color: #ffca28;
         }
         .winners-section {
-            max-width: 800px;
-            margin: 20px auto;
-            padding: 20px;
+            max-width: 90%;
+            margin: 15px auto;
+            padding: 15px;
             background-color: white;
             border-radius: 10px;
             box-shadow: 0 4px 8px rgba(0,0,0,0.1);
             text-align: center;
         }
+        .winners-section h2 {
+            font-size: clamp(18px, 4vw, 20px);
+        }
         .winner {
-            margin: 20px 0;
-            padding: 20px;
+            margin: 15px 0;
+            padding: 15px;
             background-color: #f0f4fa;
             border-left: 4px solid #1a3c6e;
             border-radius: 5px;
         }
         .winner img {
-            max-width: 200px;
-            margin-bottom: 10px;
+            max-width: 150px;
+            margin-bottom: 8px;
             border-radius: 5px;
             box-shadow: 0 2px 4px rgba(0,0,0,0.1);
         }
         .winner input[type="text"] {
-            padding: 12px;
-            margin: 10px 0;
-            width: calc(100% - 24px);
+            padding: 10px;
+            margin: 8px 0;
+            width: calc(100% - 20px);
             border: 1px solid #ccc;
             border-radius: 5px;
-            font-size: 16px;
+            font-size: clamp(14px, 3vw, 16px);
         }
         .winner button {
             background-color: #1a3c6e;
             color: white;
-            padding: 10px 20px;
+            padding: 8px 16px;
             border: none;
             border-radius: 5px;
             cursor: pointer;
             font-weight: 700;
+            font-size: clamp(12px, 3vw, 14px);
             transition: background-color 0.3s;
         }
         .winner button:hover {
@@ -84,8 +92,8 @@
         }
         .no-data {
             color: #555;
-            font-size: 16px;
-            margin: 20px 0;
+            font-size: clamp(14px, 3vw, 16px);
+            margin: 15px 0;
         }
         footer {
             background-color: #1a3c6e;
@@ -94,7 +102,7 @@
             padding: 15px;
             box-shadow: 0 -2px 4px rgba(0,0,0,0.2);
         }
-        .instagram-button {
+        .instagram-button, .share-button {
             background-color: #ffca28;
             color: #1a3c6e;
             padding: 10px 20px;
@@ -103,8 +111,8 @@
             text-decoration: none;
             display: inline-block;
             font-weight: 700;
-            font-size: 16px;
-            margin: 5px 0;
+            font-size: clamp(14px, 3vw, 16px);
+            margin: 5px;
             transition: background-color 0.3s;
         }
         .instagram-button:hover {
@@ -112,19 +120,21 @@
         }
         .share-button {
             background-color: #25d366;
-            color: white;
-            padding: 10px 20px;
-            border: none;
-            border-radius: 5px;
-            text-decoration: none;
-            display: inline-block;
-            font-weight: 700;
-            font-size: 14px;
-            margin: 5px 0;
-            transition: background-color 0.3s;
         }
         .share-button:hover {
             background-color: #1ebe5a;
+        }
+        @media (max-width: 600px) {
+            header {
+                padding: 10px;
+            }
+            .winners-section {
+                margin: 10px;
+                padding: 10px;
+            }
+            .winner img {
+                max-width: 120px;
+            }
         }
     </style>
 </head>
@@ -132,12 +142,10 @@
     <header>
         <h1>Sub-zero Beer</h1>
         <p>A distribuidora mais gelada de Cuiabá!</p>
-        <p>Cervejas artesanais, ambiente descontraído e promoções incríveis estão na Sub-zero Beer.</p>
+        <p>Cervejas artesanais, ambiente descontraído e promoções incríveis estão na Sub-zero</p>
         <p>Participe do nosso sorteio e concorra a 1 caixa de litrão e 1 porção de frango a passarinho!</p>
         <nav>
             <a href="/subzerobeer/index.html">Início</a>
-            <a href="/subzerobeer/sorteio.html">Sorteio</a>
-            <a href="/subzerobeer/ganhadores.html">Ganhadores</a>
         </nav>
     </header>
 
