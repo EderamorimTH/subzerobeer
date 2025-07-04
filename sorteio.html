@@ -16,9 +16,17 @@
         header {
             background-color: #1a3c6e;
             color: white;
-            padding: 15px 20px;
+            padding: 20px;
             text-align: center;
             box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+        }
+        header h1 {
+            margin: 0;
+            font-size: 32px;
+        }
+        header p {
+            margin: 10px 0;
+            font-size: 16px;
         }
         nav a {
             color: white;
@@ -155,18 +163,36 @@
             color: white;
             text-align: center;
             padding: 15px;
-            display: none;
             box-shadow: 0 -2px 4px rgba(0,0,0,0.2);
+            display: none;
         }
-        .share-button {
-            background-color: #25d366;
-            color: white;
-            padding: 12px 24px;
+        .instagram-button {
+            background-color: #ffca28;
+            color: #1a3c6e;
+            padding: 10px 20px;
             border: none;
             border-radius: 5px;
             text-decoration: none;
             display: inline-block;
             font-weight: 700;
+            font-size: 16px;
+            margin: 5px 0;
+            transition: background-color 0.3s;
+        }
+        .instagram-button:hover {
+            background-color: #e0a800;
+        }
+        .share-button {
+            background-color: #25d366;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            text-decoration: none;
+            display: inline-block;
+            font-weight: 700;
+            font-size: 14px;
+            margin: 5px 0;
             transition: background-color 0.3s;
         }
         .share-button:hover {
@@ -177,6 +203,9 @@
 <body>
     <header id="header">
         <h1>Sub-zero Beer</h1>
+        <p>A distribuidora mais gelada de Cuiabá!</p>
+        <p>Cervejas artesanais, ambiente descontraído e promoções incríveis estão na Sub-zero Beer.</p>
+        <p>Participe do nosso sorteio e concorra a 1 caixa de litrão e 1 porção de frango a passarinho!</p>
         <nav id="nav">
             <a href="/subzerobeer/index.html">Início</a>
         </nav>
@@ -218,10 +247,8 @@
     </section>
 
     <footer id="contato">
-        <p>Contato:</p>
-        <p>Siga-nos no Instagram: <a href="https://instagram.com/Subzerobeercba">@Subzerobeercba</a></p>
-        <p>Para dúvidas, entre em contato via Instagram!</p>
-        <p>Compartilhe no WhatsApp: <a href="https://wa.me/?text=Participe%20do%20sorteio%20do%20Sub-zero%20Beer!%20Compre%20números%20por%20R$%2010%20e%20concorra%20a%201%20caixa%20de%20litrão%20e%201%20porção%20de%20frango%20a%20passarinho:%20https://ederamorimth.github.io/subzerobeer/index.html" class="share-button">Compartilhar</a></p>
+        <p>Contato: <a href="https://instagram.com/Subzerobeercba" class="instagram-button">@Subzerobeercba</a></p>
+        <p><a href="https://wa.me/?text=Participe%20do%20sorteio%20do%20Sub-zero%20Beer!%20Compre%20números%20por%20R$%2010%20e%20concorra%20a%201%20caixa%20de%20litrão%20e%201%20porção%20de%20frango%20a%20passarinho:%20https://ederamorimth.github.io/subzerobeer/index.html" class="share-button">Compartilhar no WhatsApp</a></p>
         <p>© 2025 Sub-zero Beer</p>
     </footer>
 
@@ -262,7 +289,7 @@
                     nav.innerHTML = `
                         <a href="/subzerobeer/index.html">Início</a>
                         <a href="/subzerobeer/sorteio.html">Sorteio</a>
-                        <a href="/subzerobeer/sorteio.html#sorteio-ao-vivo">Sorteio ao Vivo</a>
+                        <a href="/subzerobeer/ganhadores.html">Ganhadores</a>
                     `;
                     loadPurchases();
                 } else {
