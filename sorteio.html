@@ -4,64 +4,76 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Sorteio - Sub-zero Beer</title>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
     <style>
         body {
-            font-family: Arial, sans-serif;
+            font-family: 'Roboto', sans-serif;
             margin: 0;
             padding: 0;
-            background-color: #f4f4f4;
+            background-color: #f5f5f5;
             color: #333;
         }
         header {
-            background-color: #007bff;
+            background-color: #1a3c6e;
             color: white;
-            padding: 10px 20px;
+            padding: 15px 20px;
             text-align: center;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
         }
         nav a {
             color: white;
             margin: 0 15px;
             text-decoration: none;
+            font-weight: 700;
+            transition: color 0.3s;
+        }
+        nav a:hover {
+            color: #ffca28;
         }
         .password-container {
             max-width: 400px;
             margin: 50px auto;
             padding: 20px;
             background-color: white;
-            border-radius: 5px;
-            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
             text-align: center;
         }
         .password-container input {
-            padding: 10px;
+            padding: 12px;
             margin: 10px 0;
             width: 80%;
             border: 1px solid #ccc;
             border-radius: 5px;
+            font-size: 16px;
         }
         .password-container button {
-            background-color: #007bff;
+            background-color: #1a3c6e;
             color: white;
-            padding: 10px 20px;
+            padding: 12px 24px;
             border: none;
             border-radius: 5px;
             cursor: pointer;
+            font-weight: 700;
+            transition: background-color 0.3s;
         }
         .password-container button:hover {
-            background-color: #0056b3;
+            background-color: #ffca28;
+            color: #1a3c6e;
         }
         .password-error {
-            color: red;
+            color: #dc3545;
             margin-top: 10px;
             display: none;
+            font-size: 14px;
         }
         .content {
             max-width: 1000px;
             margin: 20px auto;
             padding: 20px;
             background-color: white;
-            border-radius: 5px;
-            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
             display: none;
         }
         table {
@@ -71,70 +83,80 @@
         }
         th, td {
             border: 1px solid #ddd;
-            padding: 8px;
+            padding: 12px;
             text-align: left;
         }
         th {
-            background-color: #007bff;
+            background-color: #1a3c6e;
             color: white;
+            font-weight: 700;
         }
         .error {
-            color: red;
+            color: #dc3545;
             text-align: center;
             margin: 20px 0;
+            font-size: 16px;
         }
         .no-data {
             text-align: center;
             color: #555;
             margin: 20px 0;
+            font-size: 16px;
         }
         .draw-section {
             margin: 20px 0;
             text-align: center;
         }
         .draw-button {
-            background-color: #ffc107;
-            color: black;
+            background-color: #ffca28;
+            color: #1a3c6e;
             padding: 12px 24px;
             border: none;
             border-radius: 5px;
             cursor: pointer;
-            font-weight: bold;
+            font-weight: 700;
+            font-size: 16px;
+            transition: background-color 0.3s;
         }
         .draw-button:hover {
             background-color: #e0a800;
         }
         .view-phone-button {
-            background-color: #007bff;
+            background-color: #1a3c6e;
             color: white;
             padding: 10px 20px;
             border: none;
             border-radius: 5px;
             cursor: pointer;
             margin-top: 10px;
+            font-weight: 700;
+            transition: background-color 0.3s;
         }
         .view-phone-button:hover {
-            background-color: #0056b3;
+            background-color: #ffca28;
+            color: #1a3c6e;
         }
         .winner {
-            background-color: #e7f3ff;
+            background-color: #f0f4fa;
             padding: 20px;
-            border-left: 4px solid #007bff;
+            border-left: 4px solid #1a3c6e;
             margin: 20px 0;
             text-align: center;
+            border-radius: 5px;
         }
         .countdown {
             font-size: 24px;
-            font-weight: bold;
+            font-weight: 700;
             margin: 20px 0;
-            color: #007bff;
+            color: #1a3c6e;
         }
         footer {
-            background-color: #333;
+            background-color: #1a3c6e;
             color: white;
             text-align: center;
-            padding: 10px;
+            padding: 15px;
             display: none;
+            box-shadow: 0 -2px 4px rgba(0,0,0,0.2);
         }
         .share-button {
             background-color: #25d366;
@@ -144,7 +166,8 @@
             border-radius: 5px;
             text-decoration: none;
             display: inline-block;
-            font-weight: bold;
+            font-weight: 700;
+            transition: background-color 0.3s;
         }
         .share-button:hover {
             background-color: #1ebe5a;
@@ -185,7 +208,7 @@
             <tbody id="purchases-body"></tbody>
         </table>
 
-        <div class="draw-section">
+        <div class="draw-section" id="sorteio-ao-vivo">
             <h3>Sorteio ao Vivo</h3>
             <p>Clique no botão abaixo para sortear um número ao vivo.</p>
             <button class="draw-button" onclick="startDraw()">Sortear Agora</button>
@@ -198,6 +221,7 @@
         <p>Contato:</p>
         <p>Siga-nos no Instagram: <a href="https://instagram.com/Subzerobeercba">@Subzerobeercba</a></p>
         <p>Para dúvidas, entre em contato via Instagram!</p>
+        <p>Compartilhe no WhatsApp: <a href="https://wa.me/?text=Participe%20do%20sorteio%20do%20Sub-zero%20Beer!%20Compre%20números%20por%20R$%2010%20e%20concorra%20a%201%20caixa%20de%20litrão%20e%201%20porção%20de%20frango%20a%20passarinho:%20https://ederamorimth.github.io/subzerobeer/index.html" class="share-button">Compartilhar</a></p>
         <p>© 2025 Sub-zero Beer</p>
     </footer>
 
