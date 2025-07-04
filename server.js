@@ -1,3 +1,4 @@
+```javascript
 const express = require('express');
 const mongoose = require('mongoose');
 const cors = require('cors');
@@ -168,13 +169,14 @@ app.get('/get_winners', async (req, res) => {
 });
 
 app.post('/upload_winner_photo', async (req, res) => {
-    const { winnerId, photoUrl } = req.body;
-    console.log(`[${new Date().toISOString()}] Recebendo solicitação para atualizar foto do ganhador:`, { winnerId, photoUrl });
+    const { winnerId, winnerNumber } = req.body;
+    console.log(`[${new Date().toISOString()}] Recebendo solicitação para atualizar foto do ganhador:`, { winnerId, winnerNumber });
     try {
-        if (!winnerId || !photoUrl) {
-            console.error(`[${new Date().toISOString()}] Dados incompletos para atualizar foto`);
-            return res.status(400).json({ error: 'Dados incompletos' });
+        if (!winnerId || !winnerNumber || isNaN(winnerNumber) || winnerNumber < 1) {
+            console.error(`[${new Date().toISOString()}] Dados incompletos ou inválidos para atualizar foto`);
+            return res.status(400).json({ error: 'Dados incompletos ou inválidos (winnerId ou winnerNumber)' });
         }
+        const photoUrl = `https://raw.githubusercontent.com/ederamorimth/subzerobeer/main/images/ganhador${winnerNumber}.png`;
         const result = await Winner.updateOne(
             { _id: winnerId },
             { $set: { photoUrl } }
@@ -183,7 +185,7 @@ app.post('/upload_winner_photo', async (req, res) => {
             console.error(`[${new Date().toISOString()}] Ganhador não encontrado: ${winnerId}`);
             return res.status(404).json({ error: 'Ganhador não encontrado' });
         }
-        console.log(`[${new Date().toISOString()}] Foto atualizada para ganhador: ${winnerId}`);
+        console.log(`[${new Date().toISOString()}] Foto atualizada para ganhador: ${winnerId}, URL: ${photoUrl}`);
         res.json({ success: true });
     } catch (error) {
         console.error(`[${new Date().toISOString()}] Erro ao atualizar foto:`, error);
@@ -394,7 +396,19 @@ app.post('/webhook', async (req, res) => {
     }
 });
 
+app.get('/purchases', async (req, res) => {
+    try {
+        const purchases = await Purchase.find().sort({ purchaseDate: -1 });
+        console.log(`[${new Date().toISOString()}] Retornando ${purchases.length} compras`);
+        res.json(purchases);
+    } catch (error) {
+        console.error(`[${new Date().toISOString()}] Erro ao buscar compras:`, error);
+        res.status(500).json({ error: 'Erro ao buscar compras', details: error.message });
+    }
+});
+
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
     console.log(`Servidor rodando na porta ${PORT}`);
 });
+```
