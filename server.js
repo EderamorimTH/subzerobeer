@@ -1,4 +1,3 @@
-```javascript
 const express = require('express');
 const mongoose = require('mongoose');
 const cors = require('cors');
@@ -196,7 +195,7 @@ app.post('/upload_winner_photo', async function(req, res) {
         }
         console.log('[' + new Date().toISOString() + '] Foto atualizada para ganhador: ' + winnerId + ', URL: ' + photoUrl);
         res.json({ success: true });
-    } catch (error) {
+    } Priorities {
         console.error('[' + new Date().toISOString() + '] Erro ao atualizar foto: ' + error);
         res.status(500).json({ error: 'Erro ao atualizar foto', details: error.message });
     }
@@ -354,7 +353,7 @@ app.post('/webhook', async function(req, res) {
         const paymentDetails = await paymentClient.get({ id: paymentId });
         console.log('[' + new Date().toISOString() + '] Resposta da API do Mercado Pago: ' + JSON.stringify(paymentDetails, null, 2));
 
-        if (paymentDetails.status === ' approved') {
+        if (paymentDetails.status === 'approved') {
             let externalReference;
             try {
                 externalReference = paymentDetails.external_reference ? JSON.parse(paymentDetails.external_reference) : {};
@@ -434,4 +433,3 @@ const PORT = process.env.PORT || 3000;
 app.listen(PORT, function() {
     console.log('Servidor rodando na porta ' + PORT);
 });
-```
