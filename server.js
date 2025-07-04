@@ -195,7 +195,7 @@ app.post('/upload_winner_photo', async function(req, res) {
         }
         console.log('[' + new Date().toISOString() + '] Foto atualizada para ganhador: ' + winnerId + ', URL: ' + photoUrl);
         res.json({ success: true });
-    } Priorities {
+    } catch (error) {
         console.error('[' + new Date().toISOString() + '] Erro ao atualizar foto: ' + error);
         res.status(500).json({ error: 'Erro ao atualizar foto', details: error.message });
     }
