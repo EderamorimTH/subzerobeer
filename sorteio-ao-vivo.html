@@ -14,6 +14,7 @@
             background: linear-gradient(135deg, #1a3c6e, #ffca28);
             min-height: 100vh;
             display: flex;
+            flex-direction: column;
             justify-content: center;
             align-items: center;
             overflow: hidden;
@@ -28,45 +29,18 @@
             opacity: 0.1;
             z-index: 0;
         }
-        .container {
-            background: rgba(255, 255, 255, 0.95);
-            padding: 20px;
-            border-radius: 15px;
-            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.1);
-            text-align: center;
-            width: 90%;
-            max-width: 600px;
-            animation: bounceIn 1s ease-out;
-            position: relative;
+        h1 {
+            color: #ffffff;
+            font-size: clamp(36px, 8vw, 48px);
+            font-weight: 700;
+            text-shadow: 2px 2px 4px rgba(26, 60, 110, 0.5);
+            margin-bottom: 20px;
             z-index: 1;
-        }
-        @keyframes bounceIn {
-            0% { transform: scale(0.9); opacity: 0; }
-            50% { transform: scale(1.05); }
-            100% { transform: scale(1); opacity: 1; }
-        }
-        .container h1 {
-            color: #1a3c6e;
-            font-size: clamp(24px, 5vw, 28px);
-            margin-bottom: 15px;
-            text-shadow: 2px 2px 4px rgba(26, 60, 110, 0.3);
-            position: relative;
-        }
-        .container h1::after {
-            content: '🎉';
-            position: absolute;
-            font-size: 0.6em;
-            top: -10px;
-            left: 50%;
-            transform: translateX(-50%);
-            animation: bounce 2s infinite;
-        }
-        @keyframes bounce {
-            0%, 100% { transform: translateY(0); }
-            50% { transform: translateY(-10px); }
+            text-align: center;
         }
         .draw-section {
             margin: 15px 0;
+            z-index: 1;
         }
         .draw-button {
             background: linear-gradient(90deg, #1a3c6e, #ffca28);
@@ -108,6 +82,7 @@
             font-weight: 700;
             animation: pulseGlow 1.2s infinite alternate;
             text-shadow: 0 0 10px rgba(255, 202, 40, 0.7), 0 0 20px rgba(255, 202, 40, 0.4);
+            z-index: 1;
         }
         @keyframes pulseGlow {
             0% { transform: scale(1); opacity: 0.9; }
@@ -121,6 +96,7 @@
             margin: 15px 0;
             text-align: center;
             animation: slideUp 0.5s ease-out;
+            z-index: 1;
         }
         @keyframes slideUp {
             from { transform: translateY(20px); opacity: 0; }
@@ -150,7 +126,7 @@
         .snowflake {
             position: absolute;
             color: #fff;
-            font-size: 1em;
+            font-size: 1.5em;
             font-family: Arial, sans-serif;
             text-shadow: 0 0 5px rgba(255, 255, 255, 0.8);
             pointer-events: none;
@@ -161,9 +137,8 @@
             100% { top: 100%; opacity: 0; }
         }
         @media (max-width: 600px) {
-            .container {
-                margin: 10px;
-                padding: 15px;
+            h1 {
+                font-size: clamp(28px, 6vw, 36px);
             }
             .draw-button {
                 padding: 10px 20px;
@@ -176,32 +151,28 @@
     </style>
 </head>
 <body>
-    <div class="container">
-        <h1>Sorteio ao Vivo</h1>
-        <div class="draw-section">
-            <button class="draw-button" onclick="startDraw()">Sortear Agora</button>
-            <div id="countdown" class="countdown" style="display: none;">10</div>
-            <div id="winner-message" class="winner" style="display: none;"></div>
-        </div>
+    <h1>Sub-zero beer</h1>
+    <div class="draw-section">
+        <button class="draw-button" onclick="startDraw()">Sortear Agora</button>
+        <div id="countdown" class="countdown" style="display: none;">10</div>
+        <div id="winner-message" class="winner" style="display: none;"></div>
     </div>
 
     <script>
         let purchasesData = [];
         let currentWinner = null;
 
-        // Função para criar flocos de neve
         function createSnowflake() {
             const snowflake = document.createElement('div');
             snowflake.className = 'snowflake';
             snowflake.innerHTML = '❄️';
             snowflake.style.left = Math.random() * 100 + 'vw';
-            snowflake.style.fontSize = Math.random() * 10 + 10 + 'px';
+            snowflake.style.fontSize = Math.random() * 25 + 15 + 'px';
             snowflake.style.animation = `fall ${Math.random() * 5 + 5}s linear`;
             document.body.appendChild(snowflake);
             setTimeout(() => snowflake.remove(), 10000);
         }
 
-        // Gerar flocos de neve continuamente
         setInterval(createSnowflake, 200);
 
         async function loadPurchases() {
