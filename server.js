@@ -13,8 +13,8 @@ mongoose.set('strictQuery', false);
 mongoose.connect(process.env.MONGODB_URI, {
     useNewUrlParser: true,
     useUnifiedTopology: true
-}).then(function() { console.log('Conectado ao MongoDB'); })
-  .catch(function(err) { console.error('Erro ao conectar ao MongoDB: ' + err); });
+}).then(() => console.log('[' + new Date().toISOString() + '] Conectado ao MongoDB'))
+  .catch(err => console.error('[' + new Date().toISOString() + '] Erro ao conectar ao MongoDB: ' + err));
 
 const compradorSchema = new mongoose.Schema({
     number: { type: String, required: true, unique: true },
@@ -51,12 +51,10 @@ async function initializeNumbers() {
     try {
         const count = await Comprador.countDocuments();
         if (count === 0) {
-            const numbers = Array.from({ length: 150 }, function(_, i) {
-                return {
-                    number: String(i + 1).padStart(3, '0'),
-                    status: 'disponível',
-                };
-            });
+            const numbers = Array.from({ length: 150 }, (_, i) => ({
+                number: String(i + 1).padStart(3, '0'),
+                status: 'disponível',
+            }));
             await Comprador.insertMany(numbers);
             console.log('[' + new Date().toISOString() + '] Números de 001 a 150 inicializados na coleção compradores.');
         } else {
@@ -77,7 +75,7 @@ async function clearExpiredReservations() {
             { $set: { status: 'disponível', userId: null, timestamp: null } }
         );
         if (result.modifiedCount > 0) {
-            console.log('[' + new Date().toISOString() + '] Liberadas ' + result.modifiedCount + ' reservas expiradas. Números afetados: ' + expired.map(function(n) { return n.number; }).join(', '));
+            console.log('[' + new Date().toISOString() + '] Liberadas ' + result.modifiedCount + ' reservas expiradas. Números afetados: ' + expired.map(n => n.number).join(', '));
         }
     } catch (error) {
         console.error('[' + new Date().toISOString() + '] Erro ao liberar reservas expiradas: ' + error);
@@ -86,19 +84,19 @@ async function clearExpiredReservations() {
 setInterval(clearExpiredReservations, 5 * 60 * 1000);
 clearExpiredReservations();
 
-app.get('/available_numbers', async function(req, res) {
+app.get('/available_numbers', async (req, res) => {
     try {
         await clearExpiredReservations();
-        const numbers = await Comprador.find().select('number status').sort({ number: 1 });
-        console.log('[' + new Date().toISOString() + '] Números retornados: ' + numbers.length + ', números: ' + numbers.map(function(n) { return n.number + '(' + n.status + ')'; }).join(', '));
-        res.json(numbers.map(function(n) { return { number: n.number, status: n.status }; }));
+        const numbers = await Comprador.find().select('number status');
+        console.log('[' + new Date().toISOString() + '] Números retornados: ' + numbers.length + ', disponíveis: ' + numbers.filter(n => n.status === 'disponível').length);
+        res.json(numbers.map(n => ({ number: n.number, status: n.status.toLowerCase() })));
     } catch (error) {
-        console.error('[' + new Date().toISOString() + '] Erro ao buscar números: ' + error);
-        res.status(500).json({ error: 'Erro ao buscar números', details: error.message });
+        console.error('[' + new Date().toISOString() + '] Erro ao buscar números disponíveis: ' + error);
+        res.status(500).json({ error: 'Erro ao buscar números disponíveis', details: error.message });
     }
 });
 
-app.get('/progress', async function(req, res) {
+app.get('/progress', async (req, res) => {
     try {
         const total = await Comprador.countDocuments();
         const sold = await Comprador.countDocuments({ status: 'vendido' });
@@ -111,7 +109,7 @@ app.get('/progress', async function(req, res) {
     }
 });
 
-app.get('/health', async function(req, res) {
+app.get('/health', async (req, res) => {
     try {
         await mongoose.connection.db.admin().ping();
         const count = await Comprador.countDocuments();
@@ -122,7 +120,7 @@ app.get('/health', async function(req, res) {
     }
 });
 
-app.get('/get-page-password', function(req, res) {
+app.get('/get-page-password', (req, res) => {
     const requestId = Math.random().toString(36).substr(2, 9);
     console.log('[' + new Date().toISOString() + '] [' + requestId + '] Solicitação para obter hash da senha');
     const password = process.env.PAGE_PASSWORD;
@@ -134,13 +132,8 @@ app.get('/get-page-password', function(req, res) {
     res.json({ passwordHash: hash });
 });
 
-app.post('/save_winner', async function(req, res) {
-    const body = req.body;
-    const buyerName = body.buyerName;
-    const buyerPhone = body.buyerPhone;
-    const winningNumber = body.winningNumber;
-    const numbers = body.numbers;
-    const drawDate = body.drawDate;
+app.post('/save_winner', async (req, res) => {
+    const { buyerName, buyerPhone, winningNumber, numbers, drawDate } = req.body;
     console.log('[' + new Date().toISOString() + '] Recebendo solicitação para salvar ganhador: buyerName=' + buyerName + ', winningNumber=' + winningNumber + ', numbers=' + JSON.stringify(numbers) + ', drawDate=' + drawDate);
     try {
         if (!buyerName || !buyerPhone || !winningNumber || !numbers || !drawDate) {
@@ -148,10 +141,10 @@ app.post('/save_winner', async function(req, res) {
             return res.status(400).json({ error: 'Dados incompletos' });
         }
         const winner = new Winner({
-            buyerName: buyerName,
-            buyerPhone: buyerPhone,
-            winningNumber: winningNumber,
-            numbers: numbers,
+            buyerName,
+            buyerPhone,
+            winningNumber,
+            numbers,
             drawDate: new Date(drawDate)
         });
         await winner.save();
@@ -163,7 +156,7 @@ app.post('/save_winner', async function(req, res) {
     }
 });
 
-app.get('/get_winners', async function(req, res) {
+app.get('/winners', async (req, res) => {
     try {
         const winners = await Winner.find().sort({ drawDate: -1 });
         console.log('[' + new Date().toISOString() + '] Retornando ' + winners.length + ' ganhadores');
@@ -174,10 +167,8 @@ app.get('/get_winners', async function(req, res) {
     }
 });
 
-app.post('/upload_winner_photo', async function(req, res) {
-    const body = req.body;
-    const winnerId = body.winnerId;
-    const winnerNumber = body.winnerNumber;
+app.post('/upload_winner_photo', async (req, res) => {
+    const { winnerId, winnerNumber } = req.body;
     console.log('[' + new Date().toISOString() + '] Recebendo solicitação para atualizar foto do ganhador: winnerId=' + winnerId + ', winnerNumber=' + winnerNumber);
     try {
         if (!winnerId || !winnerNumber || isNaN(winnerNumber) || winnerNumber < 1) {
@@ -187,7 +178,7 @@ app.post('/upload_winner_photo', async function(req, res) {
         const photoUrl = 'https://raw.githubusercontent.com/ederamorimth/subzerobeer/main/images/ganhador' + winnerNumber + '.png';
         const result = await Winner.updateOne(
             { _id: winnerId },
-            { $set: { photoUrl: photoUrl } }
+            { $set: { photoUrl } }
         );
         if (result.modifiedCount === 0) {
             console.error('[' + new Date().toISOString() + '] Ganhador não encontrado: ' + winnerId);
@@ -201,10 +192,8 @@ app.post('/upload_winner_photo', async function(req, res) {
     }
 });
 
-app.post('/reserve_numbers', async function(req, res) {
-    const body = req.body;
-    const numbers = body.numbers;
-    const userId = body.userId;
+app.post('/reserve_numbers', async (req, res) => {
+    const { numbers, userId } = req.body;
     console.log('[' + new Date().toISOString() + '] Recebendo solicitação para reservar números: ' + numbers + ', userId: ' + userId);
     try {
         if (!numbers || !Array.isArray(numbers) || numbers.length === 0 || !userId) {
@@ -223,7 +212,7 @@ app.post('/reserve_numbers', async function(req, res) {
             }
             const result = await Comprador.updateMany(
                 { number: { $in: numbers }, status: 'disponível' },
-                { $set: { status: 'reservado', userId: userId, timestamp: new Date() } },
+                { $set: { status: 'reservado', userId, timestamp: new Date() } },
                 { session }
             );
             await session.commitTransaction();
@@ -241,16 +230,14 @@ app.post('/reserve_numbers', async function(req, res) {
     }
 });
 
-app.post('/check_reservation', async function(req, res) {
-    const body = req.body;
-    const numbers = body.numbers;
-    const userId = body.userId;
+app.post('/check_reservation', async (req, res) => {
+    const { numbers, userId } = req.body;
     try {
         const fiveMinutesAgo = new Date(Date.now() - 5 * 60 * 1000);
         const validNumbers = await Comprador.find({
             number: { $in: numbers },
             status: 'reservado',
-            userId: userId,
+            userId,
             timestamp: { $gte: fiveMinutesAgo }
         });
         console.log('[' + new Date().toISOString() + '] Verificação de reserva para números ' + numbers.join(', ') + ', userId: ' + userId + ', válida: ' + (validNumbers.length === numbers.length));
@@ -261,13 +248,8 @@ app.post('/check_reservation', async function(req, res) {
     }
 });
 
-app.post('/create_preference', async function(req, res) {
-    const body = req.body;
-    const numbers = body.numbers;
-    const userId = body.userId;
-    const buyerName = body.buyerName;
-    const buyerPhone = body.buyerPhone;
-    const quantity = body.quantity;
+app.post('/create_preference', async (req, res) => {
+    const { numbers, userId, buyerName, buyerPhone, quantity } = req.body;
     console.log('[' + new Date().toISOString() + '] Recebendo solicitação para criar preferência: numbers=' + JSON.stringify(numbers) + ', userId=' + userId + ', buyerName=' + buyerName + ', buyerPhone=' + buyerPhone + ', quantity=' + quantity);
     try {
         if (!numbers || !Array.isArray(numbers) || numbers.length === 0 || !userId || !buyerName || !buyerPhone || !quantity) {
@@ -282,7 +264,7 @@ app.post('/create_preference', async function(req, res) {
             const validNumbers = await Comprador.find({
                 number: { $in: numbers },
                 status: 'reservado',
-                userId: userId,
+                userId,
                 timestamp: { $gte: fiveMinutesAgo }
             }).session(session);
             if (validNumbers.length !== numbers.length) {
@@ -296,30 +278,28 @@ app.post('/create_preference', async function(req, res) {
             const preference = new Preference(client);
             const response = await preference.create({
                 body: {
-                    items: numbers.map(function(number) {
-                        return {
-                            title: 'Número ' + number,
-                            quantity: 1,
-                            unit_price: 10,
-                            currency_id: 'BRL'
-                        };
-                    }),
+                    items: numbers.map(number => ({
+                        title: 'Número ' + number,
+                        quantity: 1,
+                        unit_price: 10,
+                        currency_id: 'BRL'
+                    })),
                     back_urls: {
                         success: 'https://ederamorimth.github.io/subzerobeer/index.html?status=approved',
                         failure: 'https://ederamorimth.github.io/subzerobeer/index.html?status=rejected',
                         pending: 'https://ederamorimth.github.io/subzerobeer/index.html?status=pending'
                     },
                     auto_return: 'approved',
-                    external_reference: JSON.stringify({ numbers: numbers, userId: userId, buyerName: buyerName, buyerPhone: buyerPhone }),
+                    external_reference: JSON.stringify({ numbers, userId, buyerName, buyerPhone }),
                     notification_url: 'https://subzerobeer.onrender.com/webhook'
                 }
             });
             console.log('[' + new Date().toISOString() + '] Preferência criada: preference_id=' + response.id + ', init_point=' + response.init_point);
 
             const purchase = new Purchase({
-                buyerName: buyerName,
-                buyerPhone: buyerPhone,
-                numbers: numbers,
+                buyerName,
+                buyerPhone,
+                numbers,
                 preference_id: response.id
             });
             await purchase.save({ session });
@@ -338,7 +318,7 @@ app.post('/create_preference', async function(req, res) {
     }
 });
 
-app.post('/webhook', async function(req, res) {
+app.post('/webhook', async (req, res) => {
     const payment = req.body;
     console.log('[' + new Date().toISOString() + '] Webhook recebido: ' + JSON.stringify(payment, null, 2));
     try {
@@ -362,11 +342,8 @@ app.post('/webhook', async function(req, res) {
                 return res.status(400).json({ error: 'Invalid external_reference', details: e.message });
             }
 
-            const numbers = externalReference.numbers || [];
-            const userId = externalReference.userId;
-            const buyerName = externalReference.buyerName;
-            const buyerPhone = externalReference.buyerPhone;
-            if (!numbers.length || !userId) {
+            const { numbers, userId, buyerName, buyerPhone } = externalReference;
+            if (!numbers || !numbers.length || !userId) {
                 console.error('[' + new Date().toISOString() + '] Dados incompletos em external_reference: ' + JSON.stringify(externalReference));
                 return res.status(400).json({ error: 'Missing numbers or userId' });
             }
@@ -377,7 +354,7 @@ app.post('/webhook', async function(req, res) {
                 const validNumbers = await Comprador.find({
                     number: { $in: numbers },
                     status: 'reservado',
-                    userId: userId,
+                    userId,
                 }).session(session);
                 if (validNumbers.length !== numbers.length) {
                     await session.abortTransaction();
@@ -387,7 +364,7 @@ app.post('/webhook', async function(req, res) {
                 }
 
                 const compradorResult = await Comprador.updateMany(
-                    { number: { $in: numbers }, status: 'reservado', userId: userId },
+                    { number: { $in: numbers }, status: 'reservado', userId },
                     { $set: { status: 'vendido', userId: null, timestamp: null } },
                     { session }
                 );
@@ -395,7 +372,7 @@ app.post('/webhook', async function(req, res) {
 
                 const purchaseResult = await Purchase.updateMany(
                     { numbers: { $in: numbers }, status: 'pending' },
-                    { $set: { status: 'approved', paymentId: paymentId, date_approved: new Date() } },
+                    { $set: { status: 'approved', paymentId, date_approved: new Date() } },
                     { session }
                 );
                 console.log('[' + new Date().toISOString() + '] Compras atualizadas: ' + purchaseResult.modifiedCount);
@@ -418,7 +395,7 @@ app.post('/webhook', async function(req, res) {
     }
 });
 
-app.get('/purchases', async function(req, res) {
+app.get('/purchases', async (req, res) => {
     try {
         const purchases = await Purchase.find().sort({ purchaseDate: -1 });
         console.log('[' + new Date().toISOString() + '] Retornando ' + purchases.length + ' compras');
@@ -430,6 +407,6 @@ app.get('/purchases', async function(req, res) {
 });
 
 const PORT = process.env.PORT || 3000;
-app.listen(PORT, function() {
-    console.log('Servidor rodando na porta ' + PORT);
+app.listen(PORT, () => {
+    console.log('[' + new Date().toISOString() + '] Servidor rodando na porta ' + PORT);
 });
