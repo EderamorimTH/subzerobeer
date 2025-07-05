@@ -1,3 +1,4 @@
+require('dotenv').config();
 const express = require('express');
 const mongoose = require('mongoose');
 const { MercadoPagoConfig, Preference, Payment } = require('mercadopago');
@@ -22,7 +23,7 @@ async function connectToMongoDB() {
         await mongoose.connect(process.env.MONGODB_URI || 'mongodb://localhost/subzerobeer', {
             useNewUrlParser: true,
             useUnifiedTopology: true,
-            serverSelectionTimeoutMS: 30000, // Aumenta o timeout para 30s
+            serverSelectionTimeoutMS: 30000,
             connectTimeoutMS: 30000,
             retryWrites: true,
             retryReads: true
@@ -30,7 +31,7 @@ async function connectToMongoDB() {
         console.log('[' + new Date().toISOString() + '] Conectado ao MongoDB');
     } catch (err) {
         console.error('[' + new Date().toISOString() + '] Erro ao conectar ao MongoDB:', err.message);
-        process.exit(1); // Encerra o processo se a conexão falhar
+        process.exit(1);
     }
 }
 
