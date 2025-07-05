@@ -28,12 +28,20 @@
             font-family: 'Bungee', sans-serif;
             font-size: clamp(36px, 8vw, 48px);
             margin: 0;
-            text-shadow: 0 0 10px rgba(255, 255, 255, 0.8), 0 0 20px rgba(255, 0, 0, 0.7);
-            animation: neonGlow 1.5s ease-in-out infinite alternate;
+            text-shadow: 0 0 5px rgba(255, 255, 255, 0.6), 0 0 10px rgba(255, 0, 0, 0.5);
+            animation: pulseTitle 2s ease-in-out infinite;
         }
-        @keyframes neonGlow {
-            0% { text-shadow: 0 0 10px rgba(255, 255, 255, 0.8), 0 0 20px rgba(255, 0, 0, 0.7); }
-            100% { text-shadow: 0 0 20px rgba(255, 255, 255, 1), 0 0 30px rgba(255, 0, 0, 1); }
+        @keyframes pulseTitle {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
+        }
+        .sorteio-text {
+            font-family: 'Roboto', sans-serif;
+            font-size: clamp(14px, 3vw, 16px);
+            font-weight: 700;
+            margin: 10px 0;
+            text-shadow: 0 0 3px rgba(0, 0, 0, 0.3);
         }
         nav {
             margin-top: 10px;
@@ -195,18 +203,18 @@
             margin: 5px;
             transition: background-color 0.3s;
         }
-        .instagram-button:hover {
-            background-color: #cc0000;
-        }
-        .share-button {
-            background-color: #ff0000;
-        }
-        .share-button:hover {
+        .instagram-button:hover, .share-button:hover {
             background-color: #cc0000;
         }
         @media (max-width: 600px) {
             header {
                 padding: 10px;
+            }
+            header h1 {
+                font-size: clamp(28px, 6vw, 36px);
+            }
+            .sorteio-text {
+                font-size: clamp(12px, 2.5vw, 14px);
             }
             .hero {
                 padding: 20px 10px;
@@ -225,6 +233,7 @@
 <body>
     <header>
         <h1>SUB-ZERO BEER</h1>
+        <p class="sorteio-text">Participe do nosso sorteio e concorra a uma caixa de cerveja litrão a sua escolha e uma porção de frango a passarinho</p>
         <nav>
             <a href="/subzerobeer/index.html">INÍCIO</a>
             <a href="/subzerobeer/sorteio.html">SORTEIO</a>
@@ -276,9 +285,9 @@
     </section>
 
     <footer>
-        <p>Contato: <a href="https://instagram.com/Subzerobeercba" class="instagram-button">@Subzerobeercba</a></p>
-        <p><a href="https://wa.me/?text=Participe%20do%20sorteio%20do%20Sub-zero%20Beer!%20Compre%20números%20por%20R$%2010%20e%20concorra%20a%201%20caixa%20de%20litrão%20e%201%20porção%20de%20frango%20a%20passarinho:%20https://ederamorimth.github.io/subzerobeer/index.html" class="share-button">Compartilhar no WhatsApp</a></p>
-        <p>© 2025 Sub-zero Beer</p>
+        <p>Contato: <a href="https://instagram.com/Subzerobeercba" class="instagram-button">@SUBZEROBEERCBA</a></p>
+        <p><a href="https://wa.me/?text=Participe%20do%20sorteio%20do%20Sub-zero%20Beer!%20Compre%20números%20por%20R$%2010%20e%20concorra%20a%201%20caixa%20de%20litrão%20e%201%20porção%20de%20frango%20a%20passarinho:%20https://ederamorimth.github.io/subzerobeer/index.html" class="share-button">COMPARTILHAR NO WHATSAPP</a></p>
+        <p>© 2025 SUB-ZERO BEER</p>
     </footer>
 
     <script src="https://sdk.mercadopago.com/js/v2"></script>
