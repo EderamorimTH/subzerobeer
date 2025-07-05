@@ -13,29 +13,20 @@
             padding: 0;
             background-color: #ff0000;
             min-height: 100vh;
-            overflow: hidden; /* Impede rolagem causada por flocos de neve ou confetes */
-            position: relative;
-        }
-        h1, h2, h3 {
-            text-transform: uppercase;
-        }
-        .draw-section {
-            position: fixed; /* Fixa o conteúdo central para evitar deslocamentos */
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
             display: flex;
             flex-direction: column;
             justify-content: center;
             align-items: center;
-            text-align: center;
-            z-index: 10;
+            position: relative;
+            overflow-x: hidden;
+        }
+        h1, h2, h3 {
+            text-transform: uppercase;
         }
         .title {
             font-family: 'Bungee', sans-serif;
             font-size: clamp(36px, 8vw, 48px);
             color: white;
-            -webkit-text-stroke: 1px #000000; /* Contorno fino em cada letra */
             text-shadow: 0 0 5px rgba(255, 255, 255, 0.6), 0 0 10px rgba(255, 0, 0, 0.5);
             animation: pulseTitle 2s ease-in-out infinite;
             text-align: center;
@@ -43,8 +34,15 @@
         }
         @keyframes pulseTitle {
             0% { transform: scale(1); }
-            50% { transform: scale(1.03); } /* Reduzido para suavizar o movimento */
+            50% { transform: scale(1.05); }
             100% { transform: scale(1); }
+        }
+        .draw-section {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
         }
         .draw-button {
             background-color: #ff0000;
@@ -148,12 +146,8 @@
     <script>
         let purchasesData = [];
         let currentWinner = null;
-        let activeSnowflakes = 0;
-        const maxSnowflakes = 20; // Limite de flocos de neve ativos
 
         function createSnowflake() {
-            if (activeSnowflakes >= maxSnowflakes) return; // Evita excesso de flocos
-            activeSnowflakes++;
             const snowflake = document.createElement('div');
             snowflake.className = 'snowflake';
             snowflake.innerHTML = '❄️';
@@ -161,10 +155,7 @@
             snowflake.style.fontSize = Math.random() * 25 + 15 + 'px';
             snowflake.style.animation = `fall ${Math.random() * 5 + 5}s linear`;
             document.body.appendChild(snowflake);
-            setTimeout(() => {
-                snowflake.remove();
-                activeSnowflakes--;
-            }, 10000);
+            setTimeout(() => snowflake.remove(), 10000);
         }
 
         setInterval(createSnowflake, 200);
