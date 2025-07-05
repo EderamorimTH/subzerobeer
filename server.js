@@ -396,18 +396,4 @@ app.post('/webhook', async (req, res) => {
     }
 });
 
-app.get('/purchases', async (req, res) => {
-    try {
-        const purchases = await Purchase.find().sort({ purchaseDate: -1 });
-        console.log('[' + new Date().toISOString() + '] Retornando ' + purchases.length + ' compras');
-        res.json(purchases);
-    } catch (error) {
-        console.error('[' + new Date().toISOString() + '] Erro ao buscar compras: ' + error);
-        res.status(500).json({ error: 'Erro ao buscar compras', details: error.message });
-    }
-});
-
-const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => {
-    console.log('[' + new Date().toISOString() + '] Servidor rodando na porta ' + PORT);
-});
+app.get('/purchases', async (req, res) =>
