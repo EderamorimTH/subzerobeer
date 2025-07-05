@@ -10,11 +10,11 @@
             font-family: 'Roboto', sans-serif;
             margin: 0;
             padding: 0;
-            background-color: #FFFFFF; /* Fundo branco */
-            color: #000000; /* Texto preto para contraste */
+            background-color: #FFFFFF;
+            color: #000000;
         }
         header {
-            background-color: #8B0000; /* Vermelho */
+            background-color: #8B0000;
             color: white;
             padding: 15px;
             text-align: center;
@@ -23,12 +23,12 @@
         header h1 {
             margin: 0;
             font-size: clamp(24px, 5vw, 28px);
-            text-transform: uppercase; /* Cabeçalho em maiúsculas */
+            text-transform: uppercase;
         }
         header p {
             margin: 8px 0;
             font-size: clamp(14px, 3vw, 15px);
-            text-transform: uppercase; /* Texto destacado em maiúsculas */
+            text-transform: uppercase;
         }
         header .highlight {
             font-weight: 700;
@@ -47,13 +47,13 @@
             transition: color 0.3s;
         }
         nav a:hover {
-            color: #FF4040; /* Hover vermelho claro */
+            color: #FF4040;
         }
         .winners-section {
             max-width: 90%;
             margin: 15px auto;
             padding: 15px;
-            background-color: #F5F5F5; /* Cinza claro */
+            background-color: #F5F5F5;
             border-radius: 10px;
             box-shadow: 0 4px 8px rgba(0,0,0,0.1);
             text-align: center;
@@ -64,8 +64,8 @@
         .winner {
             margin: 15px 0;
             padding: 15px;
-            background-color: #FFFFFF; /* Fundo branco para contraste */
-            border-left: 4px solid #8B0000; /* Borda vermelha */
+            background-color: #FFFFFF;
+            border-left: 4px solid #8B0000;
             border-radius: 5px;
         }
         .winner img {
@@ -81,11 +81,11 @@
             border: 1px solid #ccc;
             border-radius: 5px;
             font-size: clamp(14px, 3vw, 16px);
-            background-color: #FFFFFF; /* Fundo branco */
+            background-color: #FFFFFF;
             color: #000000;
         }
         .winner button {
-            background-color: #28A745; /* Verde */
+            background-color: #28A745;
             color: white;
             padding: 8px 16px;
             border: none;
@@ -96,7 +96,7 @@
             transition: background-color 0.3s;
         }
         .winner button:hover {
-            background-color: #218838; /* Hover verde escuro */
+            background-color: #218838;
             color: #FFFFFF;
         }
         .no-data {
@@ -106,14 +106,14 @@
             margin: 15px 0;
         }
         footer {
-            background-color: #8B0000; /* Vermelho */
+            background-color: #8B0000;
             color: white;
             text-align: center;
             padding: 15px;
             box-shadow: 0 -2px 4px rgba(0,0,0,0.2);
         }
         .instagram-button, .share-button {
-            background-color: #FF4040; /* Vermelho */
+            background-color: #FF4040;
             color: #FFFFFF;
             padding: 10px 20px;
             border: none;
@@ -126,13 +126,13 @@
             transition: background-color 0.3s;
         }
         .instagram-button:hover {
-            background-color: #CC0000; /* Hover vermelho escuro */
+            background-color: #CC0000;
         }
         .share-button {
-            background-color: #25D366; /* Verde WhatsApp */
+            background-color: #25D366;
         }
         .share-button:hover {
-            background-color: #1EBE5A; /* Hover verde escuro WhatsApp */
+            background-color: #1EBE5A;
         }
         @media (max-width: 600px) {
             header {
@@ -182,7 +182,8 @@
                     winnersList.innerHTML = '<p class="no-data">AGUARDANDO O PRIMEIRO GANHADOR</p>';
                     return;
                 }
-                winners.forEach(winner => {
+                winners.forEach((winner, index) => {
+                    const winnerNumber = index + 1; // Identificador único (1, 2, 3...)
                     const div = document.createElement('div');
                     div.className = 'winner';
                     div.innerHTML = `
@@ -190,10 +191,11 @@
                         <h3>Ganhador: ${winner.buyerName}</h3>
                         <p><strong>Número Sorteado:</strong> ${winner.winningNumber}</p>
                         <p><strong>Números Comprados:</strong> ${winner.numbers.join(', ')}</p>
+                        <p><strong>Prêmio:</strong> 1 Caixa de Litrão e 1 Porção de Frango a Passarinho</p>
                         <p><strong>Telefone:</strong> ${winner.buyerPhone ? '*******' + winner.buyerPhone.slice(-4) : 'N/A'}</p>
                         <p><strong>Data do Sorteio:</strong> ${new Date(winner.drawDate).toLocaleString('pt-BR')}</p>
-                        <input type="number" id="photo-number-${winner._id}" placeholder="Número do ganhador (ex.: 1 para ganhador1.png)" min="1">
-                        <button onclick="uploadWinnerPhoto('${winner._id}')">Enviar Foto</button>
+                        <input type="number" id="photo-number-${winner._id}" placeholder="Número do ganhador (ex.: ${winnerNumber} para ganhador${winnerNumber}.png)" min="1" value="${winnerNumber}">
+                        <button onclick="uploadWinnerPhoto('${winner._id}', ${winnerNumber})">Enviar Foto</button>
                     `;
                     winnersList.appendChild(div);
                 });
@@ -203,10 +205,10 @@
             }
         }
 
-        async function uploadWinnerPhoto(winnerId) {
+        async function uploadWinnerPhoto(winnerId, winnerNumber) {
             const photoNumber = document.getElementById(`photo-number-${winnerId}`).value;
-            if (!photoNumber || isNaN(photoNumber) || photoNumber < 1) {
-                alert('Por favor, insira um número válido para o ganhador (ex.: 1 para ganhador1.png).');
+            if (!photoNumber || isNaN(photoNumber) || photoNumber < 1 || photoNumber != winnerNumber) {
+                alert(`Por favor, insira o número correto do ganhador (${winnerNumber} para ganhador${winnerNumber}.png).`);
                 return;
             }
             try {
