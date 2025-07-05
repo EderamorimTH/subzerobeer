@@ -89,24 +89,26 @@
             border: 1px solid #ccc;
             border-radius: 5px;
             text-align: center;
-            cursor: pointer;
             font-size: clamp(12px, 3vw, 14px);
             color: #000000 !important;
         }
         .number.available {
             background-color: #00FF00 !important;
             color: #000000 !important;
+            cursor: pointer;
         }
         .number.selected {
             background-color: #8B0000 !important;
             color: #000000 !important;
             border: 2px solid #000000 !important;
+            cursor: pointer;
         }
         .number.reserved, .number.sold {
             background-color: #FFFFFF !important;
             color: #000000 !important;
             border: 1px solid #ccc !important;
             cursor: not-allowed;
+            pointer-events: none;
         }
         .payment-form {
             max-width: 90%;
@@ -346,8 +348,8 @@
                         div.textContent = item.number;
                         if (status === 'disponível') {
                             div.onclick = () => toggleNumberSelection(item.number, div);
-                        } else if (status === 'reservado') {
-                            checkReservation(item.number, div);
+                        } else {
+                            div.style.pointerEvents = 'none'; // Garante que números reservados/vendidos não sejam clicáveis
                         }
                         numbersGrid.appendChild(div);
                     });
@@ -419,9 +421,11 @@
                     selectedNumbers = selectedNumbers.filter(n => n !== number);
                     updateForm();
                     element.onclick = () => toggleNumberSelection(number, element);
+                    element.style.pointerEvents = 'auto';
                     console.log(`Reserva do número ${number} expirou`);
                 } else {
                     console.log(`Reserva do número ${number} válida`);
+                    element.style.pointerEvents = 'none';
                 }
             } catch (error) {
                 console.error(`Erro ao verificar reserva ${number}:`, error.message);
@@ -462,7 +466,7 @@
                     })
                 });
                 if (!preferenceResponse.ok) throw new Error(`Erro HTTP: ${preferenceResponse.status}`);
-                const preferenceData = await preferenceResponse.json();
+                const preferenceData = await response.json();
                 console.log('Redirecionando para Mercado Pago:', preferenceData.init_point);
                 window.location.href = preferenceData.init_point;
             } catch (error) {
