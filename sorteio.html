@@ -10,11 +10,11 @@
             font-family: 'Roboto', sans-serif;
             margin: 0;
             padding: 0;
-            background-color: #000000;
-            color: #ffffff;
+            background-color: #FFFFFF; /* Fundo branco */
+            color: #000000; /* Texto preto para contraste */
         }
         header {
-            background-color: #8b0000;
+            background-color: #8B0000; /* Vermelho */
             color: white;
             padding: 15px;
             text-align: center;
@@ -23,15 +23,24 @@
         header h1 {
             margin: 0;
             font-size: clamp(24px, 5vw, 28px);
+            text-transform: uppercase; /* Cabeçalho em maiúsculas */
         }
         header p {
             margin: 8px 0;
             font-size: clamp(14px, 3vw, 15px);
+            text-transform: uppercase; /* Texto destacado em maiúsculas */
         }
         header .highlight {
             font-weight: 700;
             font-size: clamp(16px, 4vw, 18px);
-            color: #ffffff;
+            color: #FFFFFF;
+        }
+        header .highlight a {
+            color: #FFFFFF;
+            text-decoration: underline;
+        }
+        header .highlight a:hover {
+            color: #FF4040; /* Hover vermelho claro */
         }
         nav {
             margin-top: 10px;
@@ -45,13 +54,13 @@
             transition: color 0.3s;
         }
         nav a:hover {
-            color: #ff4040;
+            color: #FF4040; /* Hover vermelho claro */
         }
         .password-container {
             max-width: 90%;
             margin: 30px auto;
             padding: 15px;
-            background-color: #1a1a1a;
+            background-color: #F5F5F5; /* Cinza claro */
             border-radius: 10px;
             box-shadow: 0 4px 8px rgba(0,0,0,0.1);
             text-align: center;
@@ -63,11 +72,11 @@
             border: 1px solid #ccc;
             border-radius: 5px;
             font-size: clamp(14px, 3vw, 16px);
-            background-color: #333333;
-            color: #ffffff;
+            background-color: #FFFFFF; /* Fundo branco */
+            color: #000000;
         }
         .password-container button {
-            background-color: #8b0000;
+            background-color: #28A745; /* Verde */
             color: white;
             padding: 10px 20px;
             border: none;
@@ -78,20 +87,23 @@
             transition: background-color 0.3s;
         }
         .password-container button:hover {
-            background-color: #ff4040;
-            color: #ffffff;
+            background-color: #218838; /* Hover verde escuro */
+            color: #FFFFFF;
         }
         .password-error {
-            color: #ff4040;
+            color: #FF0000; /* Vermelho */
             margin-top: 8px;
             display: none;
             font-size: clamp(12px, 3vw, 14px);
+            background-color: #FFE6E6; /* Vermelho claro */
+            padding: 8px;
+            border-radius: 5px;
         }
         .content {
             max-width: 90%;
             margin: 15px auto;
             padding: 15px;
-            background-color: #1a1a1a;
+            background-color: #F5F5F5; /* Cinza claro */
             border-radius: 10px;
             box-shadow: 0 4px 8px rgba(0,0,0,0.1);
             display: none;
@@ -111,7 +123,7 @@
             text-align: left;
         }
         th {
-            background-color: #8b0000;
+            background-color: #8B0000; /* Vermelho */
             color: white;
             font-weight: 700;
         }
@@ -121,18 +133,24 @@
             font-size: clamp(14px, 3vw, 16px);
         }
         .error {
-            color: #ff4040;
+            color: #FF0000; /* Vermelho */
+            background-color: #FFE6E6; /* Vermelho claro */
+            padding: 8px;
+            border-radius: 5px;
         }
         .no-data {
-            color: #ffffff;
+            color: #000000;
+            background-color: #F5F5F5; /* Cinza claro */
+            padding: 8px;
+            border-radius: 5px;
         }
         .draw-section {
             margin: 15px 0;
             text-align: center;
         }
         .draw-button {
-            background-color: #ff4040;
-            color: #ffffff;
+            background-color: #28A745; /* Verde */
+            color: white;
             padding: 10px 20px;
             border: none;
             border-radius: 5px;
@@ -142,10 +160,10 @@
             transition: background-color 0.3s;
         }
         .draw-button:hover {
-            background-color: #cc0000;
+            background-color: #218838; /* Hover verde escuro */
         }
         .view-phone-button {
-            background-color: #8b0000;
+            background-color: #28A745; /* Verde */
             color: white;
             padding: 8px 16px;
             border: none;
@@ -157,13 +175,13 @@
             transition: background-color 0.3s;
         }
         .view-phone-button:hover {
-            background-color: #ff4040;
-            color: #ffffff;
+            background-color: #218838; /* Hover verde escuro */
+            color: #FFFFFF;
         }
         .winner {
-            background-color: #333333;
+            background-color: #FFFFFF; /* Fundo branco */
             padding: 15px;
-            border-left: 4px solid #8b0000;
+            border-left: 4px solid #28A745; /* Borda verde */
             margin: 15px 0;
             border-radius: 5px;
             text-align: center;
@@ -172,10 +190,13 @@
             font-size: clamp(20px, 5vw, 22px);
             font-weight: 700;
             margin: 15px 0;
-            color: #ff4040;
+            color: #FF4040; /* Vermelho */
+            background-color: #FFE6E6; /* Vermelho claro */
+            padding: 8px;
+            border-radius: 5px;
         }
         footer {
-            background-color: #8b0000;
+            background-color: #8B0000; /* Vermelho */
             color: white;
             text-align: center;
             padding: 15px;
@@ -183,8 +204,8 @@
             display: none;
         }
         .instagram-button, .share-button {
-            background-color: #ff4040;
-            color: #ffffff;
+            background-color: #FF4040; /* Vermelho */
+            color: #FFFFFF;
             padding: 10px 20px;
             border: none;
             border-radius: 5px;
@@ -196,13 +217,13 @@
             transition: background-color 0.3s;
         }
         .instagram-button:hover {
-            background-color: #cc0000;
+            background-color: #CC0000; /* Hover vermelho escuro */
         }
         .share-button {
-            background-color: #25d366;
+            background-color: #25D366; /* Verde WhatsApp */
         }
         .share-button:hover {
-            background-color: #1ebe5a;
+            background-color: #1EBE5A; /* Hover verde escuro WhatsApp */
         }
         @media (max-width: 600px) {
             header {
@@ -223,8 +244,8 @@
 </head>
 <body>
     <header id="header">
-        <h1>Sub-zero Beer</h1>
-        <p class="highlight">Participe do nosso sorteio e concorra a 1 caixa de litrão e 1 porção de frango a passarinho!</p>
+        <h1>SUB-ZERO BEER</h1>
+        <p class="highlight">PARTICIPE DO NOSSO SORTEIO AO VIVO NO <a href="https://instagram.com/Subzerobeercba" target="_blank">INSTAGRAM</a> E CONCORRA A 1 CAIXA DE LITRÃO E 1 PORÇÃO DE FRANGO A PASSARINHO!</p>
         <nav id="nav">
             <a href="/subzerobeer/index.html">Início</a>
             <a href="/subzerobeer/sorteio.html">Sorteio</a>
@@ -233,18 +254,18 @@
     </header>
 
     <div class="password-container" id="password-container">
-        <h2>Acesso Restrito</h2>
+        <h2>ACESSO RESTRITO</h2>
         <p>Digite a senha para acessar a página de sorteio:</p>
         <input type="password" id="password-input" placeholder="Senha">
         <button onclick="validatePassword()">Entrar</button>
-        <p id="password-error" class="password-error">Senha incorreta. Tente novamente.</p>
+        <p id="password-error" class="password-error">SENHA INCORRETA. TENTE NOVAMENTE.</p>
     </div>
 
     <section class="content" id="content">
         <h2>Lista de Compras</h2>
         <p>Veja todas as compras aprovadas para o sorteio.</p>
         <div id="error-message" class="error" style="display: none;"></div>
-        <div id="no-data-message" class="no-data" style="display: none;">Nenhuma compra registrada ainda.</div>
+        <div id="no-data-message" class="no-data" style="display: none;">NENHUMA COMPRA REGISTRADA AINDA.</div>
         <table id="purchases-table">
             <thead>
                 <tr>
@@ -259,7 +280,7 @@
         </table>
 
         <div class="draw-section" id="sorteio-ao-vivo">
-            <h3>Sorteio ao Vivo</h3>
+            <h3>SORTEIO AO VIVO</h3>
             <p>Clique no botão abaixo para sortear um número ao vivo.</p>
             <button class="draw-button" onclick="startDraw()">Sortear Agora</button>
             <div id="countdown" class="countdown" style="display: none;"></div>
@@ -318,7 +339,7 @@
                 }
             } catch (error) {
                 console.error(`Erro ao validar senha em ${new Date().toISOString()}:`, error.message);
-                passwordError.textContent = 'Erro ao conectar ao servidor. Tente novamente.';
+                passwordError.textContent = 'ERRO AO CONECTAR AO SERVIDOR. TENTE NOVAMENTE.';
                 passwordError.style.display = 'block';
             }
         }
@@ -375,7 +396,7 @@
                     console.error(`Erro na tentativa ${retries + 1} em ${new Date().toISOString()}:`, error.message);
                     retries++;
                     if (retries === maxRetries) {
-                        errorMessage.textContent = 'Erro ao carregar compras. Tente novamente mais tarde.';
+                        errorMessage.textContent = 'ERRO AO CARREGAR COMPRAS. TENTE NOVAMENTE MAIS TARDE.';
                         errorMessage.style.display = 'block';
                         noDataMessage.style.display = 'none';
                     } else {
@@ -394,11 +415,11 @@
             winnerMessage.style.display = 'none';
 
             let timeLeft = 10;
-            countdownElement.textContent = `Sorteio em ${timeLeft} segundos...`;
+            countdownElement.textContent = `SORTEIO EM ${timeLeft} SEGUNDOS...`;
 
             const countdown = setInterval(() => {
                 timeLeft--;
-                countdownElement.textContent = `Sorteio em ${timeLeft} segundos...`;
+                countdownElement.textContent = `SORTEIO EM ${timeLeft} SEGUNDOS...`;
                 if (timeLeft <= 0) {
                     clearInterval(countdown);
                     countdownElement.style.display = 'none';
@@ -412,14 +433,14 @@
             const winnerMessage = document.getElementById('winner-message');
             const approvedPurchases = purchasesData.filter(purchase => purchase.status === 'approved');
             if (approvedPurchases.length === 0) {
-                winnerMessage.textContent = 'Nenhuma compra aprovada para realizar o sorteio.';
+                winnerMessage.textContent = 'NENHUMA COMPRA APROVADA PARA REALIZAR O SORTEIO.';
                 winnerMessage.style.display = 'block';
                 return;
             }
 
             const allNumbers = approvedPurchases.flatMap(purchase => purchase.numbers || []);
             if (allNumbers.length === 0) {
-                winnerMessage.textContent = 'Nenhum número aprovado encontrado para o sorteio.';
+                winnerMessage.textContent = 'NENHUM NÚMERO APROVADO ENCONTRADO PARA O SORTEIO.';
                 winnerMessage.style.display = 'block';
                 return;
             }
@@ -429,7 +450,7 @@
             const winner = approvedPurchases.find(purchase => purchase.numbers && purchase.numbers.includes(winningNumber));
 
             if (!winner) {
-                winnerMessage.textContent = 'Erro: Comprador não encontrado para o número sorteado.';
+                winnerMessage.textContent = 'ERRO: COMPRADOR NÃO ENCONTRADO PARA O NÚMERO SORTEADO.';
                 winnerMessage.style.display = 'block';
                 return;
             }
@@ -456,7 +477,7 @@
             }
 
             winnerMessage.innerHTML = `
-                <h3>Parabéns ao Ganhador!</h3>
+                <h3>PARABÉNS AO GANHADOR!</h3>
                 <p><strong>Nome:</strong> ${winner.buyerName || 'N/A'}</p>
                 <p><strong>Número Sorteado:</strong> ${winningNumber}</p>
                 <p><strong>Números Comprados:</strong> ${winner.numbers ? winner.numbers.join(', ') : 'N/A'}</p>
@@ -469,7 +490,7 @@
 
         function viewWinnerPhone() {
             if (!currentWinner) {
-                alert('Nenhum ganhador selecionado.');
+                alert('NENHUM GANHADOR SELECIONADO.');
                 return;
             }
             alert(`Telefone do ganhador (${currentWinner.buyerName}): ${currentWinner.buyerPhone}`);
