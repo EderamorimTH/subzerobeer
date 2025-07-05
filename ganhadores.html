@@ -2,7 +2,7 @@
 <html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=2.0, user-scalable=yes">
     <title>GANHADORES - SUB-ZERO BEER</title>
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&family=Bungee&display=swap" rel="stylesheet">
     <style>
@@ -12,23 +12,25 @@
             padding: 0;
             background-color: white;
             color: #000000;
+            font-size: 16px;
         }
         h1, h2, h3 {
             text-transform: uppercase;
         }
         header {
-            background-color: #8b0000;
+            background-color: #000000 !important; /* Preto */
             color: white;
-            padding: 15px;
+            padding: 20px;
             text-align: center;
             box-shadow: 0 2px 4px rgba(0,0,0,0.2);
             z-index: 2;
         }
-        header h1 {
-            font-family: 'Bungee', sans-serif;
-            font-size: clamp(36px, 8vw, 48px);
-            margin: 0;
-            text-shadow: 0 0 5px rgba(255, 255, 255, 0.6), 0 0 10px rgba(255, 0, 0, 0.5);
+        .header-logo {
+            max-width: 100%;
+            height: auto;
+            max-height: 120px;
+            display: block;
+            margin: 0 auto;
             animation: pulseTitle 2s ease-in-out infinite;
         }
         @keyframes pulseTitle {
@@ -38,20 +40,20 @@
         }
         .sorteio-text {
             font-family: 'Roboto', sans-serif;
-            font-size: clamp(14px, 3vw, 16px);
+            font-size: clamp(16px, 4vw, 18px);
             font-weight: 700;
-            margin: 10px 0;
+            margin: 15px 0;
             text-shadow: 0 0 3px rgba(0, 0, 0, 0.3);
         }
         nav {
-            margin-top: 10px;
+            margin-top: 15px;
         }
         nav a {
             color: white;
-            margin: 0 10px;
+            margin: 0 15px;
             text-decoration: none;
             font-weight: 700;
-            font-size: clamp(14px, 3vw, 16px);
+            font-size: clamp(16px, 4vw, 18px);
             transition: color 0.3s;
         }
         nav a:hover {
@@ -59,21 +61,21 @@
         }
         .winners-section {
             max-width: 90%;
-            margin: 15px auto;
-            padding: 15px;
+            margin: 20px auto;
+            padding: 20px;
             background-color: #f0f0f0;
             border-radius: 10px;
             box-shadow: 0 4px 8px rgba(0,0,0,0.1);
             text-align: center;
         }
         .winners-section h2 {
-            font-size: clamp(18px, 4vw, 20px);
+            font-size: clamp(20px, 5vw, 22px);
         }
         .winner {
-            margin: 15px 0;
-            padding: 15px;
+            margin: 20px 0;
+            padding: 20px;
             background-color: #e0e0e0;
-            border-left: 4px solid #8b0000;
+            border-left: 4px solid #000000; /* Ajustado para preto */
             border-radius: 5px;
         }
         .winner img {
@@ -81,80 +83,113 @@
             height: 200px;
             object-fit: cover;
             border-radius: 10px;
-            margin-bottom: 8px;
+            margin-bottom: 10px;
             box-shadow: 0 2px 4px rgba(0,0,0,0.1);
         }
         .no-data {
             color: #000000;
             font-size: clamp(16px, 4vw, 18px);
             font-weight: 700;
-            margin: 15px 0;
+            margin: 20px 0;
         }
         .error-message {
             max-width: 90%;
-            margin: 15px auto;
-            padding: 15px;
+            margin: 20px auto;
+            padding: 20px;
             background-color: #ff4040;
             border-left: 4px solid #cc0000;
             border-radius: 10px;
             text-align: center;
             display: none;
+            font-size: clamp(16px, 4vw, 18px);
         }
         .loading-message {
             text-align: center;
-            margin: 15px;
+            margin: 20px;
             display: none;
             color: #ff0000;
             font-weight: 700;
-            font-size: clamp(14px, 3vw, 16px);
+            font-size: clamp(16px, 4vw, 18px);
         }
         footer {
-            background-color: #8b0000;
+            background-color: #000000 !important; /* Preto */
             color: white;
             text-align: center;
-            padding: 15px;
+            padding: 20px;
             box-shadow: 0 -2px 4px rgba(0,0,0,0.2);
         }
         .instagram-button, .share-button {
             background-color: #ff0000;
             color: #ffffff;
-            padding: 10px 20px;
+            padding: 12px 24px;
             border: none;
             border-radius: 5px;
             text-decoration: none;
             display: inline-block;
             font-weight: 700;
-            font-size: clamp(14px, 3vw, 16px);
-            margin: 5px;
+            font-size: clamp(16px, 4vw, 18px);
+            margin: 8px;
             transition: background-color 0.3s;
         }
         .instagram-button:hover, .share-button:hover {
             background-color: #cc0000;
         }
         @media (max-width: 600px) {
-            header {
-                padding: 10px;
+            body {
+                font-size: 14px;
             }
-            header h1 {
-                font-size: clamp(28px, 6vw, 36px);
+            header {
+                padding: 15px;
+            }
+            .header-logo {
+                max-height: 100px;
             }
             .sorteio-text {
-                font-size: clamp(12px, 2.5vw, 14px);
+                font-size: clamp(14px, 3.5vw, 16px);
+                margin: 10px 0;
+            }
+            nav a {
+                font-size: clamp(14px, 3.5vw, 16px);
+                margin: 0 10px;
             }
             .winners-section {
-                margin: 10px;
-                padding: 10px;
+                margin: 15px;
+                padding: 15px;
+            }
+            .winners-section h2 {
+                font-size: clamp(18px, 4.5vw, 20px);
+            }
+            .winner {
+                margin: 15px 0;
+                padding: 15px;
             }
             .winner img {
                 width: 150px;
                 height: 150px;
+            }
+            .no-data {
+                font-size: clamp(14px, 3.5vw, 16px);
+            }
+            .error-message {
+                padding: 15px;
+                font-size: clamp(14px, 3.5vw, 16px);
+            }
+            .loading-message {
+                font-size: clamp(14px, 3.5vw, 16px);
+            }
+            .instagram-button, .share-button {
+                padding: 10px 20px;
+                font-size: clamp(14px, 3.5vw, 16px);
+            }
+            footer {
+                padding: 15px;
             }
         }
     </style>
 </head>
 <body>
     <header>
-        <h1>SUB-ZERO BEER</h1>
+        <img src="/subzerobeer/images/subzero.png" alt="Sub-Zero Beer Logo" class="header-logo">
         <p class="sorteio-text">VEJA OS GANHADORES ANTERIORES</p>
         <nav>
             <a href="/subzerobeer/index.html">INÍCIO</a>
@@ -164,7 +199,7 @@
     </header>
 
     <div class="loading-message" id="loading-message">CARREGANDO GANHADORES...</div>
-    <div class="error-message" id="error-message"> (@SUBZEROBEERCBA).</div>
+    <div class="error-message" id="error-message">ERRO AO CARREGAR GANHADORES. ENTRE EM CONTATO COM O SUPORTE (@SUBZEROBEERCBA).</div>
     <section class="winners-section">
         <h2>GANHADORES</h2>
         <div id="winners-list"></div>
