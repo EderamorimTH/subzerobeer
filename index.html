@@ -91,6 +91,7 @@
             text-align: center;
             cursor: pointer;
             font-size: clamp(12px, 3vw, 14px);
+            color: #000000;
         }
         .number.available {
             background-color: #00FF00;
@@ -98,7 +99,7 @@
         }
         .number.selected {
             background-color: #8B0000;
-            color: #FFFFFF;
+            color: #000000;
             border: 2px solid #000000;
         }
         .number.reserved, .number.sold {
@@ -230,7 +231,6 @@
         <nav>
             <a href="/subzerobeer/index.html">Início</a>
             <a href="/subzerobeer/sorteio.html">Sorteio</a>
-            <a href="/subzerobeer/sorteio-ao-vivo.html">Sorteio ao Vivo</a>
             <a href="/subzerobeer/ganhadores.html">Ganhadores</a>
         </nav>
     </header>
@@ -341,7 +341,7 @@
                     numbers.forEach(item => {
                         console.log(`Número: ${item.number}, Status: ${item.status}`);
                         const div = document.createElement('div');
-                        div.className = `number ${item.status.toLowerCase()}`; // Garantir minúsculas
+                        div.className = `number ${item.status.toLowerCase()}`;
                         div.textContent = item.number;
                         if (item.status.toLowerCase() === 'disponível') {
                             div.onclick = () => toggleNumberSelection(item.number, div);
@@ -499,4 +499,3 @@
     </script>
 </body>
 </html>
-```
