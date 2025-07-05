@@ -1,77 +1,6 @@
 const express = require('express');
 const mongoose = require('mongoose');
-const { MercadoPagoConfig, Preference } = require('mercadopago'); // Ajuste na importação
-const cors = require('cors');
-const app = express();
-const port = process.env.PORT || 3000;
-
-app.use(cors());
-app.use(express.json());
-
-// Configure Mercado Pago
-const mercadopago = new MercadoPagoConfig({
-    accessToken: process.env.MERCADO_PAGO_ACCESS_TOKEN || 'APP_USR-7275526477888809-070301-eea6b39a6469ea60b9291fcbc20f8fdc-233975707'
-});
-
-// ... (restante do código até a rota /create_preference)
-
-// Rota para criar preferência de pagamento
-app.post('/create_preference', async (req, res) => {
-    const { numbers, userId, buyerName, buyerPhone, quantity } = req.body;
-    try {
-        const preference = new Preference(mercadopago); // Instancia Preference com a configuração
-        const preferenceData = {
-            items: [{
-                title: 'Sub-zero Beer Sorteio',
-                unit_price: 10.0,
-                quantity: quantity,
-            }],
-            back_urls: {
-                success: 'https://ederamorimth.github.io/subzerobeer/index.html?status=approved',
-                failure: 'https://ederamorimth.github.io/subzerobeer/index.html?status=rejected',
-                pending: 'https://ederamorimth.github.io/subzerobeer/index.html?status=pending'
-            },
-            auto_return: 'approved',
-            external_reference: JSON.stringify({ numbers, userId, buyerName, buyerPhone })
-        };
-
-        const response = await preference.create({ body: preferenceData }); // Ajuste na chamada
-        await Number.updateMany(
-            { number: { $in: numbers } },
-            { $set: { buyerName, buyerPhone } }
-        );
-        await Purchase.create({ numbers, userId, buyerName, buyerPhone, status: 'pending' });
-        res.json({ init_point: response.init_point });
-    } catch (error) {
-        console.error('[' + new Date().toISOString() + '] Erro ao criar preferência:', error.message);
-        res.status(500).json({ error: 'Erro ao criar preferência de pagamento' });
-    }
-});
-
-// ... (outras rotas até /webhook)
-
-// Rota para webhook do Mercado Pago
-app.post('/webhook', async (req, res) => {
-    const { data } = req.body;
-    try {
-        if (data && data.id) {
-            const payment = new Payment(mercadopago); // Instancia Payment com a configuração
-            const paymentData = await payment.get({ id: data.id }); // Ajuste na chamada
-            const { external_reference, status } = paymentData;
-            const { numbers, userId, buyerName, buyerPhone } = JSON.parse(external_reference);
-            await Purchase.updateOne(
-                { userId, numbers: { $all: numbers } },
-                { $set: { status } }
-            );
-            if (status === 'approved') {
-                await Number.updateMany(
-                    { number: { $in: numbers } },
-                    { $set: { status: 'vendido', buyerName, buyerPhonePlay the rest of the code remains unchanged. Here's the complete corrected code:
-
-```javascript
-const express = require('express');
-const mongoose = require('mongoose');
-const { MercadoPagoConfig, Preference, Payment } = require('mercadopago'); // Ajuste na importação
+const { MercadoPagoConfig, Preference, Payment } = require('mercadopago');
 const cors = require('cors');
 const app = express();
 const port = process.env.PORT || 3000;
@@ -132,14 +61,18 @@ const Winner = mongoose.model('Winner', WinnerSchema);
 
 // Inicializar números (1 a 150)
 async function initializeNumbers() {
-    const count = await Number.countDocuments();
-    if (count === 0) {
-        const numbers = Array.from({ length: 150 }, (_, i) => ({
-            number: String(i + 1).padStart(3, '0'),
-            status: 'disponível'
-        }));
-        await Number.insertMany(numbers);
-        console.log('[' + new Date().toISOString() + '] Números inicializados');
+    try {
+        const count = await Number.countDocuments();
+        if (count === 0) {
+            const numbers = Array.from({ length: 150 }, (_, i) => ({
+                number: String(i + 1).padStart(3, '0'),
+                status: 'disponível'
+            }));
+            await Number.insertMany(numbers);
+            console.log('[' + new Date().toISOString() + '] Números inicializados');
+        }
+    } catch (error) {
+        console.error('[' + new Date().toISOString() + '] Erro ao inicializar números:', error.message);
     }
 }
 
@@ -170,6 +103,9 @@ app.get('/available_numbers', async (req, res) => {
 app.post('/reserve_numbers', async (req, res) => {
     const { numbers, userId } = req.body;
     try {
+        if (!numbers || !Array.isArray(numbers) || numbers.length === 0 || !userId) {
+            return res.status(400).json({ success: false, message: 'Números ou userId inválidos' });
+        }
         const availableNumbers = await Number.find({ number: { $in: numbers }, status: 'disponível' });
         if (availableNumbers.length !== numbers.length) {
             return res.status(400).json({ success: false, message: 'Um ou mais números não estão disponíveis' });
@@ -189,6 +125,9 @@ app.post('/reserve_numbers', async (req, res) => {
 app.post('/check_reservation', async (req, res) => {
     const { numbers, userId } = req.body;
     try {
+        if (!numbers || !Array.isArray(numbers) || numbers.length === 0 || !userId) {
+            return res.status(400).json({ valid: false, message: 'Números ou userId inválidos' });
+        }
         const fiveMinutesAgo = new Date(Date.now() - 5 * 60 * 1000);
         const reservedNumbers = await Number.find({
             number: { $in: numbers },
@@ -198,8 +137,8 @@ app.post('/check_reservation', async (req, res) => {
         });
         res.json({ valid: reservedNumbers.length === numbers.length });
     } catch (error) {
-        console.error('[' + new Date().toISOString() + '] Erro ao verificar reservas搁
-        res.status(500).json({ valid: false });
+        console.error('[' + new Date().toISOString() + '] Erro ao verificar reservas:', error.message);
+        res.status(500).json({ valid: false, message: 'Erro ao verificar reservas' });
     }
 });
 
@@ -207,12 +146,15 @@ app.post('/check_reservation', async (req, res) => {
 app.post('/create_preference', async (req, res) => {
     const { numbers, userId, buyerName, buyerPhone, quantity } = req.body;
     try {
+        if (!numbers || !Array.isArray(numbers) || numbers.length === 0 || !userId || !buyerName || !buyerPhone || !quantity) {
+            return res.status(400).json({ error: 'Dados incompletos' });
+        }
         const preference = new Preference(mercadopago);
         const preferenceData = {
             items: [{
                 title: 'Sub-zero Beer Sorteio',
                 unit_price: 10.0,
-                quantity: quantity,
+                quantity: parseInt(quantity),
             }],
             back_urls: {
                 success: 'https://ederamorimth.github.io/subzerobeer/index.html?status=approved',
@@ -262,6 +204,9 @@ app.get('/winners', async (req, res) => {
 app.post('/save_winner', async (req, res) => {
     const { buyerName, buyerPhone, winningNumber, numbers, drawDate, photoUrl } = req.body;
     try {
+        if (!buyerName || !buyerPhone || !winningNumber || !numbers || !Array.isArray(numbers) || !drawDate) {
+            return res.status(400).json({ error: 'Dados incompletos' });
+        }
         await Winner.create({ buyerName, buyerPhone, winningNumber, numbers, drawDate, photoUrl });
         await Number.updateMany(
             { number: { $in: numbers } },
@@ -278,28 +223,29 @@ app.post('/save_winner', async (req, res) => {
 app.post('/webhook', async (req, res) => {
     const { data } = req.body;
     try {
-        if (data && data.id) {
-            const payment = new Payment(mercadopago);
-            const paymentData = await payment.get({ id: data.id });
-            const { external_reference, status } = paymentData;
-            const { numbers, userId, buyerName, buyerPhone } = JSON.parse(external_reference);
-            await Purchase.updateOne(
-                { userId, numbers: { $all: numbers } },
-                { $set: { status } }
-            );
-            if (status === 'approved') {
-                await Number.updateMany(
-                    { number: { $in: numbers } },
-                    { $set: { status: 'vendido', buyerName, buyerPhone } }
-                );
-            } else if (status === 'rejected') {
-                await Number.updateMany(
-                    { number: { $in: numbers } },
-                    { $set: { status: 'disponível', userId: null, reservationTime: null, buyerName: null, buyerPhone: null } }
-                );
-            }
-            console.log('[' + new Date().toISOString() + '] Webhook processado: status=' + status + ', números=' + numbers);
+        if (!data || !data.id) {
+            return res.status(400).send('Dados inválidos');
         }
+        const payment = new Payment(mercadopago);
+        const paymentData = await payment.get({ id: data.id });
+        const { external_reference, status } = paymentData;
+        const { numbers, userId, buyerName, buyerPhone } = JSON.parse(external_reference);
+        await Purchase.updateOne(
+            { userId, numbers: { $all: numbers } },
+            { $set: { status } }
+        );
+        if (status === 'approved') {
+            await Number.updateMany(
+                { number: { $in: numbers } },
+                { $set: { status: 'vendido', buyerName, buyerPhone } }
+            );
+        } else if (status === 'rejected') {
+            await Number.updateMany(
+                { number: { $in: numbers } },
+                { $set: { status: 'disponível', userId: null, reservationTime: null, buyerName: null, buyerPhone: null } }
+            );
+        }
+        console.log('[' + new Date().toISOString() + '] Webhook processado: status=' + status + ', números=' + numbers);
         res.status(200).send('OK');
     } catch (error) {
         console.error('[' + new Date().toISOString() + '] Erro no webhook:', error.message);
