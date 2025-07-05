@@ -10,11 +10,11 @@
             font-family: 'Roboto', sans-serif;
             margin: 0;
             padding: 0;
-            background-color: #FFFFFF; /* Fundo branco */
-            color: #000000; /* Texto preto para contraste */
+            background-color: #FFFFFF;
+            color: #000000;
         }
         header {
-            background-color: #8B0000; /* Vermelho */
+            background-color: #8B0000;
             color: white;
             padding: 15px;
             text-align: center;
@@ -23,10 +23,12 @@
         header h1 {
             margin: 0;
             font-size: clamp(24px, 5vw, 28px);
+            text-transform: uppercase;
         }
         header p {
             margin: 8px 0;
             font-size: clamp(14px, 3vw, 15px);
+            text-transform: uppercase;
         }
         header .highlight {
             font-weight: 700;
@@ -45,12 +47,12 @@
             transition: color 0.3s;
         }
         nav a:hover {
-            color: #FF4040; /* Hover vermelho claro */
+            color: #FF4040;
         }
         .hero {
             text-align: center;
             padding: 30px 15px;
-            background-color: #F5F5F5; /* Cinza claro para contraste com fundo branco */
+            background-color: #F5F5F5;
             border-radius: 10px;
             margin: 15px auto;
             max-width: 1000px;
@@ -60,7 +62,7 @@
             margin: 15px 0;
         }
         .hero-buttons button {
-            background-color: #8B0000; /* Vermelho */
+            background-color: #8B0000;
             color: white;
             padding: 10px 20px;
             border: none;
@@ -72,7 +74,7 @@
             transition: background-color 0.3s;
         }
         .hero-buttons button:hover {
-            background-color: #FF4040; /* Hover vermelho claro */
+            background-color: #FF4040;
             color: #FFFFFF;
         }
         .numbers-grid {
@@ -91,24 +93,25 @@
             font-size: clamp(12px, 3vw, 14px);
         }
         .number.available {
-            background-color: #00FF00; /* Verde para disponíveis */
+            background-color: #00FF00;
             color: #000000;
         }
         .number.selected {
-            background-color: #8B0000; /* Vermelho escuro para selecionados */
+            background-color: #8B0000;
             color: #FFFFFF;
-            border: 2px solid #000000; /* Borda preta */
+            border: 2px solid #000000;
         }
         .number.reserved, .number.sold {
-            background-color: #FF0000; /* Vermelho para reservados/vendidos */
-            color: #FFFFFF;
+            background-color: #FFFFFF;
+            color: #000000;
+            border: 1px solid #ccc;
             cursor: not-allowed;
         }
         .payment-form {
             max-width: 90%;
             margin: 15px auto;
             padding: 15px;
-            background-color: #F5F5F5; /* Cinza claro */
+            background-color: #F5F5F5;
             border-radius: 10px;
             box-shadow: 0 4px 8px rgba(0,0,0,0.1);
             display: block;
@@ -126,11 +129,11 @@
             border: 1px solid #ccc;
             border-radius: 5px;
             font-size: clamp(14px, 3vw, 16px);
-            background-color: #FFFFFF; /* Fundo branco para inputs */
+            background-color: #FFFFFF;
             color: #000000;
         }
         .payment-form button {
-            background-color: #28A745; /* Verde para botão de pagamento */
+            background-color: #28A745;
             color: white;
             padding: 10px 20px;
             border: none;
@@ -142,7 +145,7 @@
             transition: background-color 0.3s;
         }
         .payment-form button:hover {
-            background-color: #218838; /* Hover verde escuro */
+            background-color: #218838;
             color: #FFFFFF;
         }
         .success-message, .error-message, .pending-message, .number-error {
@@ -154,15 +157,15 @@
             display: none;
         }
         .success-message {
-            background-color: #E6FFE6; /* Verde claro */
+            background-color: #E6FFE6;
             border-left: 4px solid #28A745;
         }
         .error-message, .number-error {
-            background-color: #FFE6E6; /* Vermelho claro */
+            background-color: #FFE6E6;
             border-left: 4px solid #FF0000;
         }
         .pending-message {
-            background-color: #FFF8E6; /* Amarelo claro */
+            background-color: #FFF8E6;
             border-left: 4px solid #FF4040;
         }
         .loading-message {
@@ -174,14 +177,14 @@
             font-size: clamp(14px, 3vw, 16px);
         }
         footer {
-            background-color: #8B0000; /* Vermelho */
+            background-color: #8B0000;
             color: white;
             text-align: center;
             padding: 15px;
             box-shadow: 0 -2px 4px rgba(0,0,0,0.2);
         }
         .instagram-button, .share-button {
-            background-color: #FF4040; /* Vermelho */
+            background-color: #FF4040;
             color: #FFFFFF;
             padding: 10px 20px;
             border: none;
@@ -194,13 +197,13 @@
             transition: background-color 0.3s;
         }
         .instagram-button:hover {
-            background-color: #CC0000; /* Hover vermelho escuro */
+            background-color: #CC0000;
         }
         .share-button {
-            background-color: #25D366; /* Verde WhatsApp */
+            background-color: #25D366;
         }
         .share-button:hover {
-            background-color: #1EBE5A; /* Hover verde escuro WhatsApp */
+            background-color: #1EBE5A;
         }
         @media (max-width: 600px) {
             header {
@@ -222,7 +225,7 @@
 </head>
 <body>
     <header>
-        <h1>Sub-zero Beer</h1>
+        <h1>SUB-ZERO BEER</h1>
         <p class="highlight">PARTICIPE DO NOSSO SORTEIO E CONCORRA A 1 CAIXA DE LITRÃO E 1 PORÇÃO DE FRANGO A PASSARINHO!</p>
         <nav>
             <a href="/subzerobeer/index.html">Início</a>
@@ -232,37 +235,35 @@
     </header>
 
     <section class="hero">
-        <div class="hero-buttons">
-            <!-- Botão "Escolher 5 Números Aleatórios" removido -->
-        </div>
+        <div class="hero-buttons"></div>
     </section>
 
     <section class="success-message" id="success-message">
-        <h3>Pagamento aprovado com sucesso!</h3>
+        <h3>PAGAMENTO APROVADO COM SUCESSO!</h3>
         <p>Seus números estão confirmados. Boa sorte!</p>
     </section>
 
     <section class="error-message" id="error-message">
-        <h3>O pagamento não foi concluído.</h3>
+        <h3>O PAGAMENTO NÃO FOI CONCLUÍDO.</h3>
         <p>Seus números foram liberados. Escolha novamente para tentar outra vez.</p>
     </section>
 
     <section class="pending-message" id="pending-message">
-        <h3>Seu pagamento está pendente.</h3>
+        <h3>SEU PAGAMENTO ESTÁ PENDENTE.</h3>
         <p>Aguarde a confirmação ou tente novamente se os números expirarem.</p>
     </section>
 
     <section class="number-error" id="number-error">
-        <h3>Erro ao carregar números</h3>
+        <h3>ERRO AO CARREGAR NÚMEROS</h3>
         <p id="error-details">Não foi possível carregar os números disponíveis. Tente novamente mais tarde ou entre em contato via Instagram.</p>
     </section>
 
-    <div class="loading-message" id="loading-message">Aguarde um momento, os números estão sendo carregados...</div>
+    <div class="loading-message" id="loading-message">AGUARDE UM MOMENTO, OS NÚMEROS ESTÃO SENDO CARREGADOS...</div>
 
     <div class="numbers-grid" id="numbers-grid"></div>
 
     <section class="payment-form" id="payment-form-section">
-        <h2>Finalize sua compra</h2>
+        <h2>FINALIZE SUA COMPRA</h2>
         <p>Preencha os dados abaixo e clique em "Pagar com Pix/Cartão" para ser redirecionado ao Mercado Pago.</p>
         <form id="payment-form">
             <p>Números selecionados: <span id="selected-numbers">Nenhum</span></p>
@@ -466,7 +467,7 @@
             const backendOk = await checkBackendHealth();
             if (!backendOk) {
                 document.getElementById('number-error').style.display = 'block';
-                document.getElementById('error-details').innerHTML = '<p>Não foi possível conectar ao servidor. Verifique sua conexão ou tente novamente mais tarde.</p>';
+                document.getElementById('error-details').innerHTML = '<p>NÃO FOI POSSÍVEL CONECTAR AO SERVIDOR. VERIFIQUE SUA CONEXÃO OU TENTE NOVAMENTE MAIS TARDE.</p>';
             }
             loadNumbers();
             const urlParams = new URLSearchParams(window.location.search);
