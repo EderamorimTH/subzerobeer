@@ -384,7 +384,9 @@
                         element.classList.remove('available');
                         element.classList.add('reserved', 'selected');
                         console.log(`Número ${number} reservado para userId: ${userId}`);
-                        setTimeout(() => checkReservation(number, element), 5 * 60 * 1000);
+                        set
+
+Timeout(() => checkReservation(number, element), 5 * 60 * 1000);
                     } else {
                         alert('Erro ao reservar número: ' + result.message);
                     }
