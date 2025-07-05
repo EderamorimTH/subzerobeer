@@ -460,7 +460,7 @@
                         quantity: selectedNumbers.length
                     })
                 });
-                if (!preferenceResponse.ok) throw new Error(`Erro HTTP: ${preferenceResponse.status} - ${await preferenceResponse.text()}`);
+                if (!preferenceResponse.ok) throw new Error(`Erro HTTP: ${response.status} - ${await preferenceResponse.text()}`);
                 const preferenceData = await preferenceResponse.json();
                 console.log('Redirecionando para Mercado Pago:', preferenceData.init_point);
                 window.location.href = preferenceData.init_point;
