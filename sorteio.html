@@ -2,7 +2,7 @@
 <html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=2.0, user-scalable=yes">
     <title>Sorteio - Sub-zero Beer</title>
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
     <style>
@@ -12,45 +12,48 @@
             padding: 0;
             background-color: #FFFFFF;
             color: #000000;
+            font-size: 16px;
+        }
+        h1, h2, h3 {
+            text-transform: uppercase;
         }
         header {
-            background-color: #8B0000;
+            background-color: #000000 !important; /* Preto */
             color: white;
-            padding: 15px;
+            padding: 20px;
             text-align: center;
             box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+            z-index: 2;
         }
-        header h1 {
-            margin: 0;
-            font-size: clamp(24px, 5vw, 28px);
-            text-transform: uppercase;
+        .header-logo {
+            max-width: 100%;
+            height: auto;
+            max-height: 120px;
+            display: block;
+            margin: 0 auto;
+            animation: pulseTitle 2s ease-in-out infinite;
         }
-        header p {
-            margin: 8px 0;
-            font-size: clamp(14px, 3vw, 15px);
-            text-transform: uppercase;
+        @keyframes pulseTitle {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
         }
-        header .highlight {
-            font-weight: 700;
+        .sorteio-text {
+            font-family: 'Roboto', sans-serif;
             font-size: clamp(16px, 4vw, 18px);
-            color: #FFFFFF;
-        }
-        header .highlight a {
-            color: #FFFFFF;
-            text-decoration: underline;
-        }
-        header .highlight a:hover {
-            color: #FF4040;
+            font-weight: 700;
+            margin: 15px 0;
+            text-shadow: 0 0 3px rgba(0, 0, 0, 0.3);
         }
         nav {
-            margin-top: 10px;
+            margin-top: 15px;
         }
         nav a {
             color: white;
-            margin: 0 10px;
+            margin: 0 15px;
             text-decoration: none;
             font-weight: 700;
-            font-size: clamp(14px, 3vw, 16px);
+            font-size: clamp(16px, 4vw, 18px);
             transition: color 0.3s;
         }
         nav a:hover {
@@ -59,104 +62,103 @@
         .password-container {
             max-width: 90%;
             margin: 30px auto;
-            padding: 15px;
+            padding: 20px;
             background-color: #F5F5F5;
             border-radius: 10px;
             box-shadow: 0 4px 8px rgba(0,0,0,0.1);
             text-align: center;
         }
         .password-container input {
-            padding: 10px;
-            margin: 8px 0;
-            width: calc(100% - 20px);
+            padding: 12px;
+            margin: 10px 0;
+            width: calc(100% - 24px);
             border: 1px solid #ccc;
             border-radius: 5px;
-            font-size: clamp(14px, 3vw, 16px);
+            font-size: clamp(16px, 4vw, 18px);
             background-color: #FFFFFF;
             color: #000000;
         }
         .password-container button {
             background-color: #28A745;
             color: white;
-            padding: 10px 20px;
+            padding: 12px 24px;
             border: none;
             border-radius: 5px;
             cursor: pointer;
             font-weight: 700;
-            font-size: clamp(14px, 3vw, 16px);
+            font-size: clamp(16px, 4vw, 18px);
             transition: background-color 0.3s;
         }
         .password-container button:hover {
             background-color: #218838;
-            color: #FFFFFF;
         }
         .password-error {
             color: #FF0000;
-            margin-top: 8px;
+            margin-top: 10px;
             display: none;
-            font-size: clamp(12px, 3vw, 14px);
+            font-size: clamp(14px, 3.5vw, 16px);
             background-color: #FFE6E6;
-            padding: 8px;
+            padding: 10px;
             border-radius: 5px;
         }
         .content {
             max-width: 90%;
-            margin: 15px auto;
-            padding: 15px;
+            margin: 20px auto;
+            padding: 20px;
             background-color: #F5F5F5;
             border-radius: 10px;
             box-shadow: 0 4px 8px rgba(0,0,0,0.1);
             display: none;
         }
         .content h2 {
-            font-size: clamp(18px, 4vw, 20px);
+            font-size: clamp(20px, 5vw, 22px);
         }
         table {
             width: 100%;
             border-collapse: collapse;
-            margin-top: 15px;
-            font-size: clamp(12px, 3vw, 14px);
+            margin-top: 20px;
+            font-size: clamp(14px, 3.5vw, 16px);
         }
         th, td {
             border: 1px solid #ccc;
-            padding: 8px;
+            padding: 10px;
             text-align: left;
         }
         th {
-            background-color: #8B0000;
+            background-color: #000000; /* Ajustado para preto */
             color: white;
             font-weight: 700;
         }
         .error, .no-data {
             text-align: center;
-            margin: 15px 0;
-            font-size: clamp(14px, 3vw, 16px);
+            margin: 20px 0;
+            font-size: clamp(16px, 4vw, 18px);
         }
         .error {
             color: #FF0000;
             background-color: #FFE6E6;
-            padding: 8px;
+            padding: 10px;
             border-radius: 5px;
         }
         .no-data {
             color: #000000;
             background-color: #F5F5F5;
-            padding: 8px;
+            padding: 10px;
             border-radius: 5px;
         }
         .draw-section {
-            margin: 15px 0;
+            margin: 20px 0;
             text-align: center;
         }
         .draw-button {
             background-color: #28A745;
             color: white;
-            padding: 10px 20px;
+            padding: 12px 24px;
             border: none;
             border-radius: 5px;
             cursor: pointer;
             font-weight: 700;
-            font-size: clamp(14px, 3vw, 16px);
+            font-size: clamp(16px, 4vw, 18px);
             transition: background-color 0.3s;
         }
         .draw-button:hover {
@@ -165,55 +167,54 @@
         .view-phone-button {
             background-color: #28A745;
             color: white;
-            padding: 8px 16px;
+            padding: 10px 20px;
             border: none;
             border-radius: 5px;
             cursor: pointer;
-            margin-top: 8px;
+            margin-top: 10px;
             font-weight: 700;
-            font-size: clamp(12px, 3vw, 14px);
+            font-size: clamp(14px, 3.5vw, 16px);
             transition: background-color 0.3s;
         }
         .view-phone-button:hover {
             background-color: #218838;
-            color: #FFFFFF;
         }
         .winner {
             background-color: #FFFFFF;
-            padding: 15px;
+            padding: 20px;
             border-left: 4px solid #28A745;
-            margin: 15px 0;
+            margin: 20px 0;
             border-radius: 5px;
             text-align: center;
         }
         .countdown {
             font-size: clamp(20px, 5vw, 22px);
             font-weight: 700;
-            margin: 15px 0;
+            margin: 20px 0;
             color: #FF4040;
             background-color: #FFE6E6;
-            padding: 8px;
+            padding: 10px;
             border-radius: 5px;
         }
         footer {
-            background-color: #8B0000;
+            background-color: #000000 !important; /* Preto */
             color: white;
             text-align: center;
-            padding: 15px;
+            padding: 20px;
             box-shadow: 0 -2px 4px rgba(0,0,0,0.2);
             display: none;
         }
         .instagram-button, .share-button {
             background-color: #FF4040;
             color: #FFFFFF;
-            padding: 10px 20px;
+            padding: 12px 24px;
             border: none;
             border-radius: 5px;
             text-decoration: none;
             display: inline-block;
             font-weight: 700;
-            font-size: clamp(14px, 3vw, 16px);
-            margin: 5px;
+            font-size: clamp(16px, 4vw, 18px);
+            margin: 8px;
             transition: background-color 0.3s;
         }
         .instagram-button:hover {
@@ -226,54 +227,107 @@
             background-color: #1EBE5A;
         }
         @media (max-width: 600px) {
+            body {
+                font-size: 14px;
+            }
             header {
-                padding: 10px;
+                padding: 15px;
+            }
+            .header-logo {
+                max-height: 100px;
+            }
+            .sorteio-text {
+                font-size: clamp(14px, 3.5vw, 16px);
+                margin: 10px 0;
+            }
+            nav a {
+                font-size: clamp(14px, 3.5vw, 16px);
+                margin: 0 10px;
             }
             .password-container, .content {
-                margin: 10px;
+                margin: 15px;
+                padding: 15px;
+            }
+            .password-container input {
                 padding: 10px;
+                font-size: clamp(14px, 3.5vw,services: System: 16px 16px 0px rgba(0,0,0,0.2);
+            }
+            .password-container button {
+                padding: 10px 20px;
+                font-size: clamp(14px, 3.5vw, 16px);
+            }
+            .password-error {
+                font-size: clamp(12px, 3vw, 14px);
+                padding: 8px;
             }
             table {
-                font-size: clamp(10px, 2.5vw, 12px);
+                font-size: clamp(12px, 3vw, 14px);
             }
             th, td {
-                padding: 6px;
+                padding: 8px;
+            }
+            .draw-button {
+                padding: 10px 20px;
+                font-size: clamp(14px, 3.5vw, 16px);
+            }
+            .view-phone-button {
+                padding: 8px 16px;
+                font-size: clamp(12px, 3vw, 14px);
+            }
+            .winner {
+                padding: 15px;
+                margin: 15px 0;
+            }
+            .countdown {
+                font-size: clamp(18px, 4.5vw, 20px);
+                padding: 8px;
+            }
+            .error, .no-data {
+                font-size: clamp(14px, 3.5vw, 16px);
+                padding: 8px;
+            }
+            .instagram-button, .share-button {
+                padding: 10px 20px;
+                font-size: clamp(14px, 3.5vw, 16px);
+            }
+            footer {
+                padding: 15px;
             }
         }
     </style>
 </head>
 <body>
     <header id="header">
-        <h1>SUB-ZERO BEER</h1>
-        <p class="highlight">PARTICIPE DO NOSSO SORTEIO AO VIVO E CONCORRA A 1 CAIXA DE LITRÃO E 1 PORÇÃO DE FRANGO A PASSARINHO!</p>
+        <img src="/subzerobeer/images/subzero.png" alt="Sub-Zero Beer Logo" class="header-logo">
+        <p class="sorteio-text">PARTICIPE DO SORTEIO AO VIVO</p>
         <nav id="nav">
-            <a href="/subzerobeer/index.html">Início</a>
-            <a href="/subzerobeer/sorteio.html">Sorteio</a>
-            <a href="/subzerobeer/ganhadores.html">Ganhadores</a>
+            <a href="/subzerobeer/index.html">INÍCIO</a>
+            <a href="/subzerobeer/sorteio.html">SORTEIO</a>
+            <a href="/subzerobeer/ganhadores.html">GANHADORES</a>
         </nav>
     </header>
 
     <div class="password-container" id="password-container">
         <h2>ACESSO RESTRITO</h2>
-        <p>Digite a senha para acessar a página de sorteio:</p>
-        <input type="password" id="password-input" placeholder="Senha">
-        <button onclick="validatePassword()">Entrar</button>
+        <p>DIGITE A SENHA PARA ACESSAR A PÁGINA DE SORTEIO:</p>
+        <input type="password" id="password-input" placeholder="SENHA">
+        <button onclick="validatePassword()">ENTRAR</button>
         <p id="password-error" class="password-error">SENHA INCORRETA. TENTE NOVAMENTE.</p>
     </div>
 
     <section class="content" id="content">
-        <h2>Lista de Compras</h2>
-        <p>Veja todas as compras aprovadas para o sorteio.</p>
+        <h2>LISTA DE COMPRAS</h2>
+        <p>VEJA TODAS AS COMPRAS APROVADAS PARA O SORTEIO.</p>
         <div id="error-message" class="error" style="display: none;"></div>
         <div id="no-data-message" class="no-data" style="display: none;">NENHUMA COMPRA REGISTRADA AINDA.</div>
         <table id="purchases-table">
             <thead>
                 <tr>
-                    <th>Nome</th>
-                    <th>Telefone</th>
-                    <th>Números</th>
-                    <th>Data da Compra</th>
-                    <th>ID do Pagamento</th>
+                    <th>NOME</th>
+                    <th>TELEFONE</th>
+                    <th>NÚMEROS</th>
+                    <th>DATA DA COMPRA</th>
+                    <th>ID DO PAGAMENTO</th>
                 </tr>
             </thead>
             <tbody id="purchases-body"></tbody>
@@ -281,17 +335,17 @@
 
         <div class="draw-section" id="sorteio-ao-vivo">
             <h3>SORTEIO AO VIVO</h3>
-            <p>Clique no botão abaixo para sortear um número ao vivo.</p>
-            <button class="draw-button" onclick="startDraw()">Sortear Agora</button>
+            <p>CLIQUE NO BOTÃO ABAIXO PARA SORTEAR UM NÚMERO AO VIVO.</p>
+            <button class="draw-button" onclick="startDraw()">SORTEAR AGORA</button>
             <div id="countdown" class="countdown" style="display: none;"></div>
             <div id="winner-message" class="winner" style="display: none;"></div>
         </div>
     </section>
 
     <footer id="contato">
-        <p>Contato: <a href="https://instagram.com/Subzerobeercba" class="instagram-button">@Subzerobeercba</a></p>
-        <p><a href="https://wa.me/?text=Participe%20do%20sorteio%20do%20Sub-zero%20Beer!%20Compre%20números%20por%20R$%2010%20e%20concorra%20a%201%20caixa%20de%20litrão%20e%201%20porção%20de%20frango%20a%20passarinho:%20https://ederamorimth.github.io/subzerobeer/index.html" class="share-button">Compartilhar no WhatsApp</a></p>
-        <p>© 2025 Sub-zero Beer</p>
+        <p>Contato: <a href="https://instagram.com/Subzerobeercba" class="instagram-button">@SUBZEROBEERCBA</a></p>
+        <p><a href="https://wa.me/?text=Participe%20do%20sorteio%20do%20Sub-zero%20Beer!%20Compre%20números%20por%20R$%2010%20e%20concorra%20a%201%20caixa%20de%20litrão%20e%201%20porção%20de%20frango%20a%20passarinho:%20https://ederamorimth.github.io/subzerobeer/index.html" class="share-button">COMPARTILHAR NO WHATSAPP</a></p>
+        <p>© 2025 SUB-ZERO BEER</p>
     </footer>
 
     <script>
@@ -329,10 +383,10 @@
                     content.style.display = 'block';
                     footer.style.display = 'block';
                     nav.innerHTML = `
-                        <a href="/subzerobeer/index.html">Início</a>
-                        <a href="/subzerobeer/sorteio.html">Sorteio</a>
-                        <a href="/subzerobeer/ganhadores.html">Ganhadores</a>
-                        <a href="/subzerobeer/sorteio-ao-vivo.html">Sorteio ao Vivo</a>
+                        <a href="/subzerobeer/index.html">INÍCIO</a>
+                        <a href="/subzerobeer/sorteio.html">SORTEIO</a>
+                        <a href="/subzerobeer/ganhadores.html">GANHADORES</a>
+                        <a href="/subzerobeer/sorteio-ao-vivo.html">SORTEIO AO VIVO</a>
                     `;
                     loadPurchases();
                 } else {
@@ -479,11 +533,11 @@
 
             winnerMessage.innerHTML = `
                 <h3>PARABÉNS AO GANHADOR!</h3>
-                <p><strong>Nome:</strong> ${winner.buyerName || 'N/A'}</p>
-                <p><strong>Número Sorteado:</strong> ${winningNumber}</p>
-                <p><strong>Números Comprados:</strong> ${winner.numbers ? winner.numbers.join(', ') : 'N/A'}</p>
-                <p><strong>Telefone:</strong> ${winner.buyerPhone ? '*******' + winner.buyerPhone.slice(-4) : 'N/A'}</p>
-                <button class="view-phone-button" onclick="viewWinnerPhone()">Ver Telefone do Ganhador</button>
+                <p><strong>NOME:</strong> ${winner.buyerName || 'N/A'}</p>
+                <p><strong>NÚMERO SORTEADO:</strong> ${winningNumber}</p>
+                <p><strong>NÚMEROS COMPRADOS:</strong> ${winner.numbers ? winner.numbers.join(', ') : 'N/A'}</p>
+                <p><strong>TELEFONE:</strong> ${winner.buyerPhone ? '*******' + winner.buyerPhone.slice(-4) : 'N/A'}</p>
+                <button class="view-phone-button" onclick="viewWinnerPhone()">VER TELEFONE DO GANHADOR</button>
             `;
             winnerMessage.style.display = 'block';
             console.log(`Sorteio realizado em ${new Date().toISOString()}: Número ${winningNumber}, Ganhador: ${winner.buyerName}`);
