@@ -189,7 +189,7 @@
                     });
                     clearTimeout(timeoutId);
 
-                    if (!response.ok) throw new Error(`Erro HTTP: ${response.status}`);
+                    if (!response.ok) throw new Error(`Erro HTTP: ${response.status} - ${response.statusText}`);
                     const winners = await response.json();
                     console.log('Ganhadores:', winners);
 
