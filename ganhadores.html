@@ -105,6 +105,24 @@
             font-weight: 700;
             margin: 15px 0;
         }
+        .error-message {
+            max-width: 90%;
+            margin: 15px auto;
+            padding: 15px;
+            background-color: #FFE6E6;
+            border-left: 4px solid #FF0000;
+            border-radius: 10px;
+            text-align: center;
+            display: none;
+        }
+        .loading-message {
+            text-align: center;
+            margin: 15px;
+            display: none;
+            color: #FF4040;
+            font-weight: 700;
+            font-size: clamp(14px, 3vw, 16px);
+        }
         footer {
             background-color: #8B0000;
             color: white;
@@ -155,10 +173,13 @@
         <nav>
             <a href="/subzerobeer/index.html">Início</a>
             <a href="/subzerobeer/sorteio.html">Sorteio</a>
+            <a href="/subzerobeer/sorteio-ao-vivo.html">Sorteio ao Vivo</a>
             <a href="/subzerobeer/ganhadores.html">Ganhadores</a>
         </nav>
     </header>
 
+    <div class="loading-message" id="loading-message">Carregando ganhadores...</div>
+    <div class="error-message" id="error-message">Erro ao carregar ganhadores. Tente novamente ou contate o suporte via Instagram.</div>
     <section class="winners-section">
         <h2>Ganhadores</h2>
         <div id="winners-list"></div>
@@ -173,35 +194,67 @@
     <script>
         async function loadWinners() {
             const winnersList = document.getElementById('winners-list');
-            try {
-                const response = await fetch('https://subzerobeer.onrender.com/get_winners');
-                if (!response.ok) throw new Error(`Erro HTTP: ${response.status}`);
-                const winners = await response.json();
-                winnersList.innerHTML = '';
-                if (winners.length === 0) {
-                    winnersList.innerHTML = '<p class="no-data">AGUARDANDO O PRIMEIRO GANHADOR</p>';
+            const loadingMessage = document.getElementById('loading-message');
+            const errorMessage = document.getElementById('error-message');
+            loadingMessage.style.display = 'block';
+            errorMessage.style.display = 'none';
+            winnersList.innerHTML = '';
+
+            const maxRetries = 3;
+            let retries = 0;
+
+            while (retries < maxRetries) {
+                try {
+                    console.log(`Tentativa ${retries + 1} de carregar ganhadores em ${new Date().toISOString()}...`);
+                    const controller = new AbortController();
+                    const timeoutId = setTimeout(() => controller.abort(), 5000);
+                    const response = await fetch('https://subzerobeer.onrender.com/winners', {
+                        method: 'GET',
+                        headers: { 'Content-Type': 'application/json' },
+                        signal: controller.signal
+                    });
+                    clearTimeout(timeoutId);
+
+                    if (!response.ok) throw new Error(`Erro HTTP: ${response.status} - ${await response.text()}`);
+                    const winners = await response.json();
+                    console.log('Ganhadores carregados com sucesso:', winners);
+
+                    if (winners.length === 0) {
+                        winnersList.innerHTML = '<p class="no-data">AGUARDANDO O PRIMEIRO GANHADOR</p>';
+                        return;
+                    }
+
+                    winners.forEach((winner, index) => {
+                        const winnerNumber = index + 1; // Identificador único (1, 2, 3...)
+                        const div = document.createElement('div');
+                        div.className = 'winner';
+                        div.innerHTML = `
+                            ${winner.photoUrl ? `<img src="${winner.photoUrl}" alt="Foto do ganhador ${winner.buyerName}">` : ''}
+                            <h3>Ganhador: ${winner.buyerName || 'N/A'}</h3>
+                            <p><strong>Número Sorteado:</strong> ${winner.winningNumber || 'N/A'}</p>
+                            <p><strong>Números Comprados:</strong> ${winner.numbers ? winner.numbers.join(', ') : 'N/A'}</p>
+                            <p><strong>Prêmio:</strong> 1 Caixa de Litrão e 1 Porção de Frango a Passarinho</p>
+                            <p><strong>Telefone:</strong> ${winner.buyerPhone ? '*******' + winner.buyerPhone.slice(-4) : 'N/A'}</p>
+                            <p><strong>Data do Sorteio:</strong> ${new Date(winner.drawDate).toLocaleString('pt-BR')}</p>
+                            <input type="number" id="photo-number-${winner._id}" placeholder="Número do ganhador (ex.: ${winnerNumber} para ganhador${winnerNumber}.png)" min="1" value="${winnerNumber}">
+                            <button onclick="uploadWinnerPhoto('${winner._id}', ${winnerNumber})">Enviar Foto</button>
+                        `;
+                        winnersList.appendChild(div);
+                    });
+
                     return;
+                } catch (error) {
+                    console.error(`Erro na tentativa ${retries + 1}:`, error.message);
+                    retries++;
+                    if (retries === maxRetries) {
+                        errorMessage.style.display = 'block';
+                        winnersList.innerHTML = '<p class="no-data">ERRO AO CARREGAR GANHADORES. TENTE NOVAMENTE MAIS TARDE.</p>';
+                    } else {
+                        await new Promise(resolve => setTimeout(resolve, 2000));
+                    }
+                } finally {
+                    loadingMessage.style.display = 'none';
                 }
-                winners.forEach((winner, index) => {
-                    const winnerNumber = index + 1; // Identificador único (1, 2, 3...)
-                    const div = document.createElement('div');
-                    div.className = 'winner';
-                    div.innerHTML = `
-                        ${winner.photoUrl ? `<img src="${winner.photoUrl}" alt="Foto do ganhador ${winner.buyerName}">` : ''}
-                        <h3>Ganhador: ${winner.buyerName}</h3>
-                        <p><strong>Número Sorteado:</strong> ${winner.winningNumber}</p>
-                        <p><strong>Números Comprados:</strong> ${winner.numbers.join(', ')}</p>
-                        <p><strong>Prêmio:</strong> 1 Caixa de Litrão e 1 Porção de Frango a Passarinho</p>
-                        <p><strong>Telefone:</strong> ${winner.buyerPhone ? '*******' + winner.buyerPhone.slice(-4) : 'N/A'}</p>
-                        <p><strong>Data do Sorteio:</strong> ${new Date(winner.drawDate).toLocaleString('pt-BR')}</p>
-                        <input type="number" id="photo-number-${winner._id}" placeholder="Número do ganhador (ex.: ${winnerNumber} para ganhador${winnerNumber}.png)" min="1" value="${winnerNumber}">
-                        <button onclick="uploadWinnerPhoto('${winner._id}', ${winnerNumber})">Enviar Foto</button>
-                    `;
-                    winnersList.appendChild(div);
-                });
-            } catch (error) {
-                console.error(`Erro ao carregar ganhadores:`, error.message);
-                winnersList.innerHTML = '<p class="no-data">ERRO AO CARREGAR GANHADORES. TENTE NOVAMENTE MAIS TARDE.</p>';
             }
         }
 
@@ -212,12 +265,13 @@
                 return;
             }
             try {
+                console.log(`Enviando foto para ganhador ${winnerId}, número ${photoNumber}`);
                 const response = await fetch('https://subzerobeer.onrender.com/upload_winner_photo', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ winnerId, winnerNumber: photoNumber })
                 });
-                if (!response.ok) throw new Error(`Erro HTTP: ${response.status}`);
+                if (!response.ok) throw new Error(`Erro HTTP: ${response.status} - ${await response.text()}`);
                 alert('Foto enviada com sucesso!');
                 loadWinners();
             } catch (error) {
