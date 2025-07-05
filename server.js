@@ -1,6 +1,6 @@
 const express = require('express');
 const mongoose = require('mongoose');
-const MercadoPago = require('mercadopago').MercadoPago; // Ajuste na importação
+const { MercadoPagoConfig, Preference } = require('mercadopago'); // Ajuste na importação
 const cors = require('cors');
 const app = express();
 const port = process.env.PORT || 3000;
@@ -9,7 +9,78 @@ app.use(cors());
 app.use(express.json());
 
 // Configure Mercado Pago
-const mercadopago = new MercadoPago({
+const mercadopago = new MercadoPagoConfig({
+    accessToken: process.env.MERCADO_PAGO_ACCESS_TOKEN || 'APP_USR-7275526477888809-070301-eea6b39a6469ea60b9291fcbc20f8fdc-233975707'
+});
+
+// ... (restante do código até a rota /create_preference)
+
+// Rota para criar preferência de pagamento
+app.post('/create_preference', async (req, res) => {
+    const { numbers, userId, buyerName, buyerPhone, quantity } = req.body;
+    try {
+        const preference = new Preference(mercadopago); // Instancia Preference com a configuração
+        const preferenceData = {
+            items: [{
+                title: 'Sub-zero Beer Sorteio',
+                unit_price: 10.0,
+                quantity: quantity,
+            }],
+            back_urls: {
+                success: 'https://ederamorimth.github.io/subzerobeer/index.html?status=approved',
+                failure: 'https://ederamorimth.github.io/subzerobeer/index.html?status=rejected',
+                pending: 'https://ederamorimth.github.io/subzerobeer/index.html?status=pending'
+            },
+            auto_return: 'approved',
+            external_reference: JSON.stringify({ numbers, userId, buyerName, buyerPhone })
+        };
+
+        const response = await preference.create({ body: preferenceData }); // Ajuste na chamada
+        await Number.updateMany(
+            { number: { $in: numbers } },
+            { $set: { buyerName, buyerPhone } }
+        );
+        await Purchase.create({ numbers, userId, buyerName, buyerPhone, status: 'pending' });
+        res.json({ init_point: response.init_point });
+    } catch (error) {
+        console.error('[' + new Date().toISOString() + '] Erro ao criar preferência:', error.message);
+        res.status(500).json({ error: 'Erro ao criar preferência de pagamento' });
+    }
+});
+
+// ... (outras rotas até /webhook)
+
+// Rota para webhook do Mercado Pago
+app.post('/webhook', async (req, res) => {
+    const { data } = req.body;
+    try {
+        if (data && data.id) {
+            const payment = new Payment(mercadopago); // Instancia Payment com a configuração
+            const paymentData = await payment.get({ id: data.id }); // Ajuste na chamada
+            const { external_reference, status } = paymentData;
+            const { numbers, userId, buyerName, buyerPhone } = JSON.parse(external_reference);
+            await Purchase.updateOne(
+                { userId, numbers: { $all: numbers } },
+                { $set: { status } }
+            );
+            if (status === 'approved') {
+                await Number.updateMany(
+                    { number: { $in: numbers } },
+                    { $set: { status: 'vendido', buyerName, buyerPhonePlay the rest of the code remains unchanged. Here's the complete corrected code:
+
+```javascript
+const express = require('express');
+const mongoose = require('mongoose');
+const { MercadoPagoConfig, Preference, Payment } = require('mercadopago'); // Ajuste na importação
+const cors = require('cors');
+const app = express();
+const port = process.env.PORT || 3000;
+
+app.use(cors());
+app.use(express.json());
+
+// Configure Mercado Pago
+const mercadopago = new MercadoPagoConfig({
     accessToken: process.env.MERCADO_PAGO_ACCESS_TOKEN || 'APP_USR-7275526477888809-070301-eea6b39a6469ea60b9291fcbc20f8fdc-233975707'
 });
 
@@ -127,7 +198,7 @@ app.post('/check_reservation', async (req, res) => {
         });
         res.json({ valid: reservedNumbers.length === numbers.length });
     } catch (error) {
-        console.error('[' + new Date().toISOString() + '] Erro ao verificar reservas:', error.message);
+        console.error('[' + new Date().toISOString() + '] Erro ao verificar reservas搁
         res.status(500).json({ valid: false });
     }
 });
@@ -136,7 +207,8 @@ app.post('/check_reservation', async (req, res) => {
 app.post('/create_preference', async (req, res) => {
     const { numbers, userId, buyerName, buyerPhone, quantity } = req.body;
     try {
-        const preference = {
+        const preference = new Preference(mercadopago);
+        const preferenceData = {
             items: [{
                 title: 'Sub-zero Beer Sorteio',
                 unit_price: 10.0,
@@ -151,13 +223,13 @@ app.post('/create_preference', async (req, res) => {
             external_reference: JSON.stringify({ numbers, userId, buyerName, buyerPhone })
         };
 
-        const response = await mercadopago.preferences.create(preference);
+        const response = await preference.create({ body: preferenceData });
         await Number.updateMany(
             { number: { $in: numbers } },
             { $set: { buyerName, buyerPhone } }
         );
         await Purchase.create({ numbers, userId, buyerName, buyerPhone, status: 'pending' });
-        res.json({ init_point: response.body.init_point });
+        res.json({ init_point: response.init_point });
     } catch (error) {
         console.error('[' + new Date().toISOString() + '] Erro ao criar preferência:', error.message);
         res.status(500).json({ error: 'Erro ao criar preferência de pagamento' });
@@ -207,8 +279,9 @@ app.post('/webhook', async (req, res) => {
     const { data } = req.body;
     try {
         if (data && data.id) {
-            const payment = await mercadopago.payment.findById(data.id);
-            const { external_reference, status } = payment.body; // Ajuste para acessar payment.body
+            const payment = new Payment(mercadopago);
+            const paymentData = await payment.get({ id: data.id });
+            const { external_reference, status } = paymentData;
             const { numbers, userId, buyerName, buyerPhone } = JSON.parse(external_reference);
             await Purchase.updateOne(
                 { userId, numbers: { $all: numbers } },
