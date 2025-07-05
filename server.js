@@ -35,7 +35,7 @@ const pendingNumberSchema = new mongoose.Schema({
   userId: String,
   buyerName: String,
   buyerPhone: String,
-  reservedAt: { type: Date, default: Date.now, expires: 300 }, // Expira após 5 minutos (300 segundos)
+  reservedAt: { type: Date, default: Date.now, expires: 300 }, // Expira após 5 minutos
 });
 const PendingNumber = mongoose.model('PendingNumber', pendingNumberSchema);
 
@@ -80,7 +80,6 @@ async function cleanupExpiredReservations() {
 // Chamar inicialização e configurar cleanup
 mongoose.connection.once('open', async () => {
   await initializeNumbers();
-  // Executar cleanup a cada minuto
   setInterval(cleanupExpiredReservations, 60 * 1000);
 });
 
@@ -159,12 +158,18 @@ app.post('/create_preference', async (req, res) => {
       return res.status(400).json({ error: 'Alguns números não estão mais reservados' });
     }
 
-    // Simulação de preferência do Mercado Pago
-    const preferenceData = { init_point: 'https://www.mercadopago.com/mock_payment', external_reference: numbers.join(',') };
+    // Atualizar informações do comprador em pending_numbers
     await PendingNumber.updateMany(
       { number: { $in: numbers }, userId },
       { $set: { buyerName, buyerPhone } }
     );
+
+    // Simulação de preferência do Mercado Pago
+    const preferenceData = {
+      init_point: 'https://www.mercadopago.com/mock_payment',
+      external_reference: numbers.join(',')
+    };
+    console.log('[' + new Date().toISOString() + '] Preferência criada para números:', numbers);
     res.json(preferenceData);
   } catch (error) {
     console.error('[' + new Date().toISOString() + '] Erro ao criar preferência:', error.message);
@@ -175,28 +180,48 @@ app.post('/create_preference', async (req, res) => {
 // Webhook para processar notificações de pagamento do Mercado Pago
 app.post('/webhook', async (req, res) => {
   const { data } = req.body;
-  const paymentStatus = data?.status;
+  const paymentStatus = data?.status; // 'approved', 'rejected', 'pending'
   const numbers = data?.external_reference?.split(',');
+
+  if (!numbers || !Array.isArray(numbers) || numbers.length === 0) {
+    console.error('[' + new Date().toISOString() + '] Webhook: Números inválidos ou não fornecidos');
+    return res.status(400).json({ error: 'Números inválidos' });
+  }
+
   try {
+    const pending = await PendingNumber.find({ number: { $in: numbers } });
+    if (pending.length !== numbers.length) {
+      // Liberar números se algum não estiver pendente
+      await Number.updateMany(
+        { number: { $in: numbers }, status: 'reservado' },
+        { status: 'disponível' }
+      );
+      await PendingNumber.deleteMany({ number: { $in: numbers } });
+      console.log('[' + new Date().toISOString() + '] Webhook: Números não encontrados em pending_numbers, liberados:', numbers);
+      return res.status(400).json({ error: 'Números não encontrados em pendentes' });
+    }
+
     if (paymentStatus === 'approved') {
-      const pending = await PendingNumber.find({ number: { $in: numbers } });
-      if (pending.length === numbers.length) {
-        await Number.updateMany(
-          { number: { $in: numbers }, status: 'reservado' },
-          { status: 'vendido' }
-        );
-        await SoldNumber.insertMany(
-          pending.map(p => ({
-            number: p.number,
-            buyerName: p.buyerName,
-            buyerPhone: p.buyerPhone,
-            status: 'vendido',
-          }))
-        );
-        await PendingNumber.deleteMany({ number: { $in: numbers } });
-        console.log('[' + new Date().toISOString() + '] Pagamento aprovado, números marcados como vendido:', numbers);
-      }
+      // Marcar todos os números como vendido
+      await Number.updateMany(
+        { number: { $in: numbers }, status: 'reservado' },
+        { status: 'vendido' }
+      );
+      // Registrar todos os números em sold_numbers
+      await SoldNumber.insertMany(
+        pending.map(p => ({
+          number: p.number,
+          buyerName: p.buyerName,
+          buyerPhone: p.buyerPhone,
+          status: 'vendido',
+          timestamp: new Date()
+        }))
+      );
+      // Remover de pending_numbers
+      await PendingNumber.deleteMany({ number: { $in: numbers } });
+      console.log('[' + new Date().toISOString() + '] Pagamento aprovado, números marcados como vendido:', numbers);
     } else if (paymentStatus === 'rejected' || paymentStatus === 'pending') {
+      // Liberar todos os números
       await Number.updateMany(
         { number: { $in: numbers }, status: 'reservado' },
         { status: 'disponível' }
@@ -204,6 +229,7 @@ app.post('/webhook', async (req, res) => {
       await PendingNumber.deleteMany({ number: { $in: numbers } });
       console.log('[' + new Date().toISOString() + '] Pagamento ' + paymentStatus + ', números liberados:', numbers);
     }
+
     res.status(200).send('OK');
   } catch (error) {
     console.error('[' + new Date().toISOString() + '] Erro no webhook:', error.message);
