@@ -20,7 +20,7 @@ mongoose.set('strictQuery', true);
 // Conexão com o MongoDB
 async function connectToMongoDB() {
     const mongoUri = process.env.MONGODB_URI || 'mongodb://localhost/subzerobeer';
-    console.log('[' + new Date().toISOString() + '] Tentando conectar ao MongoDB com URI:', mongoUri.replace(/:.*@/, ':<hidden>@')); // Log para depuração
+    console.log('[' + new Date().toISOString() + '] Tentando conectar ao MongoDB com URI:', mongoUri.replace(/:.*@/, ':<hidden>@'));
     try {
         await mongoose.connect(mongoUri, {
             useNewUrlParser: true,
@@ -186,6 +186,92 @@ app.post('/create_preference', async (req, res) => {
         res.json({ init_point: response.init_point });
     } catch (error) {
         console.error('[' + new Date().toISOString() + '] Erro ao criar preferência:', error.message);
-        res.status(500).json({ error: 'Erro ao criar preferênciaсию
+        res.status(500).json({ error: 'Erro ao criar preferência de pagamento' });
+    }
+});
 
-System: * Today's date and time is 04:03 PM -04 on Saturday, July 05, 2025.
+// Rota para obter compras
+app.get('/purchases', async (req, res) => {
+    try {
+        const purchases = await Purchase.find();
+        res.json(purchases);
+    } catch (error) {
+        console.error('[' + new Date().toISOString() + '] Erro ao obter compras:', error.message);
+        res.status(500).json({ error: 'Erro ao obter compras' });
+    }
+});
+
+// Rota para obter ganhadores
+app.get('/winners', async (req, res) => {
+    try {
+        const winners = await Winner.find();
+        res.json(winners);
+    } catch (error) {
+        console.error('[' + new Date().toISOString() + '] Erro ao obter ganhadores:', error.message);
+        res.status(500).json({ error: 'Erro ao obter ganhadores' });
+    }
+});
+
+// Rota para salvar ganhador
+app.post('/save_winner', async (req, res) => {
+    const { buyerName, buyerPhone, winningNumber, numbers, drawDate, photoUrl } = req.body;
+    try {
+        if (!buyerName || !buyerPhone || !winningNumber || !numbers || !Array.isArray(numbers) || !drawDate) {
+            return res.status(400).json({ error: 'Dados incompletos' });
+        }
+        await Winner.create({ buyerName, buyerPhone, winningNumber, numbers, drawDate, photoUrl });
+        await Number.updateMany(
+            { number: { $in: numbers } },
+            { $set: { status: 'vendido' } }
+        );
+        res.json({ success: true });
+    } catch (error) {
+        console.error('[' + new Date().toISOString() + '] Erro ao salvar ganhador:', error.message);
+        res.status(500).json({ error: 'Erro ao salvar ganhador' });
+    }
+});
+
+// Rota para webhook do Mercado Pago
+app.post('/webhook', async (req, res) => {
+    const { data } = req.body;
+    try {
+        if (!data || !data.id) {
+            return res.status(400).send('Dados inválidos');
+        }
+        const payment = new Payment(mercadopago);
+        const paymentData = await payment.get({ id: data.id });
+        const { external_reference, status } = paymentData;
+        const { numbers, userId, buyerName, buyerPhone } = JSON.parse(external_reference);
+        await Purchase.updateOne(
+            { userId, numbers: { $all: numbers } },
+            { $set: { status } }
+        );
+        if (status === 'approved') {
+            await Number.updateMany(
+                { number: { $in: numbers } },
+                { $set: { status: 'vendido', buyerName, buyerPhone } }
+            );
+        } else if (status === 'rejected') {
+            await Number.updateMany(
+                { number: { $in: numbers } },
+                { $set: { status: 'disponível', userId: null, reservationTime: null, buyerName: null, buyerPhone: null } }
+            );
+        }
+        console.log('[' + new Date().toISOString() + '] Webhook processado: status=' + status + ', números=' + numbers);
+        res.status(200).send('OK');
+    } catch (error) {
+        console.error('[' + new Date().toISOString() + '] Erro no webhook:', error.message);
+        res.status(500).send('Erro no webhook');
+    }
+});
+
+// Iniciar servidor após conexão com MongoDB
+async function startServer() {
+    await connectToMongoDB();
+    await initializeNumbers();
+    app.listen(port, () => {
+        console.log('[' + new Date().toISOString() + '] Servidor rodando na porta ' + port);
+    });
+}
+
+startServer();
