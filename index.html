@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Sub-zero Beer</title>
-    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&family=Bungee&display=swap" rel="stylesheet">
     <style>
         body {
             font-family: 'Roboto', sans-serif;
@@ -22,19 +22,18 @@
             padding: 15px;
             text-align: center;
             box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+            z-index: 2;
         }
         header h1 {
+            font-family: 'Bungee', sans-serif;
+            font-size: clamp(36px, 8vw, 48px);
             margin: 0;
-            font-size: clamp(24px, 5vw, 28px);
+            text-shadow: 0 0 10px rgba(255, 255, 255, 0.8), 0 0 20px rgba(255, 0, 0, 0.7);
+            animation: neonGlow 1.5s ease-in-out infinite alternate;
         }
-        header p {
-            margin: 8px 0;
-            font-size: clamp(14px, 3vw, 15px);
-        }
-        header .highlight {
-            font-weight: 700;
-            font-size: clamp(16px, 4vw, 18px);
-            color: #ffffff;
+        @keyframes neonGlow {
+            0% { text-shadow: 0 0 10px rgba(255, 255, 255, 0.8), 0 0 20px rgba(255, 0, 0, 0.7); }
+            100% { text-shadow: 0 0 20px rgba(255, 255, 255, 1), 0 0 30px rgba(255, 0, 0, 1); }
         }
         nav {
             margin-top: 10px;
@@ -225,12 +224,11 @@
 </head>
 <body>
     <header>
-        <h1>Sub-zero Beer</h1>
-        <p class="highlight">PARTICIPE DO NOSSO SORTEIO E CONCORRA A 1 CAIXA DE LITRÃO E 1 PORÇÃO DE FRANGO A PASSARINHO!</p>
+        <h1>SUB-ZERO BEER</h1>
         <nav>
-            <a href="/subzerobeer/index.html">Início</a>
-            <a href="/subzerobeer/sorteio.html">Sorteio</a>
-            <a href="/subzerobeer/ganhadores.html">Ganhadores</a>
+            <a href="/subzerobeer/index.html">INÍCIO</a>
+            <a href="/subzerobeer/sorteio.html">SORTEIO</a>
+            <a href="/subzerobeer/ganhadores.html">GANHADORES</a>
         </nav>
     </header>
 
@@ -341,14 +339,15 @@
 
                     const allNumbers = Array.from({ length: 150 }, (_, i) => String(i + 1).padStart(3, '0'));
                     allNumbers.forEach(number => {
-                        const numData = numbers.find(n => n.number === number);
-                        const status = numData ? numData.status : 'reservado';
+                        const numData = numbers.find(n => n.number === number) || { number, status: 'reservado' };
                         const div = document.createElement('div');
-                        div.className = `number ${status}`;
+                        div.className = `number ${numData.status}`;
                         div.textContent = number;
-                        if (status === 'disponível') {
+                        if (numData.status === 'disponível') {
+                            div.classList.add('available');
                             div.onclick = () => toggleNumberSelection(number, div);
                         } else {
+                            div.classList.add(numData.status);
                             div.style.pointerEvents = 'none';
                         }
                         numbersGrid.appendChild(div);
@@ -482,7 +481,7 @@
                 document.getElementById('number-error').style.display = 'block';
                 document.getElementById('error-details').innerHTML = '<p>NÃO FOI POSSÍVEL CONECTAR AO SERVIDOR.</p>';
             }
-            loadNumbers();
+            await loadNumbers();
             const urlParams = new URLSearchParams(window.location.search);
             const status = urlParams.get('status');
             if (status === 'approved') {
