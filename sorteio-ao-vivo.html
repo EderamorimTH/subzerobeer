@@ -3,100 +3,83 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sorteio ao Vivo - Sub-zero Beer</title>
-    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
+    <title>SORTEIO AO VIVO - SUB-ZERO BEER</title>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&family=Bungee&display=swap" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
     <style>
         body {
             font-family: 'Roboto', sans-serif;
             margin: 0;
             padding: 0;
-            background: linear-gradient(135deg, #1a3c6e, #ffca28);
+            background-color: #ff0000;
             min-height: 100vh;
             display: flex;
             flex-direction: column;
             justify-content: center;
             align-items: center;
-            overflow: hidden;
             position: relative;
+            overflow-x: hidden;
         }
-        body::before {
-            content: '';
-            position: absolute;
-            width: 100%;
-            height: 100%;
-            background: url('https://www.transparenttextures.com/patterns/confetti.png');
-            opacity: 0.1;
-            z-index: 0;
+        h1, h2, h3 {
+            text-transform: uppercase;
         }
-        h1 {
-            color: #ffffff;
+        .title {
+            font-family: 'Bungee', sans-serif;
             font-size: clamp(36px, 8vw, 48px);
-            font-weight: 700;
-            text-shadow: 2px 2px 4px rgba(26, 60, 110, 0.5);
-            margin-bottom: 20px;
-            z-index: 1;
+            color: white;
+            text-shadow: 0 0 5px rgba(255, 255, 255, 0.6), 0 0 10px rgba(255, 0, 0, 0.5);
+            animation: pulseTitle 2s ease-in-out infinite;
             text-align: center;
+            margin: 0;
+        }
+        @keyframes pulseTitle {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
         }
         .draw-section {
-            margin: 15px 0;
-            z-index: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
         }
         .draw-button {
-            background: linear-gradient(90deg, #1a3c6e, #ffca28);
+            background-color: #ff0000;
             color: white;
             padding: 12px 24px;
-            border: none;
+            border: 1px solid #000000;
             border-radius: 25px;
             cursor: pointer;
             font-size: clamp(16px, 4vw, 18px);
             font-weight: 700;
-            transition: transform 0.3s, background-color 0.3s;
-            box-shadow: 0 4px 15px rgba(26, 60, 110, 0.4);
-            position: relative;
-            overflow: hidden;
-        }
-        .draw-button::before {
-            content: '🎲';
-            position: absolute;
-            left: 10px;
-            opacity: 0;
-            transition: opacity 0.3s;
-        }
-        .draw-button:hover::before {
-            opacity: 1;
+            transition: background-color 0.3s;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+            margin-top: 20px;
         }
         .draw-button:hover {
-            transform: scale(1.05);
-            background: linear-gradient(90deg, #0e2449, #e0a800);
+            background-color: #cc0000;
         }
         .draw-button:disabled {
             background-color: #ccc;
             cursor: not-allowed;
-            transform: none;
         }
         .countdown {
             font-size: clamp(20px, 5vw, 24px);
-            color: #ffca28;
+            color: white;
             margin: 15px 0;
             font-weight: 700;
-            animation: pulseGlow 1.2s infinite alternate;
-            text-shadow: 0 0 10px rgba(255, 202, 40, 0.7), 0 0 20px rgba(255, 202, 40, 0.4);
-            z-index: 1;
-        }
-        @keyframes pulseGlow {
-            0% { transform: scale(1); opacity: 0.9; }
-            100% { transform: scale(1.2); opacity: 1; text-shadow: 0 0 15px rgba(255, 202, 40, 0.9); }
+            text-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
         }
         .winner {
-            background: #f0f4fa;
+            background: #f0f0f0;
             padding: 15px;
             border-radius: 10px;
-            border-left: 6px solid #1a3c6e;
+            border-left: 6px solid #8b0000;
             margin: 15px 0;
             text-align: center;
             animation: slideUp 0.5s ease-out;
-            z-index: 1;
+            max-width: 90%;
         }
         @keyframes slideUp {
             from { transform: translateY(20px); opacity: 0; }
@@ -105,11 +88,11 @@
         .winner p {
             margin: 8px 0;
             font-size: clamp(14px, 3vw, 16px);
-            color: #1a3c6e;
+            color: #000000;
             font-weight: 500;
         }
         .view-phone-button {
-            background: linear-gradient(90deg, #1a3c6e, #ffca28);
+            background-color: #ff0000;
             color: white;
             padding: 8px 16px;
             border: none;
@@ -117,11 +100,10 @@
             cursor: pointer;
             font-size: clamp(12px, 3vw, 14px);
             font-weight: 700;
-            transition: background-color 0.3s, transform 0.3s;
+            transition: background-color 0.3s;
         }
         .view-phone-button:hover {
-            transform: translateY(-2px);
-            background: linear-gradient(90deg, #0e2449, #e0a800);
+            background-color: #cc0000;
         }
         .snowflake {
             position: absolute;
@@ -137,7 +119,7 @@
             100% { top: 100%; opacity: 0; }
         }
         @media (max-width: 600px) {
-            h1 {
+            .title {
                 font-size: clamp(28px, 6vw, 36px);
             }
             .draw-button {
@@ -147,13 +129,16 @@
             .countdown {
                 font-size: clamp(18px, 4vw, 20px);
             }
+            .winner {
+                padding: 10px;
+            }
         }
     </style>
 </head>
 <body>
-    <h1>Sub-zero Beer</h1>
     <div class="draw-section">
-        <button class="draw-button" onclick="startDraw()">Sortear Agora</button>
+        <h1 class="title">SUB-ZERO BEER</h1>
+        <button class="draw-button" onclick="startDraw()">SORTEAR AGORA</button>
         <div id="countdown" class="countdown" style="display: none;">10</div>
         <div id="winner-message" class="winner" style="display: none;"></div>
     </div>
@@ -181,7 +166,7 @@
 
             while (retries < maxRetries) {
                 try {
-                    console.log(`Tentativa ${retries + 1} de carregar compras em ${new Date().toISOString()}...`);
+                    console.log('[' + new Date().toISOString() + '] Tentativa ' + (retries + 1) + ' de carregar compras');
                     const controller = new AbortController();
                     const timeoutId = setTimeout(() => controller.abort(), 5000);
                     const response = await fetch('https://subzerobeer.onrender.com/purchases', {
@@ -191,12 +176,12 @@
                     });
                     clearTimeout(timeoutId);
 
-                    if (!response.ok) throw new Error(`Erro HTTP: ${response.status} - ${response.statusText}`);
+                    if (!response.ok) throw new Error(`Erro HTTP: ${response.status}`);
                     purchasesData = await response.json();
-                    console.log('Compras carregadas com sucesso:', purchasesData);
+                    console.log('[' + new Date().toISOString() + '] Compras carregadas com sucesso:', purchasesData);
                     return;
                 } catch (error) {
-                    console.error(`Erro na tentativa ${retries + 1}: ${error.message}`);
+                    console.error('[' + new Date().toISOString() + '] Erro na tentativa ' + (retries + 1) + ':', error.message);
                     retries++;
                     if (retries === maxRetries) {
                         alert('Erro ao carregar compras. Tente novamente ou contate o suporte via Instagram.');
@@ -209,18 +194,18 @@
 
         function launchConfetti() {
             if (typeof confetti === 'undefined') {
-                console.error('Biblioteca canvas-confetti não carregada.');
+                console.error('[' + new Date().toISOString() + '] Biblioteca canvas-confetti não carregada');
                 alert('Não foi possível carregar a animação de confetes. Tente novamente.');
                 return;
             }
-            console.log('Acionando confetes...');
+            console.log('[' + new Date().toISOString() + '] Acionando confetes');
             let burstCount = 0;
             const interval = setInterval(() => {
                 confetti({
                     particleCount: 100 + (burstCount % 3) * 20,
                     spread: 70 + (burstCount % 3) * 10,
                     origin: { y: 0.5 + (burstCount % 3) * 0.1 },
-                    colors: ['#1a3c6e', '#ffca28', '#f0f4fa'],
+                    colors: ['#8b0000', '#ff0000', '#ffffff'],
                     angle: 90,
                     drift: burstCount % 2 === 0 ? 0.5 : -0.5,
                     zIndex: 9999
@@ -239,11 +224,11 @@
             winnerMessage.style.display = 'none';
 
             let timeLeft = 10;
-            countdownElement.textContent = `Sorteio em ${timeLeft} segundos...`;
+            countdownElement.textContent = `SORTEIO EM ${timeLeft} SEGUNDOS...`;
 
             const countdown = setInterval(() => {
                 timeLeft--;
-                countdownElement.textContent = `Sorteio em ${timeLeft} segundos...`;
+                countdownElement.textContent = `SORTEIO EM ${timeLeft} SEGUNDOS...`;
                 if (timeLeft <= 0) {
                     clearInterval(countdown);
                     countdownElement.style.display = 'none';
@@ -257,14 +242,14 @@
             const winnerMessage = document.getElementById('winner-message');
             const approvedPurchases = purchasesData.filter(purchase => purchase.status === 'approved');
             if (approvedPurchases.length === 0) {
-                winnerMessage.textContent = 'Nenhuma compra aprovada para realizar o sorteio.';
+                winnerMessage.textContent = 'NENHUMA COMPRA APROVADA PARA REALIZAR O SORTEIO.';
                 winnerMessage.style.display = 'block';
                 return;
             }
 
             const allNumbers = approvedPurchases.flatMap(purchase => purchase.numbers || []);
             if (allNumbers.length === 0) {
-                winnerMessage.textContent = 'Nenhum número aprovado encontrado para o sorteio.';
+                winnerMessage.textContent = 'NENHUM NÚMERO APROVADO ENCONTRADO PARA O SORTEIO.';
                 winnerMessage.style.display = 'block';
                 return;
             }
@@ -274,7 +259,7 @@
             const winner = approvedPurchases.find(purchase => purchase.numbers && purchase.numbers.includes(winningNumber));
 
             if (!winner) {
-                winnerMessage.textContent = 'Erro: Comprador não encontrado para o número sorteado.';
+                winnerMessage.textContent = 'ERRO: COMPRADOR NÃO ENCONTRADO PARA O NÚMERO SORTEADO.';
                 winnerMessage.style.display = 'block';
                 return;
             }
@@ -283,6 +268,13 @@
             currentWinner.winningNumber = winningNumber;
 
             try {
+                const winnersCount = await fetch('https://subzerobeer.onrender.com/winners', {
+                    method: 'GET',
+                    headers: { 'Content-Type': 'application/json' }
+                }).then(res => res.json()).then(data => data.length);
+                const winnerNumber = winnersCount + 1;
+                const photoUrl = `/subzerobeer/images/ganhador${winnerNumber}.jpg`;
+
                 const response = await fetch('https://subzerobeer.onrender.com/save_winner', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
@@ -291,35 +283,36 @@
                         buyerPhone: winner.buyerPhone,
                         winningNumber,
                         numbers: winner.numbers,
-                        drawDate: new Date().toISOString()
+                        drawDate: new Date().toISOString(),
+                        photoUrl
                     })
                 });
-                if (!response.ok) throw new Error(`Erro HTTP: ${response.status} - ${response.statusText}`);
-                console.log(`Ganhador salvo com sucesso: ${winner.buyerName}, número: ${winningNumber}`);
+                if (!response.ok) throw new Error(`Erro HTTP: ${response.status}`);
+                console.log('[' + new Date().toISOString() + '] Ganhador salvo com sucesso: ' + winner.buyerName + ', número: ' + winningNumber + ', foto: ' + photoUrl);
             } catch (error) {
-                console.error(`Erro ao salvar ganhador: ${error.message}`);
+                console.error('[' + new Date().toISOString() + '] Erro ao salvar ganhador:', error.message);
                 alert('Erro ao salvar ganhador. Verifique o console para detalhes.');
             }
 
             winnerMessage.innerHTML = `
-                <h3>Parabéns ao Ganhador! 🎉</h3>
-                <p><strong>Nome:</strong> ${winner.buyerName || 'N/A'}</p>
-                <p><strong>Número Sorteado:</strong> ${winningNumber}</p>
-                <p><strong>Números Comprados:</strong> ${winner.numbers ? winner.numbers.join(', ') : 'N/A'}</p>
-                <p><strong>Telefone:</strong> ${winner.buyerPhone ? '*******' + winner.buyerPhone.slice(-4) : 'N/A'}</p>
-                <button class="view-phone-button" onclick="viewWinnerPhone()">Ver Telefone do Ganhador</button>
+                <h3>PARABÉNS AO GANHADOR! 🎉</h3>
+                <p><strong>NOME:</strong> ${winner.buyerName || 'N/A'}</p>
+                <p><strong>NÚMERO SORTEADO:</strong> ${winningNumber}</p>
+                <p><strong>NÚMEROS COMPRADOS:</strong> ${winner.numbers ? winner.numbers.join(', ') : 'N/A'}</p>
+                <p><strong>TELEFONE:</strong> ${winner.buyerPhone ? '*******' + winner.buyerPhone.slice(-4) : 'N/A'}</p>
+                <button class="view-phone-button" onclick="viewWinnerPhone()">VER TELEFONE DO GANHADOR</button>
             `;
             winnerMessage.style.display = 'block';
-            console.log(`Sorteio realizado em ${new Date().toISOString()}: Número ${winningNumber}, Ganhador: ${winner.buyerName}`);
+            console.log('[' + new Date().toISOString() + '] Sorteio realizado: Número ' + winningNumber + ', Ganhador: ' + winner.buyerName);
             launchConfetti();
         }
 
         function viewWinnerPhone() {
             if (!currentWinner) {
-                alert('Nenhum ganhador selecionado.');
+                alert('NENHUM GANHADOR SELECIONADO.');
                 return;
             }
-            alert(`Telefone do ganhador (${currentWinner.buyerName}): ${currentWinner.buyerPhone}`);
+            alert(`TELEFONE DO GANHADOR (${currentWinner.buyerName}): ${currentWinner.buyerPhone}`);
         }
 
         window.onload = () => {
