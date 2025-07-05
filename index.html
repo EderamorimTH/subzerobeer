@@ -2,7 +2,7 @@
 <html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=2.0, user-scalable=yes">
     <title>Sub-zero Beer</title>
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&family=Bungee&display=swap" rel="stylesheet">
     <style>
@@ -12,14 +12,15 @@
             padding: 0;
             background-color: white;
             color: #000000;
+            font-size: 16px;
         }
         h1, h2, h3 {
             text-transform: uppercase;
         }
         header {
-            background-color: #8b0000;
+            background-color: #000000 !important; /* Preto */
             color: white;
-            padding: 15px;
+            padding: 20px;
             text-align: center;
             box-shadow: 0 2px 4px rgba(0,0,0,0.2);
             z-index: 2;
@@ -27,7 +28,7 @@
         .header-logo {
             max-width: 100%;
             height: auto;
-            max-height: 100px;
+            max-height: 120px;
             display: block;
             margin: 0 auto;
             animation: pulseTitle 2s ease-in-out infinite;
@@ -39,20 +40,20 @@
         }
         .sorteio-text {
             font-family: 'Roboto', sans-serif;
-            font-size: clamp(14px, 3vw, 16px);
+            font-size: clamp(16px, 4vw, 18px);
             font-weight: 700;
-            margin: 10px 0;
+            margin: 15px 0;
             text-shadow: 0 0 3px rgba(0, 0, 0, 0.3);
         }
         nav {
-            margin-top: 10px;
+            margin-top: 15px;
         }
         nav a {
             color: white;
-            margin: 0 10px;
+            margin: 0 15px;
             text-decoration: none;
             font-weight: 700;
-            font-size: clamp(14px, 3vw, 16px);
+            font-size: clamp(16px, 4vw, 18px);
             transition: color 0.3s;
         }
         nav a:hover {
@@ -60,26 +61,26 @@
         }
         .hero {
             text-align: center;
-            padding: 30px 15px;
+            padding: 40px 20px;
             background-color: #f0f0f0;
             border-radius: 10px;
-            margin: 15px auto;
+            margin: 20px auto;
             max-width: 1000px;
             box-shadow: 0 4px 8px rgba(0,0,0,0.1);
         }
         .hero-buttons {
-            margin: 15px 0;
+            margin: 20px 0;
         }
         .hero-buttons button {
             background-color: #ff0000;
             color: white;
-            padding: 10px 20px;
+            padding: 12px 24px;
             border: none;
             border-radius: 5px;
             cursor: pointer;
-            margin: 5px;
+            margin: 8px;
             font-weight: 700;
-            font-size: clamp(14px, 3vw, 16px);
+            font-size: clamp(16px, 4vw, 18px);
             transition: background-color 0.3s;
         }
         .hero-buttons button:hover {
@@ -87,17 +88,17 @@
         }
         .numbers-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(40px, 1fr));
-            gap: 5px;
+            grid-template-columns: repeat(auto-fit, minmax(50px, 1fr));
+            gap: 8px;
             max-width: 90%;
-            margin: 15px auto;
+            margin: 20px auto;
         }
         .number {
-            padding: 8px;
+            padding: 12px;
             border: 1px solid #ccc;
             border-radius: 5px;
             text-align: center;
-            font-size: clamp(12px, 3vw, 14px);
+            font-size: clamp(14px, 3.5vw, 16px);
             color: #000000;
         }
         .number.available {
@@ -118,39 +119,39 @@
         }
         .payment-form {
             max-width: 90%;
-            margin: 15px auto;
-            padding: 15px;
+            margin: 20px auto;
+            padding: 20px;
             background-color: #f0f0f0;
             border-radius: 10px;
             box-shadow: 0 4px 8px rgba(0,0,0,0.1);
             display: block;
         }
         .payment-form h2 {
-            font-size: clamp(18px, 4vw, 20px);
+            font-size: clamp(20px, 5vw, 22px);
         }
         .payment-form p {
-            font-size: clamp(14px, 3vw, 15px);
+            font-size: clamp(16px, 4vw, 18px);
         }
         .payment-form input {
-            padding: 10px;
-            margin: 8px 0;
-            width: calc(100% - 20px);
+            padding: 12px;
+            margin: 10px 0;
+            width: calc(100% - 24px);
             border: 1px solid #ccc;
             border-radius: 5px;
-            font-size: clamp(14px, 3vw, 16px);
+            font-size: clamp(16px, 4vw, 18px);
             background-color: #ffffff;
             color: #000000;
         }
         .payment-form .pay-button {
             background-color: #00ff00;
             color: #000000;
-            padding: 10px 20px;
+            padding: 12px 24px;
             border: none;
             border-radius: 5px;
             cursor: pointer;
             width: 100%;
             font-weight: 700;
-            font-size: clamp(14px, 3vw, 16px);
+            font-size: clamp(16px, 4vw, 18px);
             transition: background-color 0.3s;
         }
         .payment-form .pay-button:hover {
@@ -158,15 +159,16 @@
         }
         .success-message, .error-message, .pending-message, .number-error {
             max-width: 90%;
-            margin: 15px auto;
-            padding: 15px;
+            margin: 20px auto;
+            padding: 20px;
             border-radius: 10px;
             text-align: center;
             display: none;
+            font-size: clamp(16px, 4vw, 18px);
         }
         .success-message {
             background-color: #e0e0e0;
-            border-left: 4px solid #8b0000;
+            border-left: 4px solid #000000; /* Ajustado para preto */
         }
         .error-message, .number-error {
             background-color: #ff4040;
@@ -178,55 +180,99 @@
         }
         .loading-message {
             text-align: center;
-            margin: 15px;
+            margin: 20px;
             display: none;
             color: #ff0000;
             font-weight: 700;
-            font-size: clamp(14px, 3vw, 16px);
+            font-size: clamp(16px, 4vw, 18px);
         }
         footer {
-            background-color: #8b0000;
+            background-color: #000000 !important; /* Preto */
             color: white;
             text-align: center;
-            padding: 15px;
-            box-shadow: 0 -2px 4px rgba(0,0,0,0.2);
+            padding: 20px;
+            box-shadow: 0 -2px 4px rgba(0,0delegation0,0.2);
         }
         .instagram-button, .share-button {
             background-color: #ff0000;
             color: #ffffff;
-            padding: 10px 20px;
+            padding: 12px 24px;
             border: none;
             border-radius: 5px;
             text-decoration: none;
             display: inline-block;
             font-weight: 700;
-            font-size: clamp(14px, 3vw, 16px);
-            margin: 5px;
+            font-size: clamp(16px, 4vw, 18px);
+            margin: 8px;
             transition: background-color 0.3s;
         }
         .instagram-button:hover, .share-button:hover {
             background-color: #cc0000;
         }
         @media (max-width: 600px) {
+            body {
+                font-size: 14px;
+            }
             header {
-                padding: 10px;
+                padding: 15px;
             }
             .header-logo {
-                max-height: 80px;
+                max-height: 100px;
             }
             .sorteio-text {
-                font-size: clamp(12px, 2.5vw, 14px);
+                font-size: clamp(14px, 3.5vw, 16px);
+                margin: 10px 0;
+            }
+            nav a {
+                font-size: clamp(14px, 3.5vw, 16px);
+                margin: 0 10px;
             }
             .hero {
-                padding: 20px 10px;
-                margin: 10px;
+                padding: 30px 15px;
+                margin: 15px;
+            }
+            .hero-buttons button {
+                padding: 10px 20px;
+                font-size: clamp(14px, 3.5vw, 16px);
             }
             .numbers-grid {
-                grid-template-columns: repeat(auto-fit, minmax(35px, 1fr));
-                gap: 4px;
+                grid-template-columns: repeat(auto-fit, minmax(45px, 1fr));
+                gap: 6px;
+            }
+            .number {
+                padding: 10px;
+                font-size: clamp(12px, 3vw, 14px);
             }
             .payment-form {
+                padding: 15px;
+            }
+            .payment-form h2 {
+                font-size: clamp(18px, 4.5vw, 20px);
+            }
+            .payment-form p {
+                font-size: clamp(14px, 3.5vw, 16px);
+            }
+            .payment-form input {
                 padding: 10px;
+                font-size: clamp(14px, 3.5vw, 16px);
+            }
+            .payment-form .pay-button {
+                padding: 10px 20px;
+                font-size: clamp(14px, 3.5vw, 16px);
+            }
+            .success-message, .error-message, .pending-message, .number-error {
+                padding: 15px;
+                font-size: clamp(14px, 3.5vw, 16px);
+            }
+            .loading-message {
+                font-size: clamp(14px, 3.5vw, 16px);
+            }
+            .instagram-button, .share-button {
+                padding: 10px 20px;
+                font-size: clamp(14px, 3.5vw, 16px);
+            }
+            footer {
+                padding: 15px;
             }
         }
     </style>
@@ -255,7 +301,7 @@
 
     <section class="error-message" id="error-message">
         <h3>O PAGAMENTO NÃO FOI CONCLUÍDO.</h3>
-        <p>Seus números foram liberados. Escolha novamente para tentar outra vez.</p>
+        <p>Seus números foram liberados. Escolha outra vez para tentar novamente.</p>
     </section>
 
     <section class="pending-message" id="pending-message">
@@ -472,7 +518,7 @@
                         quantity: selectedNumbers.length
                     })
                 });
-                if (!preferenceResponse.ok) throw new Error(`Erro HTTP: ${preferenceResponse.status}`);
+                if (!response.ok) throw new Error(`Erro HTTP: ${preferenceResponse.status}`);
                 const preferenceData = await preferenceResponse.json();
                 console.log('[' + new Date().toISOString() + '] Redirecionando para Mercado Pago:', preferenceData.init_point);
                 window.location.href = preferenceData.init_point;
