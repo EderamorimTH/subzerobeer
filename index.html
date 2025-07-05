@@ -10,11 +10,11 @@
             font-family: 'Roboto', sans-serif;
             margin: 0;
             padding: 0;
-            background-color: #000000;
-            color: #ffffff;
+            background-color: #FFFFFF; /* Fundo branco */
+            color: #000000; /* Texto preto para contraste */
         }
         header {
-            background-color: #8b0000;
+            background-color: #8B0000; /* Vermelho */
             color: white;
             padding: 15px;
             text-align: center;
@@ -31,7 +31,7 @@
         header .highlight {
             font-weight: 700;
             font-size: clamp(16px, 4vw, 18px);
-            color: #ffffff; /* Texto em branco conforme solicitado */
+            color: #FFFFFF;
         }
         nav {
             margin-top: 10px;
@@ -45,12 +45,12 @@
             transition: color 0.3s;
         }
         nav a:hover {
-            color: #ff4040;
+            color: #FF4040; /* Hover vermelho claro */
         }
         .hero {
             text-align: center;
             padding: 30px 15px;
-            background-color: #1a1a1a;
+            background-color: #F5F5F5; /* Cinza claro para contraste com fundo branco */
             border-radius: 10px;
             margin: 15px auto;
             max-width: 1000px;
@@ -60,7 +60,7 @@
             margin: 15px 0;
         }
         .hero-buttons button {
-            background-color: #8b0000;
+            background-color: #8B0000; /* Vermelho */
             color: white;
             padding: 10px 20px;
             border: none;
@@ -72,8 +72,8 @@
             transition: background-color 0.3s;
         }
         .hero-buttons button:hover {
-            background-color: #ff4040;
-            color: #ffffff;
+            background-color: #FF4040; /* Hover vermelho claro */
+            color: #FFFFFF;
         }
         .numbers-grid {
             display: grid;
@@ -91,23 +91,24 @@
             font-size: clamp(12px, 3vw, 14px);
         }
         .number.available {
-            background-color: #00ff00; /* Verde para números disponíveis */
+            background-color: #00FF00; /* Verde para disponíveis */
             color: #000000;
         }
         .number.selected {
-            background-color: #8b0000;
-            color: white;
+            background-color: #8B0000; /* Vermelho escuro para selecionados */
+            color: #FFFFFF;
+            border: 2px solid #000000; /* Borda preta */
         }
         .number.reserved, .number.sold {
-            background-color: #ff0000; /* Vermelho para números pagos/reservados */
-            color: #ffffff;
+            background-color: #FF0000; /* Vermelho para reservados/vendidos */
+            color: #FFFFFF;
             cursor: not-allowed;
         }
         .payment-form {
             max-width: 90%;
             margin: 15px auto;
             padding: 15px;
-            background-color: #1a1a1a;
+            background-color: #F5F5F5; /* Cinza claro */
             border-radius: 10px;
             box-shadow: 0 4px 8px rgba(0,0,0,0.1);
             display: block;
@@ -125,11 +126,11 @@
             border: 1px solid #ccc;
             border-radius: 5px;
             font-size: clamp(14px, 3vw, 16px);
-            background-color: #333333;
-            color: #ffffff;
+            background-color: #FFFFFF; /* Fundo branco para inputs */
+            color: #000000;
         }
         .payment-form button {
-            background-color: #8b0000;
+            background-color: #28A745; /* Verde para botão de pagamento */
             color: white;
             padding: 10px 20px;
             border: none;
@@ -141,8 +142,8 @@
             transition: background-color 0.3s;
         }
         .payment-form button:hover {
-            background-color: #ff4040;
-            color: #ffffff;
+            background-color: #218838; /* Hover verde escuro */
+            color: #FFFFFF;
         }
         .success-message, .error-message, .pending-message, .number-error {
             max-width: 90%;
@@ -153,35 +154,35 @@
             display: none;
         }
         .success-message {
-            background-color: #333333;
-            border-left: 4px-solid #8b0000;
+            background-color: #E6FFE6; /* Verde claro */
+            border-left: 4px solid #28A745;
         }
         .error-message, .number-error {
-            background-color: #ff4040;
-            border-left: 4px solid #cc0000;
+            background-color: #FFE6E6; /* Vermelho claro */
+            border-left: 4px solid #FF0000;
         }
         .pending-message {
-            background-color: #333333;
-            border-left: 4px solid #ff4040;
+            background-color: #FFF8E6; /* Amarelo claro */
+            border-left: 4px solid #FF4040;
         }
         .loading-message {
             text-align: center;
             margin: 15px;
             display: none;
-            color: #ff4040;
+            color: #FF4040;
             font-weight: 700;
             font-size: clamp(14px, 3vw, 16px);
         }
         footer {
-            background-color: #8b0000;
+            background-color: #8B0000; /* Vermelho */
             color: white;
             text-align: center;
             padding: 15px;
             box-shadow: 0 -2px 4px rgba(0,0,0,0.2);
         }
         .instagram-button, .share-button {
-            background-color: #ff4040;
-            color: #ffffff;
+            background-color: #FF4040; /* Vermelho */
+            color: #FFFFFF;
             padding: 10px 20px;
             border: none;
             border-radius: 5px;
@@ -193,13 +194,13 @@
             transition: background-color 0.3s;
         }
         .instagram-button:hover {
-            background-color: #cc0000;
+            background-color: #CC0000; /* Hover vermelho escuro */
         }
         .share-button {
-            background-color: #25d366;
+            background-color: #25D366; /* Verde WhatsApp */
         }
         .share-button:hover {
-            background-color: #1ebe5a;
+            background-color: #1EBE5A; /* Hover verde escuro WhatsApp */
         }
         @media (max-width: 600px) {
             header {
@@ -232,7 +233,7 @@
 
     <section class="hero">
         <div class="hero-buttons">
-            <button onclick="selectRandomNumbers()">Escolher 5 Números Aleatórios</button>
+            <!-- Botão "Escolher 5 Números Aleatórios" removido -->
         </div>
     </section>
 
@@ -281,8 +282,8 @@
 
     <script src="https://sdk.mercadopago.com/js/v2"></script>
     <script>
-        let availableNumbers = [];
         let selectedNumbers = [];
+        let userId = Math.random().toString(36).substr(2, 9);
 
         async function checkBackendHealth() {
             try {
@@ -327,30 +328,25 @@
                     if (!response.ok) {
                         throw new Error(`Erro HTTP: ${response.status}`);
                     }
-                    availableNumbers = await response.json();
-                    console.log('Números disponíveis carregados:', availableNumbers);
+                    const numbers = await response.json();
+                    console.log('Números carregados:', numbers);
 
-                    if (availableNumbers.length === 0) {
-                        errorDetails.innerHTML = '<p>Todos os números estão reservados no momento. Tente novamente mais tarde.</p>';
+                    if (numbers.length === 0) {
+                        errorDetails.innerHTML = '<p>Erro: Nenhum número disponível no momento. Tente novamente mais tarde.</p>';
                         numberError.style.display = 'block';
                         numbersGrid.style.display = 'none';
                         return;
                     }
 
-                    availableNumbers.forEach(number => {
+                    numbers.forEach(item => {
                         const div = document.createElement('div');
-                        div.className = 'number available';
-                        div.textContent = number;
-                        div.onclick = () => toggleNumberSelection(number);
-                        numbersGrid.appendChild(div);
-                    });
-
-                    const allNumbers = Array.from({ length: 150 }, (_, i) => String(i + 1).padStart(3, '0'));
-                    const reservedNumbers = allNumbers.filter(n => !availableNumbers.includes(n));
-                    reservedNumbers.forEach(number => {
-                        const div = document.createElement('div');
-                        div.className = 'number reserved';
-                        div.textContent = number;
+                        div.className = `number ${item.status}`;
+                        div.textContent = item.number;
+                        if (item.status === 'disponível') {
+                            div.onclick = () => toggleNumberSelection(item.number, div);
+                        } else if (item.status === 'reservado') {
+                            checkReservation(item.number, div);
+                        }
                         numbersGrid.appendChild(div);
                     });
 
@@ -371,40 +367,56 @@
             }
         }
 
-        function openNumberSelection() {
-            const numbersGrid = document.getElementById('numbers-grid');
-            numbersGrid.style.display = 'grid';
-            loadNumbers();
-        }
-
-        function toggleNumberSelection(number) {
+        async function toggleNumberSelection(number, element) {
             const index = selectedNumbers.indexOf(number);
-            const numberElement = Array.from(document.getElementsByClassName('number')).find(el => el.textContent === number);
-            if (index === -1 && availableNumbers.includes(number)) {
-                selectedNumbers.push(number);
-                numberElement.classList.remove('available');
-                numberElement.classList.add('selected');
-            } else if (index !== -1) {
+            if (index === -1) {
+                try {
+                    const response = await fetch('https://subzerobeer.onrender.com/reserve_numbers', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ numbers: [number], userId })
+                    });
+                    if (!response.ok) throw new Error(`Erro HTTP: ${response.status}`);
+                    const result = await response.json();
+                    if (result.success) {
+                        selectedNumbers.push(number);
+                        element.classList.remove('available');
+                        element.classList.add('reserved', 'selected');
+                        console.log(`Número ${number} reservado para userId: ${userId}`);
+                        setTimeout(() => checkReservation(number, element), 5 * 60 * 1000);
+                    } else {
+                        alert('Erro ao reservar número: ' + result.message);
+                    }
+                } catch (error) {
+                    alert('Erro ao reservar número: ' + error.message);
+                }
+            } else {
                 selectedNumbers.splice(index, 1);
-                numberElement.classList.remove('selected');
-                numberElement.classList.add('available');
+                element.classList.remove('selected');
             }
             updateForm();
         }
 
-        async function selectRandomNumbers() {
-            await loadNumbers();
-            selectedNumbers = [];
-            const available = Array.from(document.getElementsByClassName('number available'));
-            for (let i = 0; i < 5 && available.length > 0; i++) {
-                const randomIndex = Math.floor(Math.random() * available.length);
-                const number = available[randomIndex].textContent;
-                selectedNumbers.push(number);
-                available[randomIndex].classList.remove('available');
-                available[randomIndex].classList.add('selected');
-                available.splice(randomIndex, 1);
+        async function checkReservation(number, element) {
+            try {
+                const response = await fetch('https://subzerobeer.onrender.com/check_reservation', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ numbers: [number], userId })
+                });
+                if (!response.ok) throw new Error(`Erro HTTP: ${response.status}`);
+                const result = await response.json();
+                if (!result.valid) {
+                    element.classList.remove('reserved', 'selected');
+                    element.classList.add('available');
+                    selectedNumbers = selectedNumbers.filter(n => n !== number);
+                    updateForm();
+                    element.onclick = () => toggleNumberSelection(number, element);
+                    console.log(`Reserva do número ${number} expirou`);
+                }
+            } catch (error) {
+                console.error(`Erro ao verificar reserva do número ${number}:`, error.message);
             }
-            updateForm();
         }
 
         function updateForm() {
@@ -423,20 +435,10 @@
                 return;
             }
 
-            const userId = Math.random().toString(36).substr(2, 9);
             const loadingMessage = document.getElementById('loading-message');
             loadingMessage.style.display = 'block';
 
             try {
-                const reserveResponse = await fetch('https://subzerobeer.onrender.com/reserve_numbers', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ numbers: selectedNumbers, userId })
-                });
-                if (!reserveResponse.ok) throw new Error(`Erro HTTP: ${reserveResponse.status}`);
-                const reserveData = await reserveResponse.json();
-                if (!reserveData.success) throw new Error(reserveData.message);
-
                 const preferenceResponse = await fetch('https://subzerobeer.onrender.com/create_preference', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
@@ -466,13 +468,16 @@
                 document.getElementById('number-error').style.display = 'block';
                 document.getElementById('error-details').innerHTML = '<p>Não foi possível conectar ao servidor. Verifique sua conexão ou tente novamente mais tarde.</p>';
             }
-            openNumberSelection(); // Chama a função para exibir os números automaticamente
+            loadNumbers();
             const urlParams = new URLSearchParams(window.location.search);
             const status = urlParams.get('status');
             if (status === 'approved') {
                 document.getElementById('success-message').style.display = 'block';
             } else if (status === 'rejected') {
                 document.getElementById('error-message').style.display = 'block';
+                selectedNumbers = [];
+                updateForm();
+                loadNumbers();
             } else if (status === 'pending') {
                 document.getElementById('pending-message').style.display = 'block';
             }
