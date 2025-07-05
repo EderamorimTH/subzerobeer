@@ -332,7 +332,7 @@
                     const numbers = await response.json();
                     console.log('Números recebidos:', numbers);
 
-                    if (numbers.length === 0) {
+                    if (numbers.length === 0 || numbers.every(n => n.status !== 'disponível')) {
                         errorDetails.innerHTML = '<p>Todos os números estão reservados no momento. Tente novamente mais tarde.</p>';
                         numberError.style.display = 'block';
                         numbersGrid.style.display = 'none';
@@ -341,7 +341,8 @@
 
                     const allNumbers = Array.from({ length: 150 }, (_, i) => String(i + 1).padStart(3, '0'));
                     allNumbers.forEach(number => {
-                        const status = numbers.includes(number) ? 'disponível' : 'reservado';
+                        const numData = numbers.find(n => n.number === number);
+                        const status = numData ? numData.status : 'reservado';
                         const div = document.createElement('div');
                         div.className = `number ${status}`;
                         div.textContent = number;
@@ -493,7 +494,7 @@
                         quantity: selectedNumbers.length
                     })
                 });
-                if (!preferenceResponse.ok) throw new Error(`Erro HTTP: ${preferenceResponse.status} - ${preferenceResponse.statusText}`);
+                if (!preferenceResponse.ok) throw new Error(`Erro HTTP: ${preferenceResponse.status} - ${response.statusText}`);
                 const preferenceData = await preferenceResponse.json();
                 console.log('Redirecionando para Mercado Pago:', preferenceData.init_point);
                 window.location.href = preferenceData.init_point;
