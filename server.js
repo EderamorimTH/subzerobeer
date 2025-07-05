@@ -89,12 +89,12 @@ clearExpiredReservations();
 app.get('/available_numbers', async function(req, res) {
     try {
         await clearExpiredReservations();
-        const numbers = await Comprador.find({ status: 'disponível' }).select('number');
-        console.log('[' + new Date().toISOString() + '] Números disponíveis retornados: ' + numbers.length + ', números: ' + numbers.map(function(n) { return n.number; }).join(', '));
-        res.json(numbers.map(function(n) { return n.number; }));
+        const numbers = await Comprador.find().select('number status').sort({ number: 1 });
+        console.log('[' + new Date().toISOString() + '] Números retornados: ' + numbers.length + ', números: ' + numbers.map(function(n) { return n.number + '(' + n.status + ')'; }).join(', '));
+        res.json(numbers.map(function(n) { return { number: n.number, status: n.status }; }));
     } catch (error) {
-        console.error('[' + new Date().toISOString() + '] Erro ao buscar números disponíveis: ' + error);
-        res.status(500).json({ error: 'Erro ao buscar números disponíveis', details: error.message });
+        console.error('[' + new Date().toISOString() + '] Erro ao buscar números: ' + error);
+        res.status(500).json({ error: 'Erro ao buscar números', details: error.message });
     }
 });
 
