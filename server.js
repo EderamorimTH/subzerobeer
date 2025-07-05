@@ -1,6 +1,6 @@
 const express = require('express');
 const mongoose = require('mongoose');
-const MercadoPago = require('mercadopago');
+const mercadopago = require('mercadopago');
 const cors = require('cors');
 const app = express();
 const port = process.env.PORT || 3000;
@@ -9,8 +9,8 @@ app.use(cors());
 app.use(express.json());
 
 // Configuração do Mercado Pago
-MercadoPago.configure({
-    access_token: process.env.MERCADO_PAGO_ACCESS_TOKEN || 'SEU_ACCESS_TOKEN_AQUI'
+mercadopago.configure({
+    access_token: process.env.MERCADO_PAGO_ACCESS_TOKEN || 'APP_USR-7275526477888809-070301-eea6b39a6469ea60b9291fcbc20f8fdc-233975707'
 });
 
 // Conexão com o MongoDB
@@ -151,7 +151,7 @@ app.post('/create_preference', async (req, res) => {
             external_reference: JSON.stringify({ numbers, userId, buyerName, buyerPhone })
         };
 
-        const response = await MercadoPago.preferences.create(preference);
+        const response = await mercadopago.preferences.create(preference);
         await Number.updateMany(
             { number: { $in: numbers } },
             { $set: { buyerName, buyerPhone } }
@@ -207,7 +207,7 @@ app.post('/webhook', async (req, res) => {
     const { data } = req.body;
     try {
         if (data && data.id) {
-            const payment = await MercadoPago.payment.get(data.id);
+            const payment = await mercadopago.payment.get(data.id);
             const { external_reference, status } = payment.body;
             const { numbers, userId, buyerName, buyerPhone } = JSON.parse(external_reference);
             await Purchase.updateOne(
