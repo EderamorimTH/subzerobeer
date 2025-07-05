@@ -151,7 +151,7 @@
     </style>
 </head>
 <body>
-    <h1>Sub-zero beer</h1>
+    <h1>Sub-zero Beer</h1>
     <div class="draw-section">
         <button class="draw-button" onclick="startDraw()">Sortear Agora</button>
         <div id="countdown" class="countdown" style="display: none;">10</div>
@@ -297,7 +297,8 @@
                 if (!response.ok) throw new Error(`Erro HTTP ${response.status}`);
                 console.log(`Ganhador salvo com sucesso: ${winner.buyerName}, número: ${winningNumber}`);
             } catch (error) {
-                console.error(`Erro ao salvar ganhador:`, error.message);
+                console.error(`Erro ao salvar ganhador: ${error.message}`);
+                alert('Erro ao salvar ganhador. Verifique o console para detalhes.');
             }
 
             winnerMessage.innerHTML = `
