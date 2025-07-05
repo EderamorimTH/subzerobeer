@@ -8,9 +8,9 @@
     },
     "dependencies": {
         "express": "^4.17.1",
-        "mongoose": "^6.3.0",
+        "mongoose": "^7.0.0",
+        "@mercadopago/sdk-js": "^2.0.2",
         "cors": "^2.8.5",
-        "mercadopago": "^2.5.17",
         "dotenv": "^16.0.3"
     }
 }
