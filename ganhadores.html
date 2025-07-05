@@ -1,4 +1,3 @@
-```html
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
@@ -11,11 +10,11 @@
             font-family: 'Roboto', sans-serif;
             margin: 0;
             padding: 0;
-            background-color: #000000;
-            color: #ffffff;
+            background-color: #FFFFFF; /* Fundo branco */
+            color: #000000; /* Texto preto para contraste */
         }
         header {
-            background-color: #8b0000;
+            background-color: #8B0000; /* Vermelho */
             color: white;
             padding: 15px;
             text-align: center;
@@ -24,15 +23,17 @@
         header h1 {
             margin: 0;
             font-size: clamp(24px, 5vw, 28px);
+            text-transform: uppercase; /* Cabeçalho em maiúsculas */
         }
         header p {
             margin: 8px 0;
             font-size: clamp(14px, 3vw, 15px);
+            text-transform: uppercase; /* Texto destacado em maiúsculas */
         }
         header .highlight {
             font-weight: 700;
             font-size: clamp(16px, 4vw, 18px);
-            color: #ffffff;
+            color: #FFFFFF;
         }
         nav {
             margin-top: 10px;
@@ -46,13 +47,13 @@
             transition: color 0.3s;
         }
         nav a:hover {
-            color: #ff4040;
+            color: #FF4040; /* Hover vermelho claro */
         }
         .winners-section {
             max-width: 90%;
             margin: 15px auto;
             padding: 15px;
-            background-color: #1a1a1a;
+            background-color: #F5F5F5; /* Cinza claro */
             border-radius: 10px;
             box-shadow: 0 4px 8px rgba(0,0,0,0.1);
             text-align: center;
@@ -63,8 +64,8 @@
         .winner {
             margin: 15px 0;
             padding: 15px;
-            background-color: #333333;
-            border-left: 4px solid #8b0000;
+            background-color: #FFFFFF; /* Fundo branco para contraste */
+            border-left: 4px solid #8B0000; /* Borda vermelha */
             border-radius: 5px;
         }
         .winner img {
@@ -80,11 +81,11 @@
             border: 1px solid #ccc;
             border-radius: 5px;
             font-size: clamp(14px, 3vw, 16px);
-            background-color: #333333;
-            color: #ffffff;
+            background-color: #FFFFFF; /* Fundo branco */
+            color: #000000;
         }
         .winner button {
-            background-color: #8b0000;
+            background-color: #28A745; /* Verde */
             color: white;
             padding: 8px 16px;
             border: none;
@@ -95,25 +96,25 @@
             transition: background-color 0.3s;
         }
         .winner button:hover {
-            background-color: #ff4040;
-            color: #ffffff;
+            background-color: #218838; /* Hover verde escuro */
+            color: #FFFFFF;
         }
         .no-data {
-            color: #ffffff;
+            color: #000000;
             font-size: clamp(16px, 4vw, 18px);
             font-weight: 700;
             margin: 15px 0;
         }
         footer {
-            background-color: #8b0000;
+            background-color: #8B0000; /* Vermelho */
             color: white;
             text-align: center;
             padding: 15px;
             box-shadow: 0 -2px 4px rgba(0,0,0,0.2);
         }
         .instagram-button, .share-button {
-            background-color: #ff4040;
-            color: #ffffff;
+            background-color: #FF4040; /* Vermelho */
+            color: #FFFFFF;
             padding: 10px 20px;
             border: none;
             border-radius: 5px;
@@ -125,13 +126,13 @@
             transition: background-color 0.3s;
         }
         .instagram-button:hover {
-            background-color: #cc0000;
+            background-color: #CC0000; /* Hover vermelho escuro */
         }
         .share-button {
-            background-color: #25d366;
+            background-color: #25D366; /* Verde WhatsApp */
         }
         .share-button:hover {
-            background-color: #1ebe5a;
+            background-color: #1EBE5A; /* Hover verde escuro WhatsApp */
         }
         @media (max-width: 600px) {
             header {
@@ -149,10 +150,11 @@
 </head>
 <body>
     <header>
-        <h1>Sub-zero Beer</h1>
-        <p class="highlight">Este espaço é dedicado aos ganhadores do nosso sorteio! Aqui você pode ver os nomes, números sorteados e fotos dos vencedores que conquistaram prêmios incríveis</p>
+        <h1>SUB-ZERO BEER</h1>
+        <p class="highlight">ESTE ESPAÇO É DEDICADO AOS GANHADORES DO NOSSO SORTEIO! AQUI VOCÊ PODE VER OS NOMES, NÚMEROS SORTEADOS E FOTOS DOS VENCEDORES QUE CONQUISTARAM PRÊMIOS INCRÍVEIS</p>
         <nav>
             <a href="/subzerobeer/index.html">Início</a>
+            <a href="/subzerobeer/sorteio.html">Sorteio</a>
             <a href="/subzerobeer/ganhadores.html">Ganhadores</a>
         </nav>
     </header>
@@ -177,7 +179,7 @@
                 const winners = await response.json();
                 winnersList.innerHTML = '';
                 if (winners.length === 0) {
-                    winnersList.innerHTML = '<p class="no-data">Aguardando o primeiro ganhador</p>';
+                    winnersList.innerHTML = '<p class="no-data">AGUARDANDO O PRIMEIRO GANHADOR</p>';
                     return;
                 }
                 winners.forEach(winner => {
@@ -197,7 +199,7 @@
                 });
             } catch (error) {
                 console.error(`Erro ao carregar ganhadores:`, error.message);
-                winnersList.innerHTML = '<p class="no-data">Erro ao carregar ganhadores. Tente novamente mais tarde.</p>';
+                winnersList.innerHTML = '<p class="no-data">ERRO AO CARREGAR GANHADORES. TENTE NOVAMENTE MAIS TARDE.</p>';
             }
         }
 
@@ -228,4 +230,3 @@
     </script>
 </body>
 </html>
-```
