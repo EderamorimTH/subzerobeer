@@ -1,7 +1,10 @@
 const express = require('express');
 const mongoose = require('mongoose');
 const app = express();
-const port = process.env.PORT || 3000;
+const port = process.env.PORT || 10000;
+
+// Configurar strictQuery para evitar aviso de depreciação
+mongoose.set('strictQuery', true);
 
 // Configuração da URI do MongoDB usando variável de ambiente
 const mongoURI = process.env.MONGO_URI || 'mongodb+srv://Amorim:<db_password>@cluster0.8vhg4ws.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0';
