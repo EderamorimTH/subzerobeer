@@ -15,11 +15,13 @@ mongoose.connect(mongoURI, {
   useNewUrlParser: true,
   useUnifiedTopology: true,
 })
-.then(() => console.log('Conectado ao MongoDB com sucesso'))
-.catch((err) => console.error('Erro ao conectar ao MongoDB:', err));
+.then(() => console.log('[' + new Date().toISOString() + '] Conectado ao MongoDB com sucesso'))
+.catch((err) => console.error('[' + new Date().toISOString() + '] Erro ao conectar ao MongoDB:', err));
 
 // Middleware
-app.use(cors());
+app.use(cors({
+  origin: 'https://ederamorimth.github.io' // Domínio do frontend
+}));
 app.use(express.json());
 
 // Schema para números disponíveis
@@ -48,6 +50,27 @@ const soldNumberSchema = new mongoose.Schema({
   timestamp: { type: Date, default: Date.now },
 });
 const SoldNumber = mongoose.model('SoldNumber', soldNumberSchema);
+
+// Schema para compras aprovadas
+const purchaseSchema = new mongoose.Schema({
+  buyerName: String,
+  buyerPhone: String,
+  numbers: [String],
+  status: { type: String, default: 'approved' },
+  date_approved: { type: Date, default: Date.now },
+  paymentId: String,
+});
+const Purchase = mongoose.model('Purchase', purchaseSchema);
+
+// Schema para ganhadores
+const winnerSchema = new mongoose.Schema({
+  buyerName: String,
+  buyerPhone: String,
+  winningNumber: String,
+  numbers: [String],
+  drawDate: Date,
+});
+const Winner = mongoose.model('Winner', winnerSchema);
 
 // Inicializar números no MongoDB
 async function initializeNumbers() {
@@ -86,6 +109,16 @@ mongoose.connection.once('open', async () => {
 // Endpoint para verificar saúde do backend
 app.get('/health', (req, res) => {
   res.status(200).json({ status: 'OK' });
+});
+
+// Endpoint para obter o hash da senha
+app.get('/get-page-password', (req, res) => {
+  const passwordHash = process.env.PAGE_PASSWORD;
+  if (!passwordHash) {
+    console.error('[' + new Date().toISOString() + '] Variável PAGE_PASSWORD não configurada');
+    return res.status(500).json({ error: 'Variável de ambiente não configurada' });
+  }
+  res.json({ passwordHash });
 });
 
 // Endpoint para obter números disponíveis
@@ -158,13 +191,11 @@ app.post('/create_preference', async (req, res) => {
       return res.status(400).json({ error: 'Alguns números não estão mais reservados' });
     }
 
-    // Atualizar informações do comprador em pending_numbers
     await PendingNumber.updateMany(
       { number: { $in: numbers }, userId },
       { $set: { buyerName, buyerPhone } }
     );
 
-    // Simulação de preferência do Mercado Pago
     const preferenceData = {
       init_point: 'https://www.mercadopago.com/mock_payment',
       external_reference: numbers.join(',')
@@ -177,11 +208,12 @@ app.post('/create_preference', async (req, res) => {
   }
 });
 
-// Webhook para processar notificações de pagamento do Mercado Pago
+// Endpoint para processar notificações de pagamento do Mercado Pago
 app.post('/webhook', async (req, res) => {
   const { data } = req.body;
-  const paymentStatus = data?.status; // 'approved', 'rejected', 'pending'
+  const paymentStatus = data?.status;
   const numbers = data?.external_reference?.split(',');
+  const paymentId = data?.id;
 
   if (!numbers || !Array.isArray(numbers) || numbers.length === 0) {
     console.error('[' + new Date().toISOString() + '] Webhook: Números inválidos ou não fornecidos');
@@ -191,7 +223,6 @@ app.post('/webhook', async (req, res) => {
   try {
     const pending = await PendingNumber.find({ number: { $in: numbers } });
     if (pending.length !== numbers.length) {
-      // Liberar números se algum não estiver pendente
       await Number.updateMany(
         { number: { $in: numbers }, status: 'reservado' },
         { status: 'disponível' }
@@ -202,12 +233,10 @@ app.post('/webhook', async (req, res) => {
     }
 
     if (paymentStatus === 'approved') {
-      // Marcar todos os números como vendido
       await Number.updateMany(
         { number: { $in: numbers }, status: 'reservado' },
         { status: 'vendido' }
       );
-      // Registrar todos os números em sold_numbers
       await SoldNumber.insertMany(
         pending.map(p => ({
           number: p.number,
@@ -217,11 +246,17 @@ app.post('/webhook', async (req, res) => {
           timestamp: new Date()
         }))
       );
-      // Remover de pending_numbers
+      await Purchase.create({
+        buyerName: pending[0].buyerName,
+        buyerPhone: pending[0].buyerPhone,
+        numbers,
+        status: 'approved',
+        date_approved: new Date(),
+        paymentId
+      });
       await PendingNumber.deleteMany({ number: { $in: numbers } });
       console.log('[' + new Date().toISOString() + '] Pagamento aprovado, números marcados como vendido:', numbers);
     } else if (paymentStatus === 'rejected' || paymentStatus === 'pending') {
-      // Liberar todos os números
       await Number.updateMany(
         { number: { $in: numbers }, status: 'reservado' },
         { status: 'disponível' }
@@ -237,7 +272,31 @@ app.post('/webhook', async (req, res) => {
   }
 });
 
+// Endpoint para obter compras aprovadas
+app.get('/purchases', async (req, res) => {
+  try {
+    const purchases = await Purchase.find({ status: 'approved' });
+    res.json(purchases);
+  } catch (error) {
+    console.error('[' + new Date().toISOString() + '] Erro ao buscar compras:', error.message);
+    res.status(500).json({ error: 'Erro ao buscar compras' });
+  }
+});
+
+// Endpoint para salvar ganhador
+app.post('/save_winner', async (req, res) => {
+  const { buyerName, buyerPhone, winningNumber, numbers, drawDate } = req.body;
+  try {
+    await Winner.create({ buyerName, buyerPhone, winningNumber, numbers, drawDate });
+    console.log('[' + new Date().toISOString() + '] Ganhador salvo:', { buyerName, winningNumber });
+    res.status(200).json({ message: 'Ganhador salvo com sucesso' });
+  } catch (error) {
+    console.error('[' + new Date().toISOString() + '] Erro ao salvar ganhador:', error.message);
+    res.status(500).json({ error: 'Erro ao salvar ganhador' });
+  }
+});
+
 // Iniciar o servidor
 app.listen(port, () => {
-  console.log(`Servidor rodando na porta ${port}`);
+  console.log(`[' + new Date().toISOString() + '] Servidor rodando na porta ${port}`);
 });
