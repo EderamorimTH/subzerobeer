@@ -13,15 +13,26 @@ const mercadopago = new MercadoPagoConfig({
     accessToken: process.env.MERCADO_PAGO_ACCESS_TOKEN || 'APP_USR-7275526477888809-070301-eea6b39a6469ea60b9291fcbc20f8fdc-233975707'
 });
 
+// Configurar Mongoose strictQuery
+mongoose.set('strictQuery', true);
+
 // Conexão com o MongoDB
-mongoose.connect(process.env.MONGODB_URI || 'mongodb://localhost/subzerobeer', {
-    useNewUrlParser: true,
-    useUnifiedTopology: true
-}).then(() => {
-    console.log('[' + new Date().toISOString() + '] Conectado ao MongoDB');
-}).catch(err => {
-    console.error('[' + new Date().toISOString() + '] Erro ao conectar ao MongoDB:', err.message);
-});
+async function connectToMongoDB() {
+    try {
+        await mongoose.connect(process.env.MONGODB_URI || 'mongodb://localhost/subzerobeer', {
+            useNewUrlParser: true,
+            useUnifiedTopology: true,
+            serverSelectionTimeoutMS: 30000, // Aumenta o timeout para 30s
+            connectTimeoutMS: 30000,
+            retryWrites: true,
+            retryReads: true
+        });
+        console.log('[' + new Date().toISOString() + '] Conectado ao MongoDB');
+    } catch (err) {
+        console.error('[' + new Date().toISOString() + '] Erro ao conectar ao MongoDB:', err.message);
+        process.exit(1); // Encerra o processo se a conexão falhar
+    }
+}
 
 // Schema para números
 const NumberSchema = new mongoose.Schema({
@@ -76,11 +87,9 @@ async function initializeNumbers() {
     }
 }
 
-initializeNumbers();
-
 // Rota de health check
 app.get('/health', (req, res) => {
-    res.status(200).json({ status: 'OK' });
+    res.status(200).json({ status: 'OK', mongodbConnected: mongoose.connection.readyState === 1 });
 });
 
 // Rota para obter números disponíveis
@@ -253,7 +262,13 @@ app.post('/webhook', async (req, res) => {
     }
 });
 
-// Iniciar servidor
-app.listen(port, () => {
-    console.log('[' + new Date().toISOString() + '] Servidor rodando na porta ' + port);
-});
+// Iniciar servidor após conexão com MongoDB
+async function startServer() {
+    await connectToMongoDB();
+    await initializeNumbers();
+    app.listen(port, () => {
+        console.log('[' + new Date().toISOString() + '] Servidor rodando na porta ' + port);
+    });
+}
+
+startServer();
