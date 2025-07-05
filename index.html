@@ -293,8 +293,8 @@
                     method: 'GET',
                     headers: { 'Content-Type': 'application/json' }
                 });
-                if (!response.ok) throw new Error(`Erro HTTP: ${response.status} - ${await response.text()}`);
-                console.log('Backend está ativo:', await response.json());
+                if (!response.ok) throw new Error(`Erro HTTP: ${response.status}`);
+                console.log('Backend ativo:', await response.json());
                 return true;
             } catch (error) {
                 console.error('Erro ao verificar backend:', error.message);
@@ -317,7 +317,7 @@
 
             while (retries < maxRetries) {
                 try {
-                    console.log(`Tentativa ${retries + 1} de carregar números em ${new Date().toISOString()}...`);
+                    console.log(`Tentativa ${retries + 1} de carregar números...`);
                     const controller = new AbortController();
                     const timeoutId = setTimeout(() => controller.abort(), 5000);
                     const response = await fetch('https://subzerobeer.onrender.com/available_numbers', {
@@ -327,25 +327,25 @@
                     });
                     clearTimeout(timeoutId);
 
-                    if (!response.ok) throw new Error(`Erro HTTP: ${response.status} - ${await response.text()}`);
+                    if (!response.ok) throw new Error(`Erro HTTP: ${response.status}`);
                     const numbers = await response.json();
-                    console.log('Números carregados:', numbers);
+                    console.log('Números recebidos:', numbers);
 
                     if (numbers.length === 0) {
-                        errorDetails.innerHTML = '<p>Erro: Nenhum número disponível no momento. Tente novamente mais tarde.</p>';
+                        errorDetails.innerHTML = '<p>Nenhum número disponível no momento.</p>';
                         numberError.style.display = 'block';
                         numbersGrid.style.display = 'none';
                         return;
                     }
 
                     numbers.forEach(item => {
-                        console.log(`Número: ${item.number}, Status: ${item.status}`); // Log detalhado
+                        console.log(`Número: ${item.number}, Status: ${item.status}`);
                         const div = document.createElement('div');
-                        div.className = `number ${item.status}`;
+                        div.className = `number ${item.status.toLowerCase()}`; // Garantir minúsculas
                         div.textContent = item.number;
-                        if (item.status === 'disponível') {
+                        if (item.status.toLowerCase() === 'disponível') {
                             div.onclick = () => toggleNumberSelection(item.number, div);
-                        } else if (item.status === 'reservado') {
+                        } else if (item.status.toLowerCase() === 'reservado') {
                             checkReservation(item.number, div);
                         }
                         numbersGrid.appendChild(div);
@@ -353,10 +353,10 @@
 
                     return;
                 } catch (error) {
-                    console.error(`Erro na tentativa ${retries + 1} em ${new Date().toISOString()}:`, error.message);
+                    console.error(`Erro na tentativa ${retries + 1}: ${error.message}`);
                     retries++;
                     if (retries === maxRetries) {
-                        errorDetails.innerHTML = `<p>Erro ao carregar números: ${error.message}. Verifique sua conexão ou tente novamente mais tarde.</p>`;
+                        errorDetails.innerHTML = `<p>Erro ao carregar números: ${error.message}.</p>`;
                         numberError.style.display = 'block';
                         numbersGrid.style.display = 'none';
                     } else {
@@ -372,27 +372,27 @@
             const index = selectedNumbers.indexOf(number);
             if (index === -1) {
                 try {
-                    console.log(`Tentando reservar número ${number} para userId: ${userId}`);
+                    console.log(`Reservando número ${number} para userId: ${userId}`);
                     const response = await fetch('https://subzerobeer.onrender.com/reserve_numbers', {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify({ numbers: [number], userId })
                     });
-                    if (!response.ok) throw new Error(`Erro HTTP: ${response.status} - ${await response.text()}`);
+                    if (!response.ok) throw new Error(`Erro HTTP: ${response.status}`);
                     const result = await response.json();
                     if (result.success) {
                         selectedNumbers.push(number);
                         element.classList.remove('available');
                         element.classList.add('reserved', 'selected');
-                        console.log(`Número ${number} reservado com sucesso para userId: ${userId}`);
+                        console.log(`Número ${number} reservado`);
                         setTimeout(() => checkReservation(number, element), 5 * 60 * 1000);
                     } else {
-                        console.error('Erro ao reservar número:', result.message);
-                        alert('Erro ao reservar número: ' + result.message);
+                        console.error('Erro ao reservar:', result.message);
+                        alert('Erro ao reservar: ' + result.message);
                     }
                 } catch (error) {
-                    console.error('Erro ao reservar número:', error.message);
-                    alert('Erro ao reservar número: ' + error.message);
+                    console.error('Erro ao reservar:', error.message);
+                    alert('Erro ao reservar: ' + error.message);
                 }
             } else {
                 selectedNumbers.splice(index, 1);
@@ -410,7 +410,7 @@
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ numbers: [number], userId })
                 });
-                if (!response.ok) throw new Error(`Erro HTTP: ${response.status} - ${await response.text()}`);
+                if (!response.ok) throw new Error(`Erro HTTP: ${response.status}`);
                 const result = await response.json();
                 if (!result.valid) {
                     element.classList.remove('reserved', 'selected');
@@ -420,10 +420,10 @@
                     element.onclick = () => toggleNumberSelection(number, element);
                     console.log(`Reserva do número ${number} expirou`);
                 } else {
-                    console.log(`Reserva do número ${number} ainda válida`);
+                    console.log(`Reserva do número ${number} válida`);
                 }
             } catch (error) {
-                console.error(`Erro ao verificar reserva do número ${number}:`, error.message);
+                console.error(`Erro ao verificar reserva ${number}:`, error.message);
             }
         }
 
@@ -432,7 +432,7 @@
             const totalPriceSpan = document.getElementById('total-price');
             selectedNumbersSpan.textContent = selectedNumbers.length > 0 ? selectedNumbers.join(', ') : 'Nenhum';
             totalPriceSpan.textContent = (selectedNumbers.length * 10).toFixed(2);
-            console.log(`Formulário atualizado: Números selecionados: ${selectedNumbers}, Total: R$${totalPriceSpan.textContent}`);
+            console.log(`Formulário: Números: ${selectedNumbers}, Total: R$${totalPriceSpan.textContent}`);
         }
 
         document.getElementById('payment-form').addEventListener('submit', async (e) => {
@@ -440,7 +440,7 @@
             const buyerName = document.getElementById('buyer-name').value;
             const buyerPhone = document.getElementById('buyer-phone').value;
             if (!selectedNumbers.length || !buyerName || !buyerPhone) {
-                alert('Por favor, selecione números, insira seu nome e telefone.');
+                alert('Selecione números, nome e telefone.');
                 return;
             }
 
@@ -460,12 +460,12 @@
                         quantity: selectedNumbers.length
                     })
                 });
-                if (!preferenceResponse.ok) throw new Error(`Erro HTTP: ${response.status} - ${await preferenceResponse.text()}`);
+                if (!preferenceResponse.ok) throw new Error(`Erro HTTP: ${preferenceResponse.status}`);
                 const preferenceData = await preferenceResponse.json();
                 console.log('Redirecionando para Mercado Pago:', preferenceData.init_point);
                 window.location.href = preferenceData.init_point;
             } catch (error) {
-                console.error(`Erro ao processar pagamento:`, error.message);
+                console.error('Erro ao processar pagamento:', error.message);
                 alert('Erro ao processar pagamento: ' + error.message);
                 loadNumbers();
             } finally {
@@ -477,20 +477,20 @@
             const backendOk = await checkBackendHealth();
             if (!backendOk) {
                 document.getElementById('number-error').style.display = 'block';
-                document.getElementById('error-details').innerHTML = '<p>NÃO FOI POSSÍVEL CONECTAR AO SERVIDOR. VERIFIQUE SUA CONEXÃO OU TENTE NOVAMENTE MAIS TARDE.</p>';
+                document.getElementById('error-details').innerHTML = '<p>NÃO FOI POSSÍVEL CONECTAR AO SERVIDOR.</p>';
             }
             loadNumbers();
             const urlParams = new URLSearchParams(window.location.search);
             const status = urlParams.get('status');
             if (status === 'approved') {
                 document.getElementById('success-message').style.display = 'block';
-                console.log('Pagamento aprovado, números confirmados');
+                console.log('Pagamento aprovado');
             } else if (status === 'rejected') {
                 document.getElementById('error-message').style.display = 'block';
                 selectedNumbers = [];
                 updateForm();
                 loadNumbers();
-                console.log('Pagamento rejeitado, números liberados');
+                console.log('Pagamento rejeitado');
             } else if (status === 'pending') {
                 document.getElementById('pending-message').style.display = 'block';
                 console.log('Pagamento pendente');
@@ -499,3 +499,4 @@
     </script>
 </body>
 </html>
+```
