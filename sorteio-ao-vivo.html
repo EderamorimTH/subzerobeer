@@ -2,7 +2,7 @@
 <html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=2.0, user-scalable=yes">
     <title>SORTEIO AO VIVO - SUB-ZERO BEER</title>
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&family=Bungee&display=swap" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
@@ -11,46 +11,29 @@
             font-family: 'Roboto', sans-serif;
             margin: 0;
             padding: 0;
-            background-color: #ff0000;
+            background-color: #000000; /* Fundo preto */
             min-height: 100vh;
             display: flex;
             flex-direction: column;
             justify-content: center;
             align-items: center;
-            position: relative;
-            overflow-x: hidden;
+            overflow: hidden; /* Previne rolagem indesejada */
         }
-        h1, h2, h3 {
-            text-transform: uppercase;
-        }
-        .title {
-            font-family: 'Bungee', sans-serif;
-            font-size: clamp(36px, 8vw, 48px);
-            color: white;
-            text-shadow: 0 0 5px rgba(255, 255, 255, 0.6), 0 0 10px rgba(255, 0, 0, 0.5);
-            animation: pulseTitle 2s ease-in-out infinite;
-            text-align: center;
-            margin: 0;
-        }
-        @keyframes pulseTitle {
-            0% { transform: scale(1); }
-            50% { transform: scale(1.05); }
-            100% { transform: scale(1); }
-        }
-        .draw-section {
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            text-align: center;
+        .logo {
+            max-width: 100%;
+            height: auto;
+            max-height: 300px; /* Imagem grande */
+            display: block;
+            margin: 20px auto;
         }
         .draw-button {
-            background-color: #ff0000;
+            background-color: #000000; /* Fundo preto */
             color: white;
             padding: 12px 24px;
-            border: 1px solid #000000;
+            border: 2px solid #FFFFFF; /* Contorno branco */
             border-radius: 25px;
             cursor: pointer;
+            font-family: 'Bungee', sans-serif; /* Fonte estilizada */
             font-size: clamp(16px, 4vw, 18px);
             font-weight: 700;
             transition: background-color 0.3s;
@@ -58,89 +41,40 @@
             margin-top: 20px;
         }
         .draw-button:hover {
-            background-color: #cc0000;
+            background-color: #333333; /* Leve escurecimento ao hover */
         }
         .draw-button:disabled {
-            background-color: #ccc;
+            background-color: #666666;
+            border-color: #999999;
             cursor: not-allowed;
-        }
-        .countdown {
-            font-size: clamp(20px, 5vw, 24px);
-            color: white;
-            margin: 15px 0;
-            font-weight: 700;
-            text-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
-        }
-        .winner {
-            background: #f0f0f0;
-            padding: 15px;
-            border-radius: 10px;
-            border-left: 6px solid #8b0000;
-            margin: 15px 0;
-            text-align: center;
-            animation: slideUp 0.5s ease-out;
-            max-width: 90%;
-        }
-        @keyframes slideUp {
-            from { transform: translateY(20px); opacity: 0; }
-            to { transform: translateY(0); opacity: 1; }
-        }
-        .winner p {
-            margin: 8px 0;
-            font-size: clamp(14px, 3vw, 16px);
-            color: #000000;
-            font-weight: 500;
-        }
-        .view-phone-button {
-            background-color: #ff0000;
-            color: white;
-            padding: 8px 16px;
-            border: none;
-            border-radius: 20px;
-            cursor: pointer;
-            font-size: clamp(12px, 3vw, 14px);
-            font-weight: 700;
-            transition: background-color 0.3s;
-        }
-        .view-phone-button:hover {
-            background-color: #cc0000;
         }
         .snowflake {
             position: absolute;
             color: #fff;
-            font-size: 1.5em;
             font-family: Arial, sans-serif;
             text-shadow: 0 0 5px rgba(255, 255, 255, 0.8);
             pointer-events: none;
             z-index: 2;
         }
         @keyframes fall {
-            0% { top: -10%; opacity: 1; }
-            100% { top: 100%; opacity: 0; }
+            0% { transform: translateY(-100px); opacity: 1; }
+            100% { transform: translateY(calc(100vh + 100px)); opacity: 0; } /* Cai até o final da página */
         }
         @media (max-width: 600px) {
-            .title {
-                font-size: clamp(28px, 6vw, 36px);
+            .logo {
+                max-height: 200px; /* Imagem menor em mobile */
             }
             .draw-button {
                 padding: 10px 20px;
-                font-size: clamp(14px, 3vw, 16px);
-            }
-            .countdown {
-                font-size: clamp(18px, 4vw, 20px);
-            }
-            .winner {
-                padding: 10px;
+                font-size: clamp(14px, 3.5vw, 16px);
             }
         }
     </style>
 </head>
 <body>
     <div class="draw-section">
-        <h1 class="title">SUB-ZERO BEER</h1>
+        <img src="/subzerobeer/images/subzero.png" alt="Sub-Zero Beer Logo" class="logo">
         <button class="draw-button" onclick="startDraw()">SORTEAR AGORA</button>
-        <div id="countdown" class="countdown" style="display: none;">10</div>
-        <div id="winner-message" class="winner" style="display: none;"></div>
     </div>
 
     <script>
@@ -152,13 +86,13 @@
             snowflake.className = 'snowflake';
             snowflake.innerHTML = '❄️';
             snowflake.style.left = Math.random() * 100 + 'vw';
-            snowflake.style.fontSize = Math.random() * 25 + 15 + 'px';
-            snowflake.style.animation = `fall ${Math.random() * 5 + 5}s linear`;
+            snowflake.style.fontSize = Math.random() * 25 + 15 + 'px'; /* Tamanhos de 15px a 40px */
+            snowflake.style.animation = `fall ${Math.random() * 7 + 8}s linear`; /* Duração de 8s a 15s */
             document.body.appendChild(snowflake);
-            setTimeout(() => snowflake.remove(), 10000);
+            setTimeout(() => snowflake.remove(), 20000); /* Remoção após 20s */
         }
 
-        setInterval(createSnowflake, 200);
+        setInterval(createSnowflake, 1000); /* Cria flocos a cada 1s */
 
         async function loadPurchases() {
             const maxRetries = 3;
@@ -217,21 +151,14 @@
 
         function startDraw() {
             const drawButton = document.querySelector('.draw-button');
-            const countdownElement = document.getElementById('countdown');
-            const winnerMessage = document.getElementById('winner-message');
             drawButton.disabled = true;
-            countdownElement.style.display = 'block';
-            winnerMessage.style.display = 'none';
+            alert('Sorteio iniciado! Aguarde 10 segundos...');
 
             let timeLeft = 10;
-            countdownElement.textContent = `SORTEIO EM ${timeLeft} SEGUNDOS...`;
-
             const countdown = setInterval(() => {
                 timeLeft--;
-                countdownElement.textContent = `SORTEIO EM ${timeLeft} SEGUNDOS...`;
                 if (timeLeft <= 0) {
                     clearInterval(countdown);
-                    countdownElement.style.display = 'none';
                     performDraw();
                     drawButton.disabled = false;
                 }
@@ -239,18 +166,15 @@
         }
 
         async function performDraw() {
-            const winnerMessage = document.getElementById('winner-message');
             const approvedPurchases = purchasesData.filter(purchase => purchase.status === 'approved');
             if (approvedPurchases.length === 0) {
-                winnerMessage.textContent = 'NENHUMA COMPRA APROVADA PARA REALIZAR O SORTEIO.';
-                winnerMessage.style.display = 'block';
+                alert('NENHUMA COMPRA APROVADA PARA REALIZAR O SORTEIO.');
                 return;
             }
 
             const allNumbers = approvedPurchases.flatMap(purchase => purchase.numbers || []);
             if (allNumbers.length === 0) {
-                winnerMessage.textContent = 'NENHUM NÚMERO APROVADO ENCONTRADO PARA O SORTEIO.';
-                winnerMessage.style.display = 'block';
+                alert('NENHUM NÚMERO APROVADO ENCONTRADO PARA O SORTEIO.');
                 return;
             }
 
@@ -259,8 +183,7 @@
             const winner = approvedPurchases.find(purchase => purchase.numbers && purchase.numbers.includes(winningNumber));
 
             if (!winner) {
-                winnerMessage.textContent = 'ERRO: COMPRADOR NÃO ENCONTRADO PARA O NÚMERO SORTEADO.';
-                winnerMessage.style.display = 'block';
+                alert('ERRO: COMPRADOR NÃO ENCONTRADO PARA O NÚMERO SORTEADO.');
                 return;
             }
 
@@ -294,25 +217,9 @@
                 alert('Erro ao salvar ganhador. Verifique o console para detalhes.');
             }
 
-            winnerMessage.innerHTML = `
-                <h3>PARABÉNS AO GANHADOR! 🎉</h3>
-                <p><strong>NOME:</strong> ${winner.buyerName || 'N/A'}</p>
-                <p><strong>NÚMERO SORTEADO:</strong> ${winningNumber}</p>
-                <p><strong>NÚMEROS COMPRADOS:</strong> ${winner.numbers ? winner.numbers.join(', ') : 'N/A'}</p>
-                <p><strong>TELEFONE:</strong> ${winner.buyerPhone ? '*******' + winner.buyerPhone.slice(-4) : 'N/A'}</p>
-                <button class="view-phone-button" onclick="viewWinnerPhone()">VER TELEFONE DO GANHADOR</button>
-            `;
-            winnerMessage.style.display = 'block';
+            alert(`PARABÉNS AO GANHADOR!\n\nNOME: ${winner.buyerName || 'N/A'}\nNÚMERO SORTEADO: ${winningNumber}\nNÚMEROS COMPRADOS: ${winner.numbers ? winner.numbers.join(', ') : 'N/A'}\nTELEFONE: ${winner.buyerPhone ? '*******' + winner.buyerPhone.slice(-4) : 'N/A'}`);
             console.log('[' + new Date().toISOString() + '] Sorteio realizado: Número ' + winningNumber + ', Ganhador: ' + winner.buyerName);
             launchConfetti();
-        }
-
-        function viewWinnerPhone() {
-            if (!currentWinner) {
-                alert('NENHUM GANHADOR SELECIONADO.');
-                return;
-            }
-            alert(`TELEFONE DO GANHADOR (${currentWinner.buyerName}): ${currentWinner.buyerPhone}`);
         }
 
         window.onload = () => {
