@@ -133,10 +133,10 @@ app.get('/get-page-password', (req, res) => {
 });
 
 app.post('/save_winner', async (req, res) => {
-    const { buyerName, buyerPhone, winningNumber, numbers, drawDate } = req.body;
-    console.log('[' + new Date().toISOString() + '] Recebendo solicitação para salvar ganhador: buyerName=' + buyerName + ', winningNumber=' + winningNumber + ', numbers=' + JSON.stringify(numbers) + ', drawDate=' + drawDate);
+    const { buyerName, buyerPhone, winningNumber, numbers, drawDate, photoUrl } = req.body;
+    console.log('[' + new Date().toISOString() + '] Recebendo solicitação para salvar ganhador: buyerName=' + buyerName + ', winningNumber=' + winningNumber + ', numbers=' + JSON.stringify(numbers) + ', drawDate=' + drawDate + ', photoUrl=' + photoUrl);
     try {
-        if (!buyerName || !buyerPhone || !winningNumber || !numbers || !drawDate) {
+        if (!buyerName || !buyerPhone || !winningNumber || !numbers || !drawDate || !photoUrl) {
             console.error('[' + new Date().toISOString() + '] Dados incompletos para salvar ganhador');
             return res.status(400).json({ error: 'Dados incompletos' });
         }
@@ -145,10 +145,11 @@ app.post('/save_winner', async (req, res) => {
             buyerPhone,
             winningNumber,
             numbers,
-            drawDate: new Date(drawDate)
+            drawDate: new Date(drawDate),
+            photoUrl
         });
         await winner.save();
-        console.log('[' + new Date().toISOString() + '] Ganhador salvo com sucesso: ' + buyerName + ', número: ' + winningNumber);
+        console.log('[' + new Date().toISOString() + '] Ganhador salvo com sucesso: ' + buyerName + ', número: ' + winningNumber + ', foto: ' + photoUrl);
         res.json({ success: true });
     } catch (error) {
         console.error('[' + new Date().toISOString() + '] Erro ao salvar ganhador: ' + error);
@@ -175,7 +176,7 @@ app.post('/upload_winner_photo', async (req, res) => {
             console.error('[' + new Date().toISOString() + '] Dados incompletos ou inválidos para atualizar foto');
             return res.status(400).json({ error: 'Dados incompletos ou inválidos (winnerId ou winnerNumber)' });
         }
-        const photoUrl = 'https://raw.githubusercontent.com/ederamorimth/subzerobeer/main/images/ganhador' + winnerNumber + '.png';
+        const photoUrl = '/subzerobeer/images/ganhador' + winnerNumber + '.jpg';
         const result = await Winner.updateOne(
             { _id: winnerId },
             { $set: { photoUrl } }
