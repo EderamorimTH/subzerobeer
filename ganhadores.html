@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=2.0, user-scalable=yes">
     <title>Ganhadores - Sub-zero Beer</title>
-    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&family=Playfair+Display:wght@700&display=swap" rel="stylesheet">
     <style>
         body {
             font-family: 'Roboto', sans-serif;
@@ -16,6 +16,7 @@
         }
         h1, h2, h3 {
             text-transform: uppercase;
+            font-family: 'Playfair Display', serif;
         }
         header {
             background-color: #000000 !important;
@@ -69,9 +70,22 @@
             box-shadow: 0 4px 8px rgba(0,0,0,0.1);
         }
         .content h2 {
-            font-size: clamp(20px, 5vw, 24px);
+            font-size: clamp(28px, 6vw, 32px);
             text-align: center;
-            margin-bottom: 20px;
+            margin-bottom: 30px;
+            color: #000000;
+            position: relative;
+            padding-bottom: 10px;
+        }
+        .content h2::after {
+            content: '';
+            width: 100px;
+            height: 3px;
+            background-color: #FF4040;
+            position: absolute;
+            bottom: 0;
+            left: 50%;
+            transform: translateX(-50%);
         }
         .winner-card {
             display: flex;
@@ -94,19 +108,24 @@
             border-radius: 10px;
             margin-bottom: 15px;
             object-fit: cover;
+            border: 2px solid #FF4040;
         }
         .winner-details {
             text-align: center;
             width: 100%;
         }
         .winner-details p {
-            margin: 8px 0;
-            font-size: clamp(14px, 3.5vw, 16px);
+            margin: 10px 0;
+            font-size: clamp(16px, 4vw, 18px);
+            color: #333333;
+            line-height: 1.5;
         }
         .winner-details strong {
             color: #000000;
             font-weight: 700;
             text-transform: uppercase;
+            font-family: 'Playfair Display', serif;
+            font-size: clamp(18px, 4.5vw, 20px);
         }
         .error, .no-data {
             text-align: center;
@@ -159,8 +178,10 @@
             .sorteio-text { font-size: clamp(14px, 3.5vw, 16px); margin: 10px 0; }
             nav a { font-size: clamp(14px, 3.5vw, 16px); margin: 0 10px; }
             .content { margin: 15px; padding: 15px; }
+            .content h2 { font-size: clamp(24px, 5vw, 28px); }
             .winner-image { max-width: 200px; }
-            .winner-details p { font-size: clamp(12px, 3vw, 14px); }
+            .winner-details p { font-size: clamp(14px, 3.5vw, 16px); }
+            .winner-details strong { font-size: clamp(16px, 4vw, 18px); }
             .error, .no-data { font-size: clamp(14px, 3.5vw, 16px); padding: 8px; }
             .instagram-button, .share-button { padding: 10px 20px; font-size: clamp(14px, 3.5vw, 16px); }
             footer { padding: 15px; }
@@ -180,7 +201,6 @@
 
     <section class="content" id="content">
         <h2>LISTA DE GANHADORES</h2>
-        <p>VEJA OS GANHADORES DOS SORTEIOS DO SUB-ZERO BEER.</p>
         <div id="error-message" class="error" style="display: none;"></div>
         <div id="no-data-message" class="no-data" style="display: none;">NENHUM GANHADOR REGISTRADO AINDA.</div>
         <div id="winners-container"></div>
@@ -193,7 +213,7 @@
     </footer>
 
     <script>
-        async function loadWinners() {
+       she        async function loadWinners() {
             const errorMessage = document.getElementById('error-message');
             const noDataMessage = document.getElementById('no-data-message');
             const winnersContainer = document.getElementById('winners-container');
@@ -224,21 +244,28 @@
                     }
 
                     winnersContainer.innerHTML = '';
-                    winnersData.forEach(winner => {
-                        const card = document.createElement('div');
-                        card.className = 'winner-card';
-                        card.innerHTML = `
-                            ${winner.photoUrl ? `<img src="${winner.photoUrl}" alt="Foto do ganhador" class="winner-image" onerror="this.src='https://via.placeholder.com/300';">` : '<img src="https://via.placeholder.com/300" alt="Sem foto" class="winner-image">'}
-                            <div class="winner-details">
-                                <p><strong>Nome:</strong> ${winner.buyerName || 'N/A'}</p>
-                                <p><strong>Número Vencedor:</strong> ${winner.winningNumber || 'N/A'}</p>
-                <p><strong>Números Comprados:</strong> ${winner.numbers ? winner.numbers.join(', ') : 'N/A'}</p>
-                                <p><strong>Data do Sorteio:</strong> ${winner.drawDate ? new Date(winner.drawDate).toLocaleString('pt-BR') : 'N/A'}</p>
-                                <p><strong>Prêmio:</strong> ${winner.prize || 'N/A'}</p>
-                            </div>
-                        `;
-                        winnersContainer.appendChild(card);
-                    });
+                    // Exemplo com os dados fornecidos
+                    const winner = {
+                        buyerName: 'Eder',
+                        winningNumber: 137,
+                        numbers: [133, 134, 136, 135, 137],
+                        drawDate: '2025-07-06T02:51:59',
+                        prize: '1 CAIXA DE LITRÃO E 1 PORÇÃO DE FRANGO A PASSARINHO',
+                        photoUrl: 'https://via.placeholder.com/300' // Placeholder, substitua pela URL real da foto
+                    };
+                    const card = document.createElement('div');
+                    card.className = 'winner-card';
+                    card.innerHTML = `
+                        ${winner.photoUrl ? `<img src="${winner.photoUrl}" alt="Foto do ganhador" class="winner-image" onerror="this.src='https://via.placeholder.com/300';">` : '<img src="https://via.placeholder.com/300" alt="Sem foto" class="winner-image">'}
+                        <div class="winner-details">
+                            <p><strong>Nome:</strong> ${winner.buyerName || 'N/A'}</p>
+                            <p><strong>Número Vencedor:</strong> ${winner.winningNumber || 'N/A'}</p>
+                            <p><strong>Números Comprados:</strong> ${winner.numbers ? winner.numbers.join(', ') : 'N/A'}</p>
+                            <p><strong>Data do Sorteio:</strong> ${winner.drawDate ? new Date(winner.drawDate).toLocaleString('pt-BR') : 'N/A'}</p>
+                            <p><strong>Prêmio:</strong> ${winner.prize || 'N/A'}</p>
+                        </div>
+                    `;
+                    winnersContainer.appendChild(card);
 
                     noDataMessage.style.display = winnersData.length === 0 ? 'block' : 'none';
                     errorMessage.style.display = 'none';
