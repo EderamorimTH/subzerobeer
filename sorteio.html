@@ -5,7 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=2.0, user-scalable=yes">
     <title>Sorteio - Sub-zero Beer</title>
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
-    <script src="https://cdn.jsdelivr.net/npm/bcryptjs@2.4.3/dist/bcrypt.min.js"></script>
     <style>
         body {
             font-family: 'Roboto', sans-serif;
@@ -25,7 +24,6 @@
             text-align: center;
             box-shadow: 0 2px 4px rgba(0,0,0,0.2);
             z-index: 2;
-            display: none; /* Escondido até a senha ser validada */
         }
         .header-logo {
             max-width: 100%;
@@ -69,7 +67,7 @@
             background-color: #F5F5F5;
             border-radius: 10px;
             box-shadow: 0 4px 8px rgba(0,0,0,0.1);
-            display: none; /* Escondido até a senha ser validada */
+            display: block;
         }
         .content h2 {
             font-size: clamp(20px, 5vw, 22px);
@@ -131,7 +129,6 @@
             text-align: center;
             padding: 20px;
             box-shadow: 0 -2px 4px rgba(0,0,0,0.2);
-            display: none; /* Escondido até a senha ser validada */
         }
         .instagram-button, .share-button {
             background-color: #FF4040;
@@ -155,55 +152,6 @@
         .share-button:hover {
             background-color: #1EBE5A;
         }
-        .password-overlay {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0, 0, 0, 0.8);
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            z-index: 1000;
-        }
-        .password-box {
-            background: white;
-            padding: 20px;
-            border-radius: 10px;
-            text-align: center;
-            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
-            max-width: 90%;
-            width: 400px;
-        }
-        .password-box h2 {
-            font-size: clamp(20px, 5vw, 24px);
-            margin-bottom: 20px;
-        }
-        .password-box input {
-            padding: 10px;
-            font-size: clamp(14px, 3.5vw, 16px);
-            width: 80%;
-            margin-bottom: 10px;
-            border: 1px solid #ccc;
-            border-radius: 5px;
-        }
-        .password-box button {
-            background-color: #28A745;
-            color: white;
-            padding: 10px 20px;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-            font-size: clamp(14px, 3.5vw, 16px);
-        }
-        .password-box button:hover {
-            background-color: #218838;
-        }
-        .password-box .error {
-            margin-top: 10px;
-            font-size: clamp(14px, 3.5vw, 16px);
-        }
         @media (max-width: 600px) {
             body { font-size: 14px; }
             header { padding: 15px; }
@@ -217,23 +165,10 @@
             .error, .no-data { font-size: clamp(14px, 3.5vw, 16px); padding: 8px; }
             .instagram-button, .share-button { padding: 10px 20px; font-size: clamp(14px, 3.5vw, 16px); }
             footer { padding: 15px; }
-            .password-box { padding: 15px; width: 90%; }
-            .password-box h2 { font-size: clamp(18px, 4.5vw, 20px); }
-            .password-box input { font-size: clamp(12px, 3vw, 14px); }
-            .password-box button { font-size: clamp(12px, 3vw, 14px); }
         }
     </style>
 </head>
 <body>
-    <div class="password-overlay" id="password-overlay">
-        <div class="password-box">
-            <h2>DIGITE A SENHA</h2>
-            <input type="password" id="password-input" placeholder="Digite a senha">
-            <button onclick="checkPassword()">ENTRAR</button>
-            <div class="error" id="password-error" style="display: none;"></div>
-        </div>
-    </div>
-
     <header id="header">
         <img src="/subzerobeer/images/subzero.png" alt="Sub-Zero Beer Logo" class="header-logo">
         <p class="sorteio-text">PARTICIPE DO NOSSO SORTEIO E CONCORRA A UMA CAIXA DE CERVEJA LITRÃO A SUA ESCOLHA E UMA PORÇÃO DE FRANGO A PASSARINHO</p>
@@ -277,46 +212,6 @@
     </footer>
 
     <script>
-        async function checkPassword() {
-            const passwordInput = document.getElementById('password-input').value;
-            const passwordError = document.getElementById('password-error');
-            const passwordOverlay = document.getElementById('password-overlay');
-            const header = document.getElementById('header');
-            const content = document.getElementById('content');
-            const footer = document.getElementById('contato');
-
-            try {
-                console.log(`[${new Date().toISOString()}] Buscando hash da senha...`);
-                const response = await fetch('https://subzerobeer.onrender.com/get-page-password', {
-                    method: 'GET',
-                    headers: { 'Content-Type': 'application/json' }
-                });
-
-                if (!response.ok) throw new Error(`HTTP error: ${response.status}`);
-                const { passwordHash } = await response.json();
-                console.log(`[${new Date().toISOString()}] Hash recebido`);
-
-                // Comparar a senha digitada com o hash
-                const isMatch = await bcrypt.compare(passwordInput, passwordHash);
-                if (isMatch) {
-                    console.log(`[${new Date().toISOString()}] Senha correta, exibindo conteúdo`);
-                    passwordOverlay.style.display = 'none';
-                    header.style.display = 'block';
-                    content.style.display = 'block';
-                    footer.style.display = 'block';
-                    loadPurchases(); // Carrega as compras após a autenticação
-                } else {
-                    console.log(`[${new Date().toISOString()}] Senha incorreta`);
-                    passwordError.textContent = 'SENHA INCORRETA. TENTE NOVAMENTE.';
-                    passwordError.style.display = 'block';
-                }
-            } catch (error) {
-                console.error(`[${new Date().toISOString()}] Erro ao verificar senha:`, error.message);
-                passwordError.textContent = 'ERRO AO VERIFICAR SENHA. TENTE NOVAMENTE MAIS TARDE.';
-                passwordError.style.display = 'block';
-            }
-        }
-
         async function loadPurchases() {
             const errorMessage = document.getElementById('error-message');
             const noDataMessage = document.getElementById('no-data-message');
@@ -327,7 +222,7 @@
             while (retries < maxRetries) {
                 try {
                     console.log(`[${new Date().toISOString()}] Tentativa ${retries + 1} de carregar compras...`);
-                    const controller = new AbortController();
+                    const controller = new document.createElement('controller');
                     const timeoutId = setTimeout(() => controller.abort(), 15000);
                     const response = await fetch('https://subzerobeer.onrender.com/purchases', {
                         method: 'GET',
@@ -379,10 +274,8 @@
             }
         }
 
-        // Impede o carregamento automático de compras até a senha ser validada
-        document.addEventListener('DOMContentLoaded', () => {
-            console.log(`[${new Date().toISOString()}] Página carregada, aguardando senha`);
-        });
+        // Carrega as compras automaticamente ao abrir a página
+        document.addEventListener('DOMContentLoaded', loadPurchases);
     </script>
 </body>
 </html>
