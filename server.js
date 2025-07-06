@@ -189,28 +189,60 @@ app.post('/check_reservation', async (req, res) => {
 app.post('/create_preference', async (req, res) => {
   const { numbers, userId, buyerName, buyerPhone, quantity } = req.body;
   try {
-    const parsedQuantity = Number(quantity);
-    console.log(`[${new Date().toISOString()}] Dados recebidos em create_preference:`, { numbers, userId, buyerName, buyerPhone, quantity, parsedQuantity });
-    if (!numbers || !Array.isArray(numbers) || numbers.length === 0 || !userId || !buyerName || !buyerPhone || isNaN(parsedQuantity) || parsedQuantity % 1 !== 0 || parsedQuantity <= 0) {
-      console.error(`[${new Date().toISOString()}] Dados inválidos:`, { numbers, userId, buyerName, buyerPhone, quantity });
+    // Validação dos dados recebidos
+    const parsedQuantity = parseInt(quantity, 10); // Garante que quantity é um número inteiro
+    console.log(`[${new Date().toISOString()}] Dados recebidos em create_preference:`, {
+      numbers,
+      userId,
+      buyerName,
+      buyerPhone,
+      quantity,
+      parsedQuantity,
+    });
+
+    if (
+      !numbers ||
+      !Array.isArray(numbers) ||
+      numbers.length === 0 ||
+      !userId ||
+      !buyerName ||
+      !buyerPhone ||
+      isNaN(parsedQuantity) ||
+      parsedQuantity <= 0
+    ) {
+      console.error(`[${new Date().toISOString()}] Dados inválidos:`, {
+        numbers,
+        userId,
+        buyerName,
+        buyerPhone,
+        quantity,
+      });
       return res.status(400).json({ error: 'Dados inválidos ou incompletos' });
     }
 
+    // Verifica se os números estão reservados para o userId
     const validNumbers = await PendingNumber.find({ number: { $in: numbers }, userId });
     if (validNumbers.length !== numbers.length) {
       console.error(`[${new Date().toISOString()}] Números não reservados:`, numbers);
       return res.status(400).json({ error: 'Números não reservados' });
     }
 
-    await PendingNumber.updateMany({ number: { $in: numbers }, userId }, { $set: { buyerName, buyerPhone } });
+    // Atualiza os documentos pendentes com buyerName e buyerPhone
+    await PendingNumber.updateMany(
+      { number: { $in: numbers }, userId },
+      { $set: { buyerName, buyerPhone } }
+    );
 
+    // Cria a preferência do Mercado Pago
     const preference = {
-      items: [{
-        title: `Compra de ${parsedQuantity} número(s)`,
-        unit_price: 10.0,
-        quantity: parsedQuantity,
-        currency_id: 'BRL',
-      }],
+      items: [
+        {
+          title: `Compra de ${parsedQuantity} número(s)`,
+          unit_price: 10.0,
+          quantity: parsedQuantity, // Usa parsedQuantity
+          currency_id: 'BRL',
+        },
+      ],
       back_urls: {
         success: 'https://subzerobeer.onrender.com/index.html?status=approved',
         failure: 'https://subzerobeer.onrender.com/index.html?status=rejected',
@@ -225,7 +257,11 @@ app.post('/create_preference', async (req, res) => {
 
     const preferenceClient = new Preference(mercadopago);
     const response = await preferenceClient.create({ body: preference });
-    console.log(`[${new Date().toISOString()}] Preferência criada para números ${numbers.join(',')}, init_point: ${response.body.init_point}`);
+    console.log(
+      `[${new Date().toISOString()}] Preferência criada para números ${numbers.join(',')}, init_point: ${
+        response.body.init_point
+      }`
+    );
     res.json({ init_point: response.body.init_point });
   } catch (error) {
     console.error(`[${new Date().toISOString()}] Erro ao criar preferência:`, error.message);
