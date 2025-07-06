@@ -87,7 +87,6 @@ async function initializeNumbers() {
       console.log(`[${new Date().toISOString()}] 150 números inseridos com sucesso`);
     } else {
       console.log(`[${new Date().toISOString()}] Coleção 'numbers' já contém ${count} registros`);
-      // Corrigir status inválidos
       const invalidNumbers = await Number.find({ status: { $nin: ['disponível', 'reservado', 'vendido'] } });
       if (invalidNumbers.length > 0) {
         console.log(`[${new Date().toISOString()}] Encontrados ${invalidNumbers.length} números com status inválido. Corrigindo...`);
