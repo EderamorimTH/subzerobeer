@@ -67,14 +67,14 @@ async function initializeNumbers() {
     const count = await Number.countDocuments();
     console.log(`[${new Date().toISOString()}] Verificando coleção 'numbers': ${count} documentos encontrados`);
 
-    // Passo 1: Obter números pagos da coleção purchases
+    // Obter números pagos da coleção purchases
     const approvedPurchases = await Purchase.find({ status: 'approved' });
     const paidNumbers = approvedPurchases.reduce((acc, purchase) => {
       return [...acc, ...purchase.numbers];
     }, []);
     console.log(`[${new Date().toISOString()}] Números pagos encontrados em purchases: ${paidNumbers.join(', ')}`);
 
-    // Passo 2: Inicializar ou reinicializar a coleção numbers
+    // Inicializar ou reinicializar a coleção numbers
     if (count < 150) {
       console.log(`[${new Date().toISOString()}] Coleção 'numbers' incompleta ou vazia. Inicializando números...`);
       await Number.deleteMany({});
@@ -86,7 +86,7 @@ async function initializeNumbers() {
       console.log(`[${new Date().toISOString()}] 150 números inseridos com sucesso, com números pagos marcados como 'vendido'`);
     } else {
       console.log(`[${new Date().toISOString()}] Coleção 'numbers' já contém ${count} registros`);
-      // Passo 3: Atualizar números pagos para 'vendido'
+      // Atualizar números pagos para 'vendido'
       if (paidNumbers.length > 0) {
         await Number.updateMany(
           { number: { $in: paidNumbers }, status: { $ne: 'vendido' } },
@@ -183,9 +183,8 @@ app.post('/reserve_numbers', async (req, res) => {
   } catch (error) {
     console.error(`[${new Date().toISOString()}] Erro ao reservar números:`, error.message);
     res.status(500).json({ error: 'Erro ao reservar números: ' + error.message });
- 
- });
-}
+  }
+});
 
 app.post('/check_reservation', async (req, res) => {
   const { numbers, userId } = req.body;
@@ -352,7 +351,7 @@ app.post('/webhook', async (req, res) => {
       console.log(`[${new Date().toISOString()}] Pagamento ${paymentStatus} para números ${numbers.join(',')}, salvo como ${paymentStatus}`);
     }
     res.status(200).send('OK');
-  } backlight: {
+  } catch (error) {
     console.error(`[${new Date().toISOString()}] Erro no webhook:`, error.message, error.stack);
     res.status(500).json({ error: 'Erro no webhook: ' + error.message });
   }
