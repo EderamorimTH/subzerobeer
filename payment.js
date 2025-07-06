@@ -113,21 +113,6 @@ async function toggleNumberSelection(number, element) {
         return;
     }
 
-    const buyerName = document.getElementById('buyer-name')?.value?.trim();
-    const buyerPhone = document.getElementById('buyer-phone')?.value?.trim();
-
-    // Validação antes de reservar
-    if (!buyerName) {
-        console.error(`[${new Date().toISOString()}] Nome do comprador não fornecido`);
-        alert('Por favor, preencha o nome completo antes de selecionar números.');
-        return;
-    }
-    if (!buyerPhone) {
-        console.error(`[${new Date().toISOString()}] Telefone não fornecido`);
-        alert('Por favor, preencha o telefone antes de selecionar números.');
-        return;
-    }
-
     const index = selectedNumbers.indexOf(number);
     if (index === -1) {
         isReserving = true;
@@ -136,7 +121,7 @@ async function toggleNumberSelection(number, element) {
             const response = await fetch('https://subzerobeer.onrender.com/reserve_numbers', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ numbers: [number], userId, buyerName, buyerPhone })
+                body: JSON.stringify({ numbers: [number], userId })
             });
             if (!response.ok) {
                 const errorData = await response.json();
