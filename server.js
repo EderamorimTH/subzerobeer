@@ -233,5 +233,84 @@ app.post('/webhook', async (req, res) => {
     const payment = await paymentClient.get({ id: data.id });
     const { status: paymentStatus, external_reference } = payment.body;
     const numbers = external_reference?.split(',');
-    if (!numbers || !Array.isArray(numbers)) return res.status(400).json({ error: 'Números inválidos' });
-    const pending =
+    if (!numbers || !Array.isArray(numbers) || numbers.length === 0) {
+      console.error(`[${new Date().toISOString()}] Números inválidos no webhook:`, external_reference);
+      return res.status(400).json({ error: 'Números inválidos' });
+    }
+    const pending = await PendingNumber.find({ number: { $in: numbers } });
+    if (pending.length !== numbers.length) {
+      console.error(`[${new Date().toISOString()}] Números pendentes não encontrados:`, numbers);
+      await Number.updateMany({ number: { $in: numbers } }, { status: 'disponível' });
+      return res.status(400).json({ error: 'Números pendentes não encontrados' });
+    }
+    if (paymentStatus === 'approved') {
+      await Number.updateMany({ number: { $in: numbers } }, { status: 'vendido' });
+      await SoldNumber.insertMany(pending.map(p => ({
+        number: p.number,
+        buyerName: p.buyerName,
+        buyerPhone: p.buyerPhone,
+        status: 'vendido',
+        timestamp: new Date()
+      })));
+      await Purchase.create({
+        buyerName: pending[0].buyerName,
+        buyerPhone: pending[0].buyerPhone,
+        numbers,
+        status: 'approved',
+        date_approved: new Date(),
+        paymentId: data.id
+      });
+      await PendingNumber.deleteMany({ number: { $in: numbers } });
+      console.log(`[${new Date().toISOString()}] Pagamento aprovado para números ${numbers.join(',')}`);
+    } else {
+      await Number.updateMany({ number: { $in: numbers } }, { status: 'disponível' });
+      await PendingNumber.deleteMany({ number: { $in: numbers } });
+      console.log(`[${new Date().toISOString()}] Pagamento ${paymentStatus} para números ${numbers.join(',')}`);
+    }
+    res.status(200).send('OK');
+  } catch (error) {
+    console.error(`[${new Date().toISOString()}] Erro no webhook:`, error.message);
+    res.status(500).json({ error: 'Erro no webhook: ' + error.message });
+  }
+});
+
+app.get('/purchases', async (_, res) => {
+  try {
+    const purchases = await Purchase.find({ status: 'approved' });
+    console.log(`[${new Date().toISOString()}] Retornando ${purchases.length} compras aprovadas`);
+    res.json(purchases);
+  } catch (error) {
+    console.error(`[${new Date().toISOString()}] Erro ao buscar compras:`, error.message);
+    res.status(500).json({ error: 'Erro ao buscar compras: ' + error.message });
+  }
+});
+
+app.get('/winners', async (_, res) => {
+  try {
+    const winners = await Winner.find();
+    console.log(`[${new Date().toISOString()}] Retornando ${winners.length} ganhadores`);
+    res.json(winners);
+  } catch (error) {
+    console.error(`[${new Date().toISOString()}] Erro ao buscar ganhadores:`, error.message);
+    res.status(500).json({ error: 'Erro ao buscar ganhadores: ' + error.message });
+  }
+});
+
+app.post('/save_winner', async (req, res) => {
+  const { buyerName, buyerPhone, winningNumber, numbers, drawDate, prize, photoUrl } = req.body;
+  if (!buyerName || !buyerPhone || !winningNumber || !numbers || !drawDate || !prize || !photoUrl) {
+    return res.status(400).json({ error: 'Dados incompletos' });
+  }
+  try {
+    await Winner.create({ buyerName, buyerPhone, winningNumber, numbers, drawDate, prize, photoUrl });
+    console.log(`[${new Date().toISOString()}] Ganhador salvo: ${buyerName}, número: ${winningNumber}`);
+    res.json({ message: 'Ganhador salvo com sucesso' });
+  } catch (error) {
+    console.error(`[${new Date().toISOString()}] Erro ao salvar ganhador:`, error.message);
+    res.status(500).json({ error: 'Erro ao salvar ganhador: ' + error.message });
+  }
+});
+
+app.listen(port, () => {
+  console.log(`[${new Date().toISOString()}] Servidor rodando na porta ${port}`);
+});
