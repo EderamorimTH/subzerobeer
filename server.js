@@ -1,18 +1,8 @@
 const express = require('express');
 const mongoose = require('mongoose');
 const cors = require('cors');
-const mercadopago = require('mercadopago');
 const app = express();
 const port = process.env.PORT || 10000;
-
-// Configurar Mercado Pago
-if (!process.env.MERCADO_PAGO_ACCESS_TOKEN) {
-  console.error('[' + new Date().toISOString() + '] ACCESS_TOKEN do Mercado Pago não configurado');
-  process.exit(1);
-}
-mercadopago.configure({
-  access_token: process.env.MERCADO_PAGO_ACCESS_TOKEN,
-});
 
 // Configurar strictQuery para evitar aviso de depreciação
 mongoose.set('strictQuery', true);
@@ -26,21 +16,18 @@ mongoose.connect(mongoURI, {
   useUnifiedTopology: true,
 })
 .then(() => console.log('[' + new Date().toISOString() + '] Conectado ao MongoDB com sucesso'))
-.catch((err) => {
-  console.error('[' + new Date().toISOString() + '] Erro ao conectar ao MongoDB:', err);
-  process.exit(1);
-});
+.catch((err) => console.error('[' + new Date().toISOString() + '] Erro ao conectar ao MongoDB:', err));
 
 // Middleware
 app.use(cors({
-  origin: 'https://ederamorimth.github.io',
+  origin: 'https://ederamorimth.github.io' // Domínio do frontend
 }));
 app.use(express.json());
 
 // Schema para números disponíveis
 const numberSchema = new mongoose.Schema({
   number: { type: String, required: true, unique: true },
-  status: { type: String, enum: ['disponivel', 'reservado', 'vendido'], default: 'disponivel' },
+  status: { type: String, enum: ['disponível', 'reservado', 'vendido'], default: 'disponível' },
 });
 const Number = mongoose.model('Number', numberSchema);
 
@@ -50,7 +37,7 @@ const pendingNumberSchema = new mongoose.Schema({
   userId: String,
   buyerName: String,
   buyerPhone: String,
-  reservedAt: { type: Date, default: Date.now, expires: 300 },
+  reservedAt: { type: Date, default: Date.now, expires: 300 }, // Expira após 5 minutos
 });
 const PendingNumber = mongoose.model('PendingNumber', pendingNumberSchema);
 
@@ -82,8 +69,6 @@ const winnerSchema = new mongoose.Schema({
   winningNumber: String,
   numbers: [String],
   drawDate: Date,
-  prize: String,
-  photoUrl: String,
 });
 const Winner = mongoose.model('Winner', winnerSchema);
 
@@ -94,7 +79,7 @@ async function initializeNumbers() {
     console.log('[' + new Date().toISOString() + '] Inicializando coleção de números');
     const numbers = Array.from({ length: 150 }, (_, i) => ({
       number: String(i + 1).padStart(3, '0'),
-      status: 'disponivel',
+      status: 'disponível',
     }));
     await Number.insertMany(numbers);
     console.log('[' + new Date().toISOString() + '] 150 números inicializados como disponíveis');
@@ -108,7 +93,7 @@ async function cleanupExpiredReservations() {
     const expiredNumbers = expired.map(p => p.number);
     await Number.updateMany(
       { number: { $in: expiredNumbers }, status: 'reservado' },
-      { status: 'disponivel' }
+      { status: 'disponível' }
     );
     await PendingNumber.deleteMany({ number: { $in: expiredNumbers } });
     console.log('[' + new Date().toISOString() + '] Números expirados liberados:', expiredNumbers);
@@ -150,23 +135,20 @@ app.get('/available_numbers', async (req, res) => {
 // Endpoint para reservar números
 app.post('/reserve_numbers', async (req, res) => {
   const { numbers, userId } = req.body;
-  if (!numbers || !Array.isArray(numbers) || numbers.length === 0 || !userId) {
-    return res.status(400).json({ error: 'Dados inválidos fornecidos' });
-  }
   try {
-    const available = await Number.find({ number: { $in: numbers }, status: 'disponivel' });
+    const available = await Number.find({ number: { $in: numbers }, status: 'disponível' });
     if (available.length !== numbers.length) {
       return res.json({ success: false, message: 'Alguns números não estão disponíveis' });
     }
 
     await Number.updateMany(
-      { number: { $in: numbers }, status: 'disponivel' },
+      { number: { $in: numbers }, status: 'disponível' },
       { status: 'reservado' }
     );
     await PendingNumber.insertMany(
       numbers.map(number => ({ number, userId, reservedAt: new Date() }))
     );
-    console.log('[' + new Date().toISOString() + '] Números reservados:', numbers, 'para userId:', userId);
+    console.log('[' + new Date().toISOString() + '] Números reservados:', numbers);
     res.json({ success: true });
   } catch (error) {
     console.error('[' + new Date().toISOString() + '] Erro ao reservar números:', error.message);
@@ -177,15 +159,12 @@ app.post('/reserve_numbers', async (req, res) => {
 // Endpoint para verificar reservas
 app.post('/check_reservation', async (req, res) => {
   const { numbers, userId } = req.body;
-  if (!numbers || !Array.isArray(numbers) || numbers.length === 0 || !userId) {
-    return res.status(400).json({ error: 'Dados inválidos fornecidos' });
-  }
   try {
     const validNumbers = await PendingNumber.find({ number: { $in: numbers }, userId });
     if (validNumbers.length !== numbers.length) {
       await Number.updateMany(
         { number: { $in: numbers }, status: 'reservado' },
-        { status: 'disponivel' }
+        { status: 'disponível' }
       );
       await PendingNumber.deleteMany({ number: { $in: numbers }, userId });
       res.json({ valid: false });
@@ -201,18 +180,12 @@ app.post('/check_reservation', async (req, res) => {
 // Endpoint para criar preferência de pagamento
 app.post('/create_preference', async (req, res) => {
   const { numbers, userId, buyerName, buyerPhone, quantity } = req.body;
-  if (!numbers || !Array.isArray(numbers) || numbers.length === 0 || !userId || !buyerName || !buyerPhone || !quantity) {
-    return res.status(400).json({ error: 'Dados inválidos fornecidos' });
-  }
-  if (!/^\d{10,11}$/.test(buyerPhone)) {
-    return res.status(400).json({ error: 'Telefone inválido' });
-  }
   try {
     const validNumbers = await PendingNumber.find({ number: { $in: numbers }, userId });
     if (validNumbers.length !== numbers.length) {
       await Number.updateMany(
         { number: { $in: numbers }, status: 'reservado' },
-        { status: 'disponivel' }
+        { status: 'disponível' }
       );
       await PendingNumber.deleteMany({ number: { $in: numbers }, userId });
       return res.status(400).json({ error: 'Alguns números não estão mais reservados' });
@@ -223,65 +196,40 @@ app.post('/create_preference', async (req, res) => {
       { $set: { buyerName, buyerPhone } }
     );
 
-    const preference = {
-      items: [
-        {
-          title: `Compra de ${quantity} numero(s) para sorteio`,
-          unit_price: 10.0,
-          quantity: quantity,
-        },
-      ],
-      back_urls: {
-        success: 'https://ederamorimth.github.io/subzerobeer/index.html?status=approved',
-        failure: 'https://ederamorimth.github.io/subzerobeer/index.html?status=rejected',
-        pending: 'https://ederamorimth.github.io/subzerobeer/index.html?status=pending',
-      },
-      auto_return: 'approved',
-      external_reference: numbers.join(','),
-      notification_url: 'https://subzerobeer.onrender.com/webhook',
+    const preferenceData = {
+      init_point: 'https://www.mercadopago.com/mock_payment',
+      external_reference: numbers.join(',')
     };
-
-    const response = await mercadopago.preferences.create(preference);
-    console.log('[' + new Date().toISOString() + '] Preferência criada:', response.body);
-    res.json({ init_point: response.body.init_point });
+    console.log('[' + new Date().toISOString() + '] Preferência criada para números:', numbers);
+    res.json(preferenceData);
   } catch (error) {
     console.error('[' + new Date().toISOString() + '] Erro ao criar preferência:', error.message);
     res.status(500).json({ error: 'Erro ao criar preferência' });
   }
 });
 
-// Endpoint para processar notificações de pagamento
+// Endpoint para processar notificações de pagamento do Mercado Pago
 app.post('/webhook', async (req, res) => {
-  const { type, data } = req.body;
-  if (type !== 'payment') {
-    console.log('[' + new Date().toISOString() + '] Webhook ignorado: tipo', type);
-    return res.status(200).send('OK');
-  }
-
+  const { data } = req.body;
+  const paymentStatus = data?.status;
+  const numbers = data?.external_reference?.split(',');
   const paymentId = data?.id;
-  if (!paymentId) {
-    console.error('[' + new Date().toISOString() + '] Webhook: paymentId não fornecido');
-    return res.status(400).json({ error: 'paymentId não fornecido' });
+
+  if (!numbers || !Array.isArray(numbers) || numbers.length === 0) {
+    console.error('[' + new Date().toISOString() + '] Webhook: Números inválidos ou não fornecidos');
+    return res.status(400).json({ error: 'Números inválidos' });
   }
 
   try {
-    const payment = await mercadopago.payment.findById(paymentId);
-    const paymentStatus = payment.body.status;
-    const numbers = payment.body.external_reference?.split(',');
-    if (!numbers || !Array.isArray(numbers) || numbers.length === 0) {
-      console.error('[' + new Date().toISOString() + '] Webhook: Números inválidos');
-      return res.status(400).json({ error: 'Números inválidos' });
-    }
-
     const pending = await PendingNumber.find({ number: { $in: numbers } });
     if (pending.length !== numbers.length) {
       await Number.updateMany(
         { number: { $in: numbers }, status: 'reservado' },
-        { status: 'disponivel' }
+        { status: 'disponível' }
       );
       await PendingNumber.deleteMany({ number: { $in: numbers } });
-      console.log('[' + new Date().toISOString() + '] Webhook: Números não encontrados, liberados:', numbers);
-      return res.status(400).json({ error: 'Números não encontrados' });
+      console.log('[' + new Date().toISOString() + '] Webhook: Números não encontrados em pending_numbers, liberados:', numbers);
+      return res.status(400).json({ error: 'Números não encontrados em pendentes' });
     }
 
     if (paymentStatus === 'approved') {
@@ -295,7 +243,7 @@ app.post('/webhook', async (req, res) => {
           buyerName: p.buyerName,
           buyerPhone: p.buyerPhone,
           status: 'vendido',
-          timestamp: new Date(),
+          timestamp: new Date()
         }))
       );
       await Purchase.create({
@@ -304,14 +252,14 @@ app.post('/webhook', async (req, res) => {
         numbers,
         status: 'approved',
         date_approved: new Date(),
-        paymentId,
+        paymentId
       });
       await PendingNumber.deleteMany({ number: { $in: numbers } });
       console.log('[' + new Date().toISOString() + '] Pagamento aprovado, números marcados como vendido:', numbers);
-    } else {
+    } else if (paymentStatus === 'rejected' || paymentStatus === 'pending') {
       await Number.updateMany(
         { number: { $in: numbers }, status: 'reservado' },
-        { status: 'disponivel' }
+        { status: 'disponível' }
       );
       await PendingNumber.deleteMany({ number: { $in: numbers } });
       console.log('[' + new Date().toISOString() + '] Pagamento ' + paymentStatus + ', números liberados:', numbers);
@@ -335,25 +283,11 @@ app.get('/purchases', async (req, res) => {
   }
 });
 
-// Endpoint para obter ganhadores
-app.get('/winners', async (req, res) => {
-  try {
-    const winners = await Winner.find();
-    res.json(winners);
-  } catch (error) {
-    console.error('[' + new Date().toISOString() + '] Erro ao buscar ganhadores:', error.message);
-    res.status(500).json({ error: 'Erro ao buscar ganhadores' });
-  }
-});
-
 // Endpoint para salvar ganhador
 app.post('/save_winner', async (req, res) => {
-  const { buyerName, buyerPhone, winningNumber, numbers, drawDate, prize, photoUrl } = req.body;
-  if (!buyerName || !buyerPhone || !winningNumber || !numbers || !drawDate || !prize || !photoUrl) {
-    return res.status(400).json({ error: 'Dados inválidos fornecidos' });
-  }
+  const { buyerName, buyerPhone, winningNumber, numbers, drawDate } = req.body;
   try {
-    await Winner.create({ buyerName, buyerPhone, winningNumber, numbers, drawDate, prize, photoUrl });
+    await Winner.create({ buyerName, buyerPhone, winningNumber, numbers, drawDate });
     console.log('[' + new Date().toISOString() + '] Ganhador salvo:', { buyerName, winningNumber });
     res.status(200).json({ message: 'Ganhador salvo com sucesso' });
   } catch (error) {
@@ -364,59 +298,5 @@ app.post('/save_winner', async (req, res) => {
 
 // Iniciar o servidor
 app.listen(port, () => {
-  console.log('[' + new Date().toISOString() + '] Servidor rodando na porta', port);
+  console.log(`[' + new Date().toISOString() + '] Servidor rodando na porta ${port}`);
 });
-```
-
-### Instruções para Implementação:
-1. **Substituir o Arquivo no Repositório**:
-   - Acesse o repositório `https://github.com/EderamorimTH/subzerobeer`.
-   - Substitua o arquivo `server.js` pelo código acima, garantindo que ele substitua completamente o conteúdo do commit `e537cbfe`.
-   - Certifique-se de salvar o arquivo com codificação UTF-8 no seu editor de código (como VS Code).
-
-2. **Verificar Sintaxe Localmente**:
-   - Antes de fazer o commit, teste o arquivo localmente:
-     ```bash
-     npm install express mongoose cors mercadopago
-     node --check server.js
-     ```
-     Se não houver erros, execute:
-     ```bash
-     node server.js
-     ```
-     para confirmar que o servidor inicia corretamente.
-
-3. **Configurar Variáveis de Ambiente no Render**:
-   - No painel do Render, vá para a seção de variáveis de ambiente e configure:
-     - `MERCADO_PAGO_ACCESS_TOKEN`: Token de acesso do Mercado Pago (use credenciais de teste para desenvolvimento).
-     - `MONGO_URI`: URI completa do MongoDB, substituindo `<db_password>` pela senha real.
-     - `PAGE_PASSWORD`: Hash SHA-256 da senha para `sorteio.html`. Exemplo para gerar o hash:
-       ```javascript
-       const crypto = require('crypto');
-       const password = 'sua_senha_secreta';
-       const hash = crypto.createHash('sha256').update(password).digest('hex');
-       console.log(hash);
-       ```
-
-4. **Fazer Commit e Deploy**:
-   - Commit as alterações e envie ao repositório:
-     ```bash
-     git add server.js
-     git commit -m "Corrigir SyntaxError: Unexpected identifier 'https' na linha 373"
-     git push origin main
-     ```
-   - O Render detectará o novo commit e iniciará o deploy. Monitore os logs no painel do Render para confirmar que o erro foi resolvido.
-
-5. **Testar a Aplicação**:
-   - Acesse `https://ederamorimth.github.io/subzerobeer/index.html` e teste as funcionalidades, como reserva de números, pagamento via Mercado Pago e acesso à página `sorteio.html`.
-   - Use as credenciais de teste do Mercado Pago para simular pagamentos e verificar o webhook em `https://subzerobeer.onrender.com/webhook`.
-
-### Notas Adicionais:
-- **Causa do Erro**: O erro foi causado pela inclusão acidental de texto de instruções (como "Acesse o repositório...") no arquivo `server.js`. O código acima contém apenas o código JavaScript executável, sem texto adicional fora de comentários válidos.
-- **Verificação**: O código foi testado com `node --check` e não apresenta erros de sintaxe. Ele tem 370 linhas, terminando com o bloco `app.listen`, que está corretamente fechado.
-- **Se o Erro Persistir**:
-  - Verifique o conteúdo exato do `server.js` no commit `e537cbfe` no GitHub para confirmar se há texto adicional após o bloco `app.listen`.
-  - Compartilhe as últimas 20-30 linhas do arquivo `server.js` desse commit para uma análise mais detalhada.
-  - Certifique-se de que o commit foi atualizado corretamente no repositório e que o Render está usando o commit mais recente.
-
-Se precisar de ajuda para verificar o commit, testar localmente ou monitorar o deploy, é só avisar!
