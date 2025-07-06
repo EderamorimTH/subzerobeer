@@ -69,45 +69,59 @@
             box-shadow: 0 4px 8px rgba(0,0,0,0.1);
         }
         .content h2 {
-            font-size: clamp(20px, 5vw, 22px);
+            font-size: clamp(20px, 5vw, 24px);
+            text-align: center;
+            margin-bottom: 20px;
         }
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-top: 20px;
-            font-size: clamp(14px, 3.5vw, 16px);
+        .winner-card {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            background-color: #FFFFFF;
+            border-radius: 10px;
+            padding: 20px;
+            margin: 15px 0;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            transition: transform 0.3s ease;
         }
-        th, td {
-            border: 1px solid #ccc;
-            padding: 10px;
-            text-align: left;
-        }
-        th {
-            background-color: #000000;
-            color: white;
-            font-weight: 700;
+        .winner-card:hover {
+            transform: translateY(-5px);
         }
         .winner-image {
-            max-width: 100px;
+            max-width: 300px;
+            width: 100%;
             height: auto;
-            border-radius: 5px;
+            border-radius: 10px;
+            margin-bottom: 15px;
+            object-fit: cover;
+        }
+        .winner-details {
+            text-align: center;
+            width: 100%;
+        }
+        .winner-details p {
+            margin: 8px 0;
+            font-size: clamp(14px, 3.5vw, 16px);
+        }
+        .winner-details strong {
+            color: #000000;
+            font-weight: 700;
+            text-transform: uppercase;
         }
         .error, .no-data {
             text-align: center;
             margin: 20px 0;
             font-size: clamp(16px, 4vw, 18px);
+            padding: 10px;
+            border-radius: 5px;
         }
         .error {
             color: #FF0000;
             background-color: #FFE6E6;
-            padding: 10px;
-            border-radius: 5px;
         }
         .no-data {
             color: #000000;
             background-color: #F5F5F5;
-            padding: 10px;
-            border-radius: 5px;
         }
         footer {
             background-color: #000000 !important;
@@ -145,9 +159,8 @@
             .sorteio-text { font-size: clamp(14px, 3.5vw, 16px); margin: 10px 0; }
             nav a { font-size: clamp(14px, 3.5vw, 16px); margin: 0 10px; }
             .content { margin: 15px; padding: 15px; }
-            table { font-size: clamp(12px, 3vw, 14px); }
-            th, td { padding: 8px; }
-            .winner-image { max-width: 80px; }
+            .winner-image { max-width: 200px; }
+            .winner-details p { font-size: clamp(12px, 3vw, 14px); }
             .error, .no-data { font-size: clamp(14px, 3.5vw, 16px); padding: 8px; }
             .instagram-button, .share-button { padding: 10px 20px; font-size: clamp(14px, 3.5vw, 16px); }
             footer { padding: 15px; }
@@ -170,19 +183,7 @@
         <p>VEJA OS GANHADORES DOS SORTEIOS DO SUB-ZERO BEER.</p>
         <div id="error-message" class="error" style="display: none;"></div>
         <div id="no-data-message" class="no-data" style="display: none;">NENHUM GANHADOR REGISTRADO AINDA.</div>
-        <table id="winners-table">
-            <thead>
-                <tr>
-                    <th>NOME</th>
-                    <th>NÚMERO VENCEDOR</th>
-                    <th>NÚMEROS COMPRADOS</th>
-                    <th>DATA DO SORTEIO</th>
-                    <th>PRÊMIO</th>
-                    <th>FOTO</th>
-                </tr>
-            </thead>
-            <tbody id="winners-body"></tbody>
-        </table>
+        <div id="winners-container"></div>
     </section>
 
     <footer id="contato">
@@ -195,7 +196,7 @@
         async function loadWinners() {
             const errorMessage = document.getElementById('error-message');
             const noDataMessage = document.getElementById('no-data-message');
-            const winnersBody = document.getElementById('winners-body');
+            const winnersContainer = document.getElementById('winners-container');
             const maxRetries = 3;
             let retries = 0;
 
@@ -218,22 +219,25 @@
                     if (winnersData.length === 0) {
                         noDataMessage.style.display = 'block';
                         errorMessage.style.display = 'none';
-                        winnersBody.innerHTML = '';
+                        winnersContainer.innerHTML = '';
                         return;
                     }
 
-                    winnersBody.innerHTML = '';
+                    winnersContainer.innerHTML = '';
                     winnersData.forEach(winner => {
-                        const row = document.createElement('tr');
-                        row.innerHTML = `
-                            <td>${winner.buyerName || 'N/A'}</td>
-                            <td>${winner.winningNumber || 'N/A'}</td>
-                            <td>${winner.numbers ? winner.numbers.join(', ') : 'N/A'}</td>
-                            <td>${winner.drawDate ? new Date(winner.drawDate).toLocaleString('pt-BR') : 'N/A'}</td>
-                            <td>${winner.prize || 'N/A'}</td>
-                            <td>${winner.photoUrl ? `<img src="${winner.photoUrl}" alt="Foto do ganhador" class="winner-image" onerror="this.src='https://via.placeholder.com/100';">` : 'N/A'}</td>
+                        const card = document.createElement('div');
+                        card.className = 'winner-card';
+                        card.innerHTML = `
+                            ${winner.photoUrl ? `<img src="${winner.photoUrl}" alt="Foto do ganhador" class="winner-image" onerror="this.src='https://via.placeholder.com/300';">` : '<img src="https://via.placeholder.com/300" alt="Sem foto" class="winner-image">'}
+                            <div class="winner-details">
+                                <p><strong>Nome:</strong> ${winner.buyerName || 'N/A'}</p>
+                                <p><strong>Número Vencedor:</strong> ${winner.winningNumber || 'N/A'}</p>
+                <p><strong>Números Comprados:</strong> ${winner.numbers ? winner.numbers.join(', ') : 'N/A'}</p>
+                                <p><strong>Data do Sorteio:</strong> ${winner.drawDate ? new Date(winner.drawDate).toLocaleString('pt-BR') : 'N/A'}</p>
+                                <p><strong>Prêmio:</strong> ${winner.prize || 'N/A'}</p>
+                            </div>
                         `;
-                        winnersBody.appendChild(row);
+                        winnersContainer.appendChild(card);
                     });
 
                     noDataMessage.style.display = winnersData.length === 0 ? 'block' : 'none';
