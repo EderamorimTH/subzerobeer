@@ -133,14 +133,19 @@ app.get('/health', (_, res) => {
   res.json({ status: 'OK' });
 });
 
-app.get('/get-page-password', (req, res) => {
-  const passwordHash = process.env.PAGE_PASSWORD;
-  if (!passwordHash) {
+app.post('/verify-password', (req, res) => {
+  const { password } = req.body;
+  const correctPassword = process.env.PAGE_PASSWORD;
+  if (!correctPassword) {
     console.error(`[${new Date().toISOString()}] Senha não configurada no servidor`);
     return res.status(500).json({ error: 'Variável de ambiente não configurada' });
   }
-  console.log(`[${new Date().toISOString()}] Retornando hash da senha: ${passwordHash}`);
-  res.json({ passwordHash });
+  console.log(`[${new Date().toISOString()}] Verificando senha para acesso a sorteio.html`);
+  if (password === correctPassword) {
+    res.json({ success: true });
+  } else {
+    res.json({ success: false });
+  }
 });
 
 app.get('/available_numbers', async (_, res) => {
