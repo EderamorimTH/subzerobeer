@@ -83,9 +83,7 @@ async function loadNumbers() {
     const allNumbers = Array.from({ length: 150 }, (_, i) => String(i + 1).padStart(3, '0'));
     allNumbers.forEach(number => {
         const numData = numbers.find(n => n.number === number) || { number, status: 'reserved' };
-        // Normalizar o status para aceitar disponivel ou disponível
         const status = numData.status.normalize('NFD').replace(/[\u0300-\u036f]/g, '') === 'disponivel' ? 'disponível' : numData.status;
-        // Mapear status para classes do CSS
         const cssStatus = status === 'disponível' ? 'available' : status === 'reservado' ? 'reserved' : 'sold';
         console.log(`[${new Date().toISOString()}] Processando número:`, { number, status, cssStatus });
         const div = document.createElement('div');
