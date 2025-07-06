@@ -5,7 +5,6 @@ const mercadopago = require('mercadopago');
 const app = express();
 const port = process.env.PORT || 10000;
 
-// Configurar Mercado Pago
 if (!process.env.MERCADO_PAGO_ACCESS_TOKEN) {
   console.error('[' + new Date().toISOString() + '] ACCESS_TOKEN do Mercado Pago não configurado');
   process.exit(1);
@@ -14,13 +13,10 @@ mercadopago.configure({
   access_token: process.env.MERCADO_PAGO_ACCESS_TOKEN,
 });
 
-// Configurar strictQuery para evitar aviso de depreciação
 mongoose.set('strictQuery', true);
 
-// Configuração da URI do MongoDB
 const mongoURI = process.env.MONGO_URI || 'mongodb+srv://Amorim:<db_password>@cluster0.8vhg4ws.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0';
 
-// Conexão com o MongoDB
 mongoose.connect(mongoURI, {
   useNewUrlParser: true,
   useUnifiedTopology: true,
@@ -31,20 +27,17 @@ mongoose.connect(mongoURI, {
   process.exit(1);
 });
 
-// Middleware
 app.use(cors({
   origin: 'https://ederamorimth.github.io',
 }));
 app.use(express.json());
 
-// Schema para números disponíveis
 const numberSchema = new mongoose.Schema({
   number: { type: String, required: true, unique: true },
   status: { type: String, enum: ['disponivel', 'reservado', 'vendido'], default: 'disponivel' },
 });
 const Number = mongoose.model('Number', numberSchema);
 
-// Schema para números pendentes (com TTL de 5 minutos)
 const pendingNumberSchema = new mongoose.Schema({
   number: { type: String, required: true },
   userId: String,
@@ -54,7 +47,6 @@ const pendingNumberSchema = new mongoose.Schema({
 });
 const PendingNumber = mongoose.model('PendingNumber', pendingNumberSchema);
 
-// Schema para números vendidos
 const soldNumberSchema = new mongoose.Schema({
   number: { type: String, required: true },
   buyerName: String,
@@ -64,7 +56,6 @@ const soldNumberSchema = new mongoose.Schema({
 });
 const SoldNumber = mongoose.model('SoldNumber', soldNumberSchema);
 
-// Schema para compras aprovadas
 const purchaseSchema = new mongoose.Schema({
   buyerName: String,
   buyerPhone: String,
@@ -75,7 +66,6 @@ const purchaseSchema = new mongoose.Schema({
 });
 const Purchase = mongoose.model('Purchase', purchaseSchema);
 
-// Schema para ganhadores
 const winnerSchema = new mongoose.Schema({
   buyerName: String,
   buyerPhone: String,
@@ -87,7 +77,6 @@ const winnerSchema = new mongoose.Schema({
 });
 const Winner = mongoose.model('Winner', winnerSchema);
 
-// Inicializar números no MongoDB
 async function initializeNumbers() {
   const count = await Number.countDocuments();
   if (count === 0) {
@@ -101,7 +90,6 @@ async function initializeNumbers() {
   }
 }
 
-// Atualizar números expirados para disponível
 async function cleanupExpiredReservations() {
   const expired = await PendingNumber.find({ reservedAt: { $lte: new Date(Date.now() - 300000) } });
   if (expired.length > 0) {
@@ -115,18 +103,15 @@ async function cleanupExpiredReservations() {
   }
 }
 
-// Chamar inicialização e configurar cleanup
 mongoose.connection.once('open', async () => {
   await initializeNumbers();
   setInterval(cleanupExpiredReservations, 60 * 1000);
 });
 
-// Endpoint para verificar saúde do backend
 app.get('/health', (req, res) => {
   res.status(200).json({ status: 'OK' });
 });
 
-// Endpoint para obter o hash da senha
 app.get('/get-page-password', (req, res) => {
   const passwordHash = process.env.PAGE_PASSWORD;
   if (!passwordHash) {
@@ -136,7 +121,6 @@ app.get('/get-page-password', (req, res) => {
   res.json({ passwordHash });
 });
 
-// Endpoint para obter números disponíveis
 app.get('/available_numbers', async (req, res) => {
   try {
     const numbers = await Number.find({}, 'number status');
@@ -147,7 +131,6 @@ app.get('/available_numbers', async (req, res) => {
   }
 });
 
-// Endpoint para reservar números
 app.post('/reserve_numbers', async (req, res) => {
   const { numbers, userId } = req.body;
   if (!numbers || !Array.isArray(numbers) || numbers.length === 0 || !userId) {
@@ -174,7 +157,6 @@ app.post('/reserve_numbers', async (req, res) => {
   }
 });
 
-// Endpoint para verificar reservas
 app.post('/check_reservation', async (req, res) => {
   const { numbers, userId } = req.body;
   if (!numbers || !Array.isArray(numbers) || numbers.length === 0 || !userId) {
@@ -198,7 +180,6 @@ app.post('/check_reservation', async (req, res) => {
   }
 });
 
-// Endpoint para criar preferência de pagamento
 app.post('/create_preference', async (req, res) => {
   const { numbers, userId, buyerName, buyerPhone, quantity } = req.body;
   if (!numbers || !Array.isArray(numbers) || numbers.length === 0 || !userId || !buyerName || !buyerPhone || !quantity) {
@@ -250,7 +231,6 @@ app.post('/create_preference', async (req, res) => {
   }
 });
 
-// Endpoint para processar notificações de pagamento
 app.post('/webhook', async (req, res) => {
   const { type, data } = req.body;
   if (type !== 'payment') {
@@ -324,7 +304,6 @@ app.post('/webhook', async (req, res) => {
   }
 });
 
-// Endpoint para obter compras aprovadas
 app.get('/purchases', async (req, res) => {
   try {
     const purchases = await Purchase.find({ status: 'approved' });
@@ -335,7 +314,6 @@ app.get('/purchases', async (req, res) => {
   }
 });
 
-// Endpoint para obter ganhadores
 app.get('/winners', async (req, res) => {
   try {
     const winners = await Winner.find();
@@ -346,7 +324,6 @@ app.get('/winners', async (req, res) => {
   }
 });
 
-// Endpoint para salvar ganhador
 app.post('/save_winner', async (req, res) => {
   const { buyerName, buyerPhone, winningNumber, numbers, drawDate, prize, photoUrl } = req.body;
   if (!buyerName || !buyerPhone || !winningNumber || !numbers || !drawDate || !prize || !photoUrl) {
@@ -362,25 +339,6 @@ app.post('/save_winner', async (req, res) => {
   }
 });
 
-// Iniciar o servidor
 app.listen(port, () => {
   console.log('[' + new Date().toISOString() + '] Servidor rodando na porta', port);
 });
-```
-
-### Instruções para Implementação:
-1. **Substituir o Arquivo no Repositório**:
-   - Acesse o repositório `https://github.com/EderamorimTH/subzerobeer`.
-   - Substitua o arquivo `server.js` pelo código acima, garantindo que não haja texto de instruções (como "Acesse o repositório...") ou comentários mal formatados.
-   - Salve o arquivo com codificação UTF-8 no seu editor de código (como VS Code).
-
-2. **Verificar Sintaxe Localmente**:
-   - Antes de fazer o commit, teste o arquivo localmente:
-     ```bash
-     npm install express mongoose cors mercadopago
-     node --check server.js
-     ```
-     Se não houver erros, execute:
-     ```bash
-     node server.js
-     ```
