@@ -66,7 +66,6 @@ async function loadNumbers() {
                 }));
                 errorDetails.innerHTML = '<p>Não foi possível conectar ao servidor. Tente novamente em alguns minutos ou entre em contato via <a href="https://instagram.com/Subzerobeercba" target="_blank">@SUBZEROBEERCBA</a>.</p>';
                 numberError.style.display = 'block';
-                setTimeout(loadNumbers, 10000);
             }
             await new Promise(resolve => setTimeout(resolve, 2000));
         }
@@ -185,7 +184,7 @@ function updateForm() {
     console.log(`[${new Date().toISOString()}] Formulário atualizado: Números: ${selectedNumbers}, Total: R$${totalPriceSpan.textContent}`);
 }
 
-async function checkReservation(numbers) {
+async function checkReservations(numbers) {
     try {
         console.log(`[${new Date().toISOString()}] Verificando reserva para números: ${numbers}`);
         const response = await fetch('https://subzerobeer.onrender.com/check_reservation', {
@@ -213,7 +212,7 @@ async function sendPaymentRequest(data) {
     while (retries < maxRetries) {
         try {
             console.log(`[${new Date().toISOString()}] Tentativa ${retries + 1} de enviar pagamento:`, data);
-            if (!await checkReservation(data.numbers)) {
+            if (!await checkReservations(data.numbers)) {
                 console.warn(`[${new Date().toISOString()}] Números inválidos ou já reservados`);
                 alert('Um ou mais números selecionados já foram reservados ou vendidos por outra pessoa. Escolha outros números.');
                 return;
@@ -225,7 +224,7 @@ async function sendPaymentRequest(data) {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ ...data, quantity: parseInt(data.quantity, 10) }),
-                signal: controller.signal,
+                signal: controller.signal
             });
 
             clearTimeout(timeoutId);
@@ -249,7 +248,7 @@ async function sendPaymentRequest(data) {
                 await fetch('https://subzerobeer.onrender.com/check_reservation', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ numbers: data.numbers, userId: data.userId }),
+                    body: JSON.stringify({ numbers: data.numbers, userId: data.userId })
                 });
             } else {
                 await new Promise(resolve => setTimeout(resolve, 3000));
