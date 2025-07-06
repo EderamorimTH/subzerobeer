@@ -384,37 +384,3 @@ app.listen(port, () => {
      ```bash
      node server.js
      ```
-     para confirmar que o servidor inicia corretamente.
-
-3. **Confirmar Variáveis de Ambiente**:
-   - No painel do Render, verifique se as variáveis estão configuradas:
-     - `MERCADO_PAGO_ACCESS_TOKEN`: Token de acesso do Mercado Pago (teste ou produção).
-     - `MONGO_URI`: URI completa do MongoDB, com a senha real no lugar de `<db_password>`.
-     - `PAGE_PASSWORD`: Hash SHA-256 da senha para `sorteio.html`. Para gerar:
-       ```javascript
-       const crypto = require('crypto');
-       const password = 'sua_senha_secreta';
-       const hash = crypto.createHash('sha256').update(password).digest('hex');
-       console.log(hash);
-       ```
-
-4. **Fazer Commit e Deploy**:
-   - Commit as alterações e envie ao repositório:
-     ```bash
-     git add server.js
-     git commit -m "Corrigir SyntaxError e substituir mock_payment por API real do Mercado Pago"
-     git push origin main
-     ```
-   - Monitore os logs do deploy no Render para confirmar que o erro foi resolvido.
-
-5. **Testar a Integração com Mercado Pago**:
-   - Acesse `https://ederamorimth.github.io/subzerobeer/index.html`.
-   - Reserve números e inicie um pagamento. A resposta do endpoint `/create_preference` deve retornar um `init_point` válido (ex.: `https://www.mercadopago.com.br/checkout/v1/redirect?...`).
-   - Teste o webhook (`/webhook`) usando ferramentas como ngrok ou as credenciais de teste do Mercado Pago.
-
-### Notas Adicionais:
-- **Correção do Mock**: O endpoint `/create_preference` agora usa `mercadopago.preferences.create` para criar uma preferência de pagamento real, eliminando o link fictício `https://www.mercadopago.com/mock_payment`.
-- **Erro de Sintaxe**: O erro anterior foi causado por texto de instruções incluído no arquivo. O código acima contém apenas código executável, sem documentação ou comentários que possam causar erros.
-- **Testes**: Use o painel de desenvolvedores do Mercado Pago (https://www.mercadopago.com.br/developers/panel) para obter credenciais de teste e simular pagamentos.
-
-Se houver mais erros no deploy ou se precisar de ajuda para testar a integração, compartilhe os novos logs ou detalhes, e posso orientar further!
