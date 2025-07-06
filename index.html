@@ -18,7 +18,7 @@
             text-transform: uppercase;
         }
         header {
-            background-color: #000000 !important; /* Preto */
+            background-color: #000000 !important;
             color: white;
             padding: 20px;
             text-align: center;
@@ -44,6 +44,7 @@
             font-weight: 700;
             margin: 15px 0;
             text-shadow: 0 0 3px rgba(0, 0, 0, 0.3);
+            text-transform: uppercase;
         }
         nav {
             margin-top: 15px;
@@ -67,24 +68,6 @@
             margin: 20px auto;
             max-width: 1000px;
             box-shadow: 0 4px 8px rgba(0,0,0,0.1);
-        }
-        .hero-buttons {
-            margin: 20px 0;
-        }
-        .hero-buttons button {
-            background-color: #ff0000;
-            color: white;
-            padding: 12px 24px;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-            margin: 8px;
-            font-weight: 700;
-            font-size: clamp(16px, 4vw, 18px);
-            transition: background-color 0.3s;
-        }
-        .hero-buttons button:hover {
-            background-color: #cc0000;
         }
         .numbers-grid {
             display: grid;
@@ -133,7 +116,7 @@
             font-size: clamp(16px, 4vw, 18px);
         }
         .payment-form input {
-            padding12px;
+            padding: 12px;
             margin: 10px 0;
             width: calc(100% - 24px);
             border: 1px solid #ccc;
@@ -210,77 +193,30 @@
             background-color: #cc0000;
         }
         @media (max-width: 600px) {
-            body {
-                font-size: 14px;
-            }
-            header {
-                padding: 15px;
-            }
-            .header-logo {
-                max-height: 100px;
-            }
-            .sorteio-text {
-                font-size: clamp(14px, 3.5vw, 16px);
-                margin: 10px 0;
-            }
-            nav a {
-                font-size: clamp(14px, 3.5vw, 16px);
-                margin: 0 10px;
-            }
-            .hero {
-                padding: 30px 15px;
-                margin: 15px;
-            }
-            .hero-buttons button {
-                padding: 10px 20px;
-                font-size: clamp(14px, 3.5vw, 16px);
-            }
-            .numbers-grid {
-                grid-template-columns: repeat(auto-fit, minmax(45px, 1fr));
-                gap: 6px;
-            }
-            .number {
-                padding: 10px;
-                font-size: clamp(12px, 3vw, 14px);
-            }
-            .payment-form {
-                padding: 15px;
-            }
-            .payment-form h2 {
-                font-size: clamp(18px, 4.5vw, 20px);
-            }
-            .payment-form p {
-                font-size: clamp(14px, 3.5vw, 16px);
-            }
-            .payment-form input {
-                padding: 10px;
-                font-size: clamp(14px, 3.5vw, 16px);
-            }
-            .payment-form .pay-button {
-                padding: 10px 20px;
-                font-size: clamp(14px, 3.5vw, 16px);
-            }
-            .success-message, .error-message, .pending-message, .number-error {
-                padding: 15px;
-                font-size: clamp(14px, 3.5vw, 16px);
-            }
-            .loading-message {
-                font-size: clamp(14px, 3.5vw, 16px);
-            }
-            .instagram-button, .share-button {
-                padding: 10px 20px;
-                font-size: clamp(14px, 3.5vw, 16px);
-            }
-            footer {
-                padding: 15px;
-            }
+            body { font-size: 14px; }
+            header { padding: 15px; }
+            .header-logo { max-height: 100px; }
+            .sorteio-text { font-size: clamp(14px, 3.5vw, 16px); margin: 10px 0; }
+            nav a { font-size: clamp(14px, 3.5vw, 16px); margin: 0 10px; }
+            .hero { padding: 30px 15px; margin: 15px; }
+            .numbers-grid { grid-template-columns: repeat(auto-fit, minmax(45px, 1fr)); gap: 6px; }
+            .number { padding: 10px; font-size: clamp(12px, 3vw, 14px); }
+            .payment-form { padding: 15px; }
+            .payment-form h2 { font-size: clamp(18px, 4.5vw, 20px); }
+            .payment-form p { font-size: clamp(14px, 3.5vw, 16px); }
+            .payment-form input { padding: 10px; font-size: clamp(14px, 3.5vw, 16px); }
+            .payment-form .pay-button { padding: 10px 20px; font-size: clamp(14px, 3.5vw, 16px); }
+            .success-message, .error-message, .pending-message, .number-error { padding: 15px; font-size: clamp(14px, 3.5vw, 16px); }
+            .loading-message { font-size: clamp(14px, 3.5vw, 16px); }
+            .instagram-button, .share-button { padding: 10px 20px; font-size: clamp(14px, 3.5vw, 16px); }
+            footer { padding: 15px; }
         }
     </style>
 </head>
 <body>
     <header>
         <img src="/subzerobeer/images/subzero.png" alt="Sub-Zero Beer Logo" class="header-logo">
-        <p class="sorteio-text">Participe do nosso sorteio e concorra a uma caixa de cerveja litrão a sua escolha e uma porção de frango a passarinho</p>
+        <p class="sorteio-text">PARTICIPE DO NOSSO SORTEIO E CONCORRA A UMA CAIXA DE CERVEJA LITRÃO A SUA ESCOLHA E UMA PORÇÃO DE FRANGO A PASSARINHO</p>
         <nav>
             <a href="/subzerobeer/index.html">INÍCIO</a>
             <a href="/subzerobeer/sorteio.html">SORTEIO</a>
@@ -288,11 +224,7 @@
         </nav>
     </header>
 
-    <section class="hero">
-        <div class="hero-buttons">
-            <!-- Botão "Escolher 5 Números Aleatórios" removido -->
-        </div>
-    </section>
+    <section class="hero"></section>
 
     <section class="success-message" id="success-message">
         <h3>PAGAMENTO APROVADO COM SUCESSO!</h3>
@@ -338,228 +270,6 @@
     </footer>
 
     <script src="https://sdk.mercadopago.com/js/v2"></script>
-    <script>
-        let selectedNumbers = [];
-        let userId = Math.random().toString(36).substr(2, 9);
-
-        async function checkBackendHealth() {
-            try {
-                const response = await fetch('https://subzerobeer.onrender.com/health', {
-                    method: 'GET',
-                    headers: { 'Content-Type': 'application/json' }
-                });
-                if (!response.ok) throw new Error(`Erro HTTP: ${response.status}`);
-                console.log('[' + new Date().toISOString() + '] Backend ativo');
-                return true;
-            } catch (error) {
-                console.error('[' + new Date().toISOString() + '] Erro ao verificar backend:', error.message);
-                return false;
-            }
-        }
-
-        async function loadNumbers() {
-            const numbersGrid = document.getElementById('numbers-grid');
-            const loadingMessage = document.getElementById('loading-message');
-            const numberError = document.getElementById('number-error');
-            const errorDetails = document.getElementById('error-details');
-            numbersGrid.style.display = 'grid';
-            numberError.style.display = 'none';
-            loadingMessage.style.display = 'block';
-            numbersGrid.innerHTML = '';
-
-            const maxRetries = 3;
-            let retries = 0;
-            let numbers = [];
-
-            while (retries < maxRetries) {
-                try {
-                    console.log('[' + new Date().toISOString() + '] Tentativa ' + (retries + 1) + ' de carregar números');
-                    const controller = new AbortController();
-                    const timeoutId = setTimeout(() => controller.abort(), 10000); // Aumentado para 10s
-                    const response = await fetch('https://subzerobeer.onrender.com/available_numbers', {
-                        method: 'GET',
-                        headers: { 'Content-Type': 'application/json' },
-                        signal: controller.signal
-                    });
-                    clearTimeout(timeoutId);
-
-                    if (!response.ok) throw new Error(`Erro HTTP: ${response.status}`);
-                    numbers = await response.json();
-                    console.log('[' + new Date().toISOString() + '] Números recebidos:', numbers);
-
-                    if (!Array.isArray(numbers) || numbers.length === 0) {
-                        throw new Error('Resposta inválida ou sem números disponíveis');
-                    }
-                    break; // Sai do loop se a requisição for bem-sucedida
-                } catch (error) {
-                    console.error('[' + new Date().toISOString() + '] Erro na tentativa ' + (retries + 1) + ':', error.message);
-                    retries++;
-                    if (retries === maxRetries) {
-                        console.log('[' + new Date().toISOString() + '] Fallback: preenchendo grade com números padrão');
-                        numbers = Array.from({ length: 150 }, (_, i) => ({
-                            number: String(i + 1).padStart(3, '0'),
-                            status: 'reservado'
-                        }));
-                        errorDetails.innerHTML = '<p>Erro ao carregar números: Não foi possível conectar ao servidor. Exibindo números como reservados. Tente novamente mais tarde.</p>';
-                        numberError.style.display = 'block';
-                    }
-                    await new Promise(resolve => setTimeout(resolve, 2000));
-                }
-            }
-
-            loadingMessage.style.display = 'none';
-
-            const allNumbers = Array.from({ length: 150 }, (_, i) => String(i + 1).padStart(3, '0'));
-            allNumbers.forEach(number => {
-                const numData = numbers.find(n => n.number === number) || { number, status: 'reservado' };
-                console.log('[' + new Date().toISOString() + '] Processando número:', numData);
-                const div = document.createElement('div');
-                div.className = `number ${numData.status}`;
-                div.textContent = number;
-                if (numData.status === 'disponível') {
-                    div.classList.add('available');
-                    div.onclick = () => toggleNumberSelection(number, div);
-                } else {
-                    div.classList.add(numData.status);
-                    div.style.pointerEvents = 'none';
-                }
-                numbersGrid.appendChild(div);
-            });
-
-            if (numbers.every(n => n.status !== 'disponível')) {
-                errorDetails.innerHTML = '<p>Todos os números estão reservados no momento. Tente novamente mais tarde.</p>';
-                numberError.style.display = 'block';
-            }
-        }
-
-        async function toggleNumberSelection(number, element) {
-            const index = selectedNumbers.indexOf(number);
-            if (index === -1) {
-                try {
-                    console.log('[' + new Date().toISOString() + '] Reservando número ' + number + ' para userId: ' + userId);
-                    const response = await fetch('https://subzerobeer.onrender.com/reserve_numbers', {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ numbers: [number], userId })
-                    });
-                    if (!response.ok) throw new Error(`Erro HTTP: ${response.status}`);
-                    const result = await response.json();
-                    if (result.success) {
-                        selectedNumbers.push(number);
-                        element.classList.remove('available');
-                        element.classList.add('selected');
-                        console.log('[' + new Date().toISOString() + '] Número ' + number + ' reservado');
-                        setTimeout(() => checkReservation(number, element), 5 * 60 * 1000);
-                    } else {
-                        console.error('[' + new Date().toISOString() + '] Erro ao reservar:', result.message);
-                        alert('Erro ao reservar: ' + result.message);
-                    }
-                } catch (error) {
-                    console.error('[' + new Date().toISOString() + '] Erro ao reservar:', error.message);
-                    alert('Erro ao reservar: ' + error.message);
-                }
-            } else {
-                selectedNumbers.splice(index, 1);
-                element.classList.remove('selected');
-                element.classList.add('available');
-                console.log('[' + new Date().toISOString() + '] Número ' + number + ' desselecionado');
-            }
-            updateForm();
-        }
-
-        async function checkReservation(number, element) {
-            try {
-                console.log('[' + new Date().toISOString() + '] Verificando reserva do número ' + number);
-                const response = await fetch('https://subzerobeer.onrender.com/check_reservation', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ numbers: [number], userId })
-                });
-                if (!response.ok) throw new Error(`Erro HTTP: ${response.status}`);
-                const result = await response.json();
-                if (!result.valid) {
-                    element.classList.remove('selected');
-                    element.classList.add('available');
-                    selectedNumbers = selectedNumbers.filter(n => n !== number);
-                    updateForm();
-                    element.onclick = () => toggleNumberSelection(number, element);
-                    element.style.pointerEvents = 'auto';
-                    console.log('[' + new Date().toISOString() + '] Reserva do número ' + number + ' expirou');
-                }
-            } catch (error) {
-                console.error('[' + new Date().toISOString() + '] Erro ao verificar reserva ' + number + ':', error.message);
-            }
-        }
-
-        function updateForm() {
-            const selectedNumbersSpan = document.getElementById('selected-numbers');
-            const totalPriceSpan = document.getElementById('total-price');
-            selectedNumbersSpan.textContent = selectedNumbers.length > 0 ? selectedNumbers.join(', ') : 'Nenhum';
-            totalPriceSpan.textContent = (selectedNumbers.length * 10).toFixed(2);
-            console.log('[' + new Date().toISOString() + '] Formulário atualizado: Números: ' + selectedNumbers + ', Total: R$' + totalPriceSpan.textContent);
-        }
-
-        document.getElementById('payment-form').addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const buyerName = document.getElementById('buyer-name').value;
-            const buyerPhone = document.getElementById('buyer-phone').value;
-            if (!selectedNumbers.length || !buyerName || !buyerPhone) {
-                alert('Selecione números, nome e telefone.');
-                return;
-            }
-
-            const loadingMessage = document.getElementById('loading-message');
-            loadingMessage.style.display = 'block';
-
-            try {
-                console.log('[' + new Date().toISOString() + '] Iniciando pagamento: Números: ' + selectedNumbers + ', Nome: ' + buyerName + ', Telefone: ' + buyerPhone);
-                const preferenceResponse = await fetch('https://subzerobeer.onrender.com/create_preference', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        numbers: selectedNumbers,
-                        userId,
-                        buyerName,
-                        buyerPhone,
-                        quantity: selectedNumbers.length
-                    })
-                });
-                if (!preferenceResponse.ok) throw new Error(`Erro HTTP: ${preferenceResponse.status}`);
-                const preferenceData = await preferenceResponse.json();
-                console.log('[' + new Date().toISOString() + '] Redirecionando para Mercado Pago:', preferenceData.init_point);
-                window.location.href = preferenceData.init_point;
-            } catch (error) {
-                console.error('[' + new Date().toISOString() + '] Erro ao processar pagamento:', error.message);
-                alert('Erro ao processar pagamento: ' + error.message);
-                loadNumbers();
-            } finally {
-                loadingMessage.style.display = 'none';
-            }
-        });
-
-        window.onload = async () => {
-            const backendOk = await checkBackendHealth();
-            if (!backendOk) {
-                document.getElementById('number-error').style.display = 'block';
-                document.getElementById('error-details').innerHTML = '<p>NÃO FOI POSSÍVEL CONECTAR AO SERVIDOR.</p>';
-            }
-            await loadNumbers();
-            const urlParams = new URLSearchParams(window.location.search);
-            const status = urlParams.get('status');
-            if (status === 'approved') {
-                document.getElementById('success-message').style.display = 'block';
-                console.log('[' + new Date().toISOString() + '] Pagamento aprovado');
-            } else if (status === 'rejected') {
-                document.getElementById('error-message').style.display = 'block';
-                selectedNumbers = [];
-                updateForm();
-                loadNumbers();
-                console.log('[' + new Date().toISOString() + '] Pagamento rejeitado');
-            } else if (status === 'pending') {
-                document.getElementById('pending-message').style.display = 'block';
-                console.log('[' + new Date().toISOString() + '] Pagamento pendente');
-            }
-        };
-    </script>
+    <script src="/subzerobeer/payment.js"></script>
 </body>
 </html>
