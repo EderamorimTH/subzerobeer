@@ -3,14 +3,14 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=2.0, user-scalable=yes">
-    <title>GANHADORES - SUB-ZERO BEER</title>
-    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&family=Bungee&display=swap" rel="stylesheet">
+    <title>Ganhadores - Sub-zero Beer</title>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
     <style>
         body {
             font-family: 'Roboto', sans-serif;
             margin: 0;
             padding: 0;
-            background-color: white;
+            background-color: #FFFFFF;
             color: #000000;
             font-size: 16px;
         }
@@ -58,59 +58,56 @@
             transition: color 0.3s;
         }
         nav a:hover {
-            color: #ff4040;
+            color: #FF4040;
         }
-        .winners-section {
+        .content {
             max-width: 90%;
             margin: 20px auto;
             padding: 20px;
-            background-color: #f0f0f0;
+            background-color: #F5F5F5;
             border-radius: 10px;
             box-shadow: 0 4px 8px rgba(0,0,0,0.1);
-            text-align: center;
         }
-        .winners-section h2 {
+        .content h2 {
             font-size: clamp(20px, 5vw, 22px);
         }
-        .winner {
-            margin: 20px 0;
-            padding: 20px;
-            background-color: #e0e0e0;
-            border-left: 4px solid #000000;
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+            font-size: clamp(14px, 3.5vw, 16px);
+        }
+        th, td {
+            border: 1px solid #ccc;
+            padding: 10px;
+            text-align: left;
+        }
+        th {
+            background-color: #000000;
+            color: white;
+            font-weight: 700;
+        }
+        .winner-image {
+            max-width: 100px;
+            height: auto;
             border-radius: 5px;
         }
-        .winner img {
-            width: 200px;
-            height: 200px;
-            object-fit: cover;
-            border-radius: 10px;
-            margin-bottom: 10px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        .error, .no-data {
+            text-align: center;
+            margin: 20px 0;
+            font-size: clamp(16px, 4vw, 18px);
+        }
+        .error {
+            color: #FF0000;
+            background-color: #FFE6E6;
+            padding: 10px;
+            border-radius: 5px;
         }
         .no-data {
             color: #000000;
-            font-size: clamp(16px, 4vw, 18px);
-            font-weight: 700;
-            margin: 20px 0;
-        }
-        .error-message {
-            max-width: 90%;
-            margin: 20px auto;
-            padding: 20px;
-            background-color: #ff4040;
-            border-left: 4px solid #cc0000;
-            border-radius: 10px;
-            text-align: center;
-            display: none;
-            font-size: clamp(16px, 4vw, 18px);
-        }
-        .loading-message {
-            text-align: center;
-            margin: 20px;
-            display: none;
-            color: #ff0000;
-            font-weight: 700;
-            font-size: clamp(16px, 4vw, 18px);
+            background-color: #F5F5F5;
+            padding: 10px;
+            border-radius: 5px;
         }
         footer {
             background-color: #000000 !important;
@@ -120,8 +117,8 @@
             box-shadow: 0 -2px 4px rgba(0,0,0,0.2);
         }
         .instagram-button, .share-button {
-            background-color: #ff0000;
-            color: #ffffff;
+            background-color: #FF4040;
+            color: #FFFFFF;
             padding: 12px 24px;
             border: none;
             border-radius: 5px;
@@ -132,8 +129,14 @@
             margin: 8px;
             transition: background-color 0.3s;
         }
-        .instagram-button:hover, .share-button:hover {
-            background-color: #cc0000;
+        .instagram-button:hover {
+            background-color: #CC0000;
+        }
+        .share-button {
+            background-color: #25D366;
+        }
+        .share-button:hover {
+            background-color: #1EBE5A;
         }
         @media (max-width: 600px) {
             body { font-size: 14px; }
@@ -141,59 +144,66 @@
             .header-logo { max-height: 100px; }
             .sorteio-text { font-size: clamp(14px, 3.5vw, 16px); margin: 10px 0; }
             nav a { font-size: clamp(14px, 3.5vw, 16px); margin: 0 10px; }
-            .winners-section { margin: 15px; padding: 15px; }
-            .winners-section h2 { font-size: clamp(18px, 4.5vw, 20px); }
-            .winner { margin: 15px 0; padding: 15px; }
-            .winner img { width: 150px; height: 150px; }
-            .no-data { font-size: clamp(14px, 3.5vw, 16px); }
-            .error-message { padding: 15px; font-size: clamp(14px, 3.5vw, 16px); }
-            .loading-message { font-size: clamp(14px, 3.5vw, 16px); }
+            .content { margin: 15px; padding: 15px; }
+            table { font-size: clamp(12px, 3vw, 14px); }
+            th, td { padding: 8px; }
+            .winner-image { max-width: 80px; }
+            .error, .no-data { font-size: clamp(14px, 3.5vw, 16px); padding: 8px; }
             .instagram-button, .share-button { padding: 10px 20px; font-size: clamp(14px, 3.5vw, 16px); }
             footer { padding: 15px; }
         }
     </style>
 </head>
 <body>
-    <header>
+    <header id="header">
         <img src="/subzerobeer/images/subzero.png" alt="Sub-Zero Beer Logo" class="header-logo">
         <p class="sorteio-text">PARTICIPE DO NOSSO SORTEIO E CONCORRA A UMA CAIXA DE CERVEJA LITRÃO A SUA ESCOLHA E UMA PORÇÃO DE FRANGO A PASSARINHO</p>
-        <nav>
+        <nav id="nav">
             <a href="/subzerobeer/index.html">INÍCIO</a>
             <a href="/subzerobeer/sorteio.html">SORTEIO</a>
             <a href="/subzerobeer/ganhadores.html">GANHADORES</a>
         </nav>
     </header>
 
-    <div class="loading-message" id="loading-message">CARREGANDO GANHADORES...</div>
-    <div class="error-message" id="error-message">ERRO AO CARREGAR GANHADORES. ENTRE EM CONTATO COM O SUPORTE (@SUBZEROBEERCBA).</div>
-    <section class="winners-section">
-        <h2>GANHADORES</h2>
-        <div id="winners-list"></div>
+    <section class="content" id="content">
+        <h2>LISTA DE GANHADORES</h2>
+        <p>VEJA OS GANHADORES DOS SORTEIOS DO SUB-ZERO BEER.</p>
+        <div id="error-message" class="error" style="display: none;"></div>
+        <div id="no-data-message" class="no-data" style="display: none;">NENHUM GANHADOR REGISTRADO AINDA.</div>
+        <table id="winners-table">
+            <thead>
+                <tr>
+                    <th>NOME</th>
+                    <th>NÚMERO VENCEDOR</th>
+                    <th>NÚMEROS COMPRADOS</th>
+                    <th>DATA DO SORTEIO</th>
+                    <th>PRÊMIO</th>
+                    <th>FOTO</th>
+                </tr>
+            </thead>
+            <tbody id="winners-body"></tbody>
+        </table>
     </section>
 
-    <footer>
+    <footer id="contato">
         <p>Contato: <a href="https://instagram.com/Subzerobeercba" class="instagram-button">@SUBZEROBEERCBA</a></p>
-        <p><a href="https://wa.me/?text=Participe%20do%20sorteio%20do%20Sub-zero%20Beer!%20Compre%20números%20por%20R$%2010%20e%20concorra%20a%201%20caixa%20de%20litrão%20e%201%20porção%20de%20frango%20a%20passarinho:%20https://ederamorimth.github.io/subzerobeer/index.html" class="share-button">COMPARTILHAR NO WHATSAPP</a></p>
+        <p><a href="https://wa.me/?text=Participe%20do%20sorteio%20do%20Sub-zero%20Beer!%20Compre%20números%20por%20R$%2010%20e%20concorra%20a%201%20caixa%20de%20litrão%20e%201%20porção%20de%20frango%20a%20passarinho:%20https://subzerobeer.onrender.com" class="share-button">COMPARTILHAR NO WHATSAPP</a></p>
         <p>© 2025 SUB-ZERO BEER</p>
     </footer>
 
     <script>
         async function loadWinners() {
-            const winnersList = document.getElementById('winners-list');
-            const loadingMessage = document.getElementById('loading-message');
             const errorMessage = document.getElementById('error-message');
-            loadingMessage.style.display = 'block';
-            errorMessage.style.display = 'none';
-            winnersList.innerHTML = '';
-
+            const noDataMessage = document.getElementById('no-data-message');
+            const winnersBody = document.getElementById('winners-body');
             const maxRetries = 3;
             let retries = 0;
 
             while (retries < maxRetries) {
                 try {
-                    console.log(`[${new Date().toISOString()}] Tentativa ${retries + 1} de carregar ganhadores`);
+                    console.log(`[${new Date().toISOString()}] Tentativa ${retries + 1} de carregar ganhadores...`);
                     const controller = new AbortController();
-                    const timeoutId = setTimeout(() => controller.abort(), 5000);
+                    const timeoutId = setTimeout(() => controller.abort(), 15000);
                     const response = await fetch('https://subzerobeer.onrender.com/winners', {
                         method: 'GET',
                         headers: { 'Content-Type': 'application/json' },
@@ -201,44 +211,44 @@
                     });
                     clearTimeout(timeoutId);
 
-                    if (!response.ok) throw new Error(`Erro HTTP: ${response.status}`);
-                    const winners = await response.json();
-                    console.log(`[${new Date().toISOString()}] Ganhadores recebidos:`, winners);
+                    if (!response.ok) throw new Error(`HTTP error: ${response.status}`);
+                    const winnersData = await response.json();
+                    console.log(`[${new Date().toISOString()}] Ganhadores carregados com sucesso:`, winnersData);
 
-                    if (winners.length === 0) {
-                        winnersList.innerHTML = '<p class="no-data">AGUARDANDO O PRIMEIRO GANHADOR</p>';
+                    if (winnersData.length === 0) {
+                        noDataMessage.style.display = 'block';
+                        errorMessage.style.display = 'none';
+                        winnersBody.innerHTML = '';
                         return;
                     }
 
-                    winners.forEach((winner, index) => {
-                        const winnerNumber = index + 1;
-                        const photoUrl = `https://raw.githubusercontent.com/ederamorimth/subzerobeer/main/images/ganhador${winnerNumber}.jpg`;
-                        const div = document.createElement('div');
-                        div.className = 'winner';
-                        div.innerHTML = `
-                            <img src="${photoUrl}" alt="Foto do ganhador ${winner.buyerName}" onerror="this.src='https://via.placeholder.com/200';">
-                            <h3>GANHADOR: ${winner.buyerName || 'N/A'}</h3>
-                            <p><strong>NÚMERO SORTEADO:</strong> ${winner.winningNumber || 'N/A'}</p>
-                            <p><strong>NÚMEROS COMPRADOS:</strong> ${winner.numbers ? winner.numbers.join(', ') : 'N/A'}</p>
-                            <p><strong>PRÊMIO:</strong> 1 CAIXA DE LITRÃO E 1 PORÇÃO DE FRANGO A PASSARINHO</p>
-                            <p><strong>TELEFONE:</strong> ${winner.buyerPhone ? '*******' + winner.buyerPhone.slice(-4) : 'N/A'}</p>
-                            <p><strong>DATA DO SORTEIO:</strong> ${new Date(winner.drawDate).toLocaleString('pt-BR')}</p>
+                    winnersBody.innerHTML = '';
+                    winnersData.forEach(winner => {
+                        const row = document.createElement('tr');
+                        row.innerHTML = `
+                            <td>${winner.buyerName || 'N/A'}</td>
+                            <td>${winner.winningNumber || 'N/A'}</td>
+                            <td>${winner.numbers ? winner.numbers.join(', ') : 'N/A'}</td>
+                            <td>${winner.drawDate ? new Date(winner.drawDate).toLocaleString('pt-BR') : 'N/A'}</td>
+                            <td>${winner.prize || 'N/A'}</td>
+                            <td>${winner.photoUrl ? `<img src="${winner.photoUrl}" alt="Foto do ganhador" class="winner-image" onerror="this.src='https://via.placeholder.com/100';">` : 'N/A'}</td>
                         `;
-                        winnersList.appendChild(div);
+                        winnersBody.appendChild(row);
                     });
 
+                    noDataMessage.style.display = winnersData.length === 0 ? 'block' : 'none';
+                    errorMessage.style.display = 'none';
                     return;
                 } catch (error) {
                     console.error(`[${new Date().toISOString()}] Erro na tentativa ${retries + 1}:`, error.message);
                     retries++;
                     if (retries === maxRetries) {
+                        errorMessage.textContent = 'ERRO AO CARREGAR GANHADORES. TENTE NOVAMENTE MAIS TARDE OU ENTRE EM CONTATO VIA INSTAGRAM.';
                         errorMessage.style.display = 'block';
-                        winnersList.innerHTML = '<p class="no-data">ERRO AO CARREGAR GANHADORES.</p>';
+                        noDataMessage.style.display = 'none';
                     } else {
                         await new Promise(resolve => setTimeout(resolve, 2000));
                     }
-                } finally {
-                    loadingMessage.style.display = 'none';
                 }
             }
         }
