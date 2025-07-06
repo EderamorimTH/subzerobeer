@@ -226,22 +226,22 @@
 
     <section class="hero"></section>
 
-    <section class="success-message" id="success-message">
+    <section class="success-message" id="success-message" aria-live="polite">
         <h3>PAGAMENTO APROVADO COM SUCESSO!</h3>
         <p>Seus números estão confirmados. Boa sorte!</p>
     </section>
 
-    <section class="error-message" id="error-message">
+    <section class="error-message" id="error-message" aria-live="polite">
         <h3>O PAGAMENTO NÃO FOI CONCLUÍDO.</h3>
         <p>Seus números foram liberados. Escolha outra vez para tentar novamente.</p>
     </section>
 
-    <section class="pending-message" id="pending-message">
+    <section class="pending-message" id="pending-message" aria-live="polite">
         <h3>SEU PAGAMENTO ESTÁ PENDENTE.</h3>
         <p>Aguarde a confirmação ou tente novamente se os números expirarem.</p>
     </section>
 
-    <section class="number-error" id="number-error">
+    <section class="number-error" id="number-error" aria-live="polite">
         <h3>ERRO AO CARREGAR NÚMEROS</h3>
         <p id="error-details">Não foi possível carregar os números disponíveis. Tente novamente mais tarde ou entre em contato via Instagram.</p>
     </section>
@@ -257,7 +257,7 @@
             <p>Números selecionados: <span id="selected-numbers">Nenhum</span></p>
             <p>Total: R$ <span id="total-price">0</span></p>
             <input type="text" id="buyer-name" placeholder="Seu Nome" required>
-            <input type="text" id="buyer-phone" placeholder="Seu Telefone (ex.: 11912345678)" required>
+            <input type="tel" id="buyer-phone" placeholder="Seu Telefone (ex.: 11912345678)" pattern="[0-9]{10,11}" required>
             <button type="submit" class="pay-button">Pagar com Pix/Cartão</button>
             <p>Atenção: Você tem 5 minutos para realizar o pagamento, ou os números selecionados serão liberados. Volte ao site para verificar a disponibilidade.</p>
         </form>
@@ -265,7 +265,7 @@
 
     <footer>
         <p>Contato: <a href="https://instagram.com/Subzerobeercba" class="instagram-button">@SUBZEROBEERCBA</a></p>
-        <p><a href="https://wa.me/?text=Participe%20do%20sorteio%20do%20Sub-zero%20Beer!%20Compre%20números%20por%20R$%2010%20e%20concorra%20a%201%20caixa%20de%20litrão%20e%201%20porção%20de%20frango%20a%20passarinho:%20https://ederamorimth.github.io/subzerobeer/index.html" class="share-button">COMPARTILHAR NO WHATSAPP</a></p>
+        <p><a href="https://wa.me/?text=Participe%20do%20sorteio%20do%20Sub-zero%20Beer!%20Compre%20números%20por%20R$%2010%20e%20concorra%20a%201%20caixa%20de%20litrão%20e%201%20porção%20de%20frango%20a%20passarinho:%20https://subzerobeer.onrender.com" class="share-button">COMPARTILHAR NO WHATSAPP</a></p>
         <p>© 2025 SUB-ZERO BEER</p>
     </footer>
 
