@@ -138,13 +138,11 @@ app.get('/available_numbers', async (_, res) => {
 
 app.post('/reserve_numbers', async (req, res) => {
   const { numbers, userId, buyerName, buyerPhone } = req.body;
-  if (!numbers || !Array.isArray(numbers) || numbers.length === 0 || !userId || !buyerName || !buyerPhone) {
+  if (!numbers || !Array.isArray(numbers) || numbers.length === 0 || !userId) {
     const missingFields = [];
     if (!numbers) missingFields.push('numbers');
     if (!Array.isArray(numbers) || numbers.length === 0) missingFields.push('numbers deve ser um array não vazio');
     if (!userId) missingFields.push('userId');
-    if (!buyerName) missingFields.push('buyerName');
-    if (!buyerPhone) missingFields.push('buyerPhone');
     console.error(`[${new Date().toISOString()}] Dados inválidos:`, { missingFields, received: req.body });
     return res.status(400).json({ error: `Dados inválidos ou incompletos: ${missingFields.join(', ')}` });
   }
@@ -155,7 +153,13 @@ app.post('/reserve_numbers', async (req, res) => {
       return res.json({ success: false, message: 'Alguns números indisponíveis' });
     }
     await Number.updateMany({ number: { $in: numbers } }, { status: 'reservado' });
-    await PendingNumber.insertMany(numbers.map(n => ({ number: n, userId, buyerName, buyerPhone, reservedAt: new Date() })));
+    await PendingNumber.insertMany(numbers.map(n => ({
+      number: n,
+      userId,
+      buyerName: buyerName || '',
+      buyerPhone: buyerPhone || '',
+      reservedAt: new Date()
+    })));
     console.log(`[${new Date().toISOString()}] Números ${numbers.join(',')} reservados para userId: ${userId}`);
     res.json({ success: true });
   } catch (error) {
@@ -186,6 +190,7 @@ app.post('/create_preference', async (req, res) => {
   const { numbers, userId, buyerName, buyerPhone, quantity } = req.body;
   try {
     const parsedQuantity = Number(quantity);
+    console.log(`[${new Date().toISOString()}] Dados recebidos em create_preference:`, { numbers, userId, buyerName, buyerPhone, quantity, parsedQuantity });
     if (!numbers || !Array.isArray(numbers) || numbers.length === 0 || !userId || !buyerName || !buyerPhone || isNaN(parsedQuantity) || parsedQuantity % 1 !== 0 || parsedQuantity <= 0) {
       console.error(`[${new Date().toISOString()}] Dados inválidos:`, { numbers, userId, buyerName, buyerPhone, quantity });
       return res.status(400).json({ error: 'Dados inválidos ou incompletos' });
