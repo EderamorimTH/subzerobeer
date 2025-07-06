@@ -262,17 +262,18 @@ app.post('/create_preference', async (req, res) => {
       return res.status(500).json({ error: `Erro ao chamar a API do Mercado Pago: ${apiError.message}` });
     }
 
-    if (!response || !response.body || !response.body.init_point) {
+    // Ajuste: Acessar init_point diretamente do response
+    if (!response || !response.init_point) {
       console.error(`[${new Date().toISOString()}] Resposta inválida do Mercado Pago:`, response);
       return res.status(500).json({ error: 'Resposta inválida do Mercado Pago' });
     }
 
     console.log(
       `[${new Date().toISOString()}] Preferência criada para números ${numbers.join(',')}, init_point: ${
-        response.body.init_point
+        response.init_point
       }`
     );
-    res.json({ init_point: response.body.init_point });
+    res.json({ init_point: response.init_point });
   } catch (error) {
     console.error(`[${new Date().toISOString()}] Erro ao criar preferência:`, error.message, error.stack);
     res.status(500).json({ error: `Erro ao criar preferência: ${error.message}` });
