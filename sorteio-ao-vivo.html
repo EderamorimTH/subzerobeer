@@ -74,8 +74,7 @@
             font-size: clamp(20px, 5vw, 22px);
             font-weight: 700;
             margin: 20px 0;
-            color: #FF4040;
-            background-color: #FFE6E6;
+            color: #FFFFFF;
             padding: 10px;
             border-radius: 5px;
             display: none;
@@ -115,7 +114,11 @@
             setTimeout(() => snowflake.remove(), 20000);
         }
 
-        setInterval(createSnowflake, 1000);
+        // Aumenta a frequência dos flocos de neve
+        setInterval(() => {
+            createSnowflake();
+            createSnowflake(); // Cria dois flocos por intervalo para mais densidade
+        }, 300);
 
         async function loadPurchases() {
             const maxRetries = 3;
@@ -181,11 +184,11 @@
             winnerMessage.style.display = 'none';
 
             let timeLeft = 10;
-            countdownElement.textContent = `SORTEIO EM ${timeLeft} SEGUNDOS...`;
+            countdownElement.textContent = `${timeLeft}`;
 
             const countdown = setInterval(() => {
                 timeLeft--;
-                countdownElement.textContent = `SORTEIO EM ${timeLeft} SEGUNDOS...`;
+                countdownElement.textContent = `${timeLeft}`;
                 if (timeLeft <= 0) {
                     clearInterval(countdown);
                     countdownElement.style.display = 'none';
