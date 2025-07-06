@@ -60,21 +60,12 @@
         nav a:hover {
             color: #ff4040;
         }
-        .hero {
-            text-align: center;
-            padding: 40px 20px;
-            background-color: #f0f0f0;
-            border-radius: 10px;
-            margin: 20px auto;
-            max-width: 1000px;
-            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
-        }
         .numbers-grid {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(50px, 1fr));
             gap: 8px;
             max-width: 90%;
-            margin: 20px auto;
+            margin: 10px auto; /* Reduced margin-top */
         }
         .number {
             padding: 12px;
@@ -86,7 +77,7 @@
         }
         .number.available {
             background-color: #00ff00 !important;
-            color: #ffffff !important;
+            color: #000000 !important; /* Black text for visibility */
             cursor: pointer;
         }
         .number.selected {
@@ -198,8 +189,7 @@
             .header-logo { max-height: 100px; }
             .sorteio-text { font-size: clamp(14px, 3.5vw, 16px); margin: 10px 0; }
             nav a { font-size: clamp(14px, 3.5vw, 16px); margin: 0 10px; }
-            .hero { padding: 30px 15px; margin: 15px; }
-            .numbers-grid { grid-template-columns: repeat(auto-fit, minmax(45px, 1fr)); gap: 6px; }
+            .numbers-grid { grid-template-columns: repeat(auto-fit, minmax(45px, 1fr)); gap: 6px; margin-top: 10px; }
             .number { padding: 10px; font-size: clamp(12px, 3vw, 14px); }
             .payment-form { padding: 15px; }
             .payment-form h2 { font-size: clamp(18px, 4.5vw, 20px); }
@@ -215,16 +205,15 @@
 </head>
 <body>
     <header>
-        <img src="/subzerobeer/images/subzero.png" alt="Sub-Zero Beer Logo" class="header-logo">
-        <p class="sorteio-text">PARTICIPE DO NOSSO SORTEIO E CONCORRA A UMA CAIXA DE CERVEJA LITRÃO A SUA ESCOLHA E UMA PORÇÃO DE FRANGO A PASSARINHO</p>
+        <a href="/subzerobeer/sorteio.html">
+            <img src="/subzerobeer/images/subzero.png" alt="Sub-Zero Beer Logo" class="header-logo">
+        </a>
+        <p class="sorteio-text">PARTICIPE DO NOSSO SORTEIO E CONCORRA A UMA CAIXA DE CERVEJA LITRÃO A SUA ESCOLHA E UMA PORÇÃO DE FRANGO A PASSARINHO VALOR DE 5 REAIS CADA NÚMERO!</p>
         <nav>
             <a href="/subzerobeer/index.html">INÍCIO</a>
-            <a href="/subzerobeer/sorteio.html">SORTEIO</a>
             <a href="/subzerobeer/ganhadores.html">GANHADORES</a>
         </nav>
     </header>
-
-    <section class="hero"></section>
 
     <section class="success-message" id="success-message" aria-live="polite">
         <h3>PAGAMENTO APROVADO COM SUCESSO!</h3>
@@ -252,7 +241,7 @@
 
     <section class="payment-form" id="payment-form-section">
         <h2>FINALIZE SUA COMPRA</h2>
-        <p>Preencha os dados abaixo e clique em "Pagar com Pix/Cartão" para ser redirecionado ao Mercado Pago.</p>
+        <p>Preencha os dados abaixo e clique em "Pagar com Pix/Cartão" para ser redirecionado ao Mercado Pago. Cada número custa R$ 5,00.</p>
         <form id="payment-form">
             <p>Números selecionados: <span id="selected-numbers">Nenhum</span></p>
             <p>Total: R$ <span id="total-price">0.00</span></p>
@@ -265,7 +254,7 @@
 
     <footer>
         <p>Contato: <a href="https://instagram.com/Subzerobeercba" class="instagram-button">@SUBZEROBEERCBA</a></p>
-        <p><a href="https://wa.me/?text=Participe%20do%20sorteio%20do%20Sub-zero%20Beer!%20Compre%20números%20por%20R$%2010%20e%20concorra%20a%201%20caixa%20de%20litrão%20e%201%20porção%20de%20frango%20a%20passarinho:%20https://subzerobeer.onrender.com" class="share-button">COMPARTILHAR NO WHATSAPP</a></p>
+        <p><a href="https://wa.me/?text=Participe%20do%20sorteio%20do%20Sub-zero%20Beer!%20Compre%20números%20por%20R$%205%20e%20concorra%20a%201%20caixa%20de%20litrão%20e%201%20porção%20de%20frango%20a%20passarinho:%20https://subzerobeer.onrender.com" class="share-button">COMPARTILHAR NO WHATSAPP</a></p>
         <p>© 2025 SUB-ZERO BEER</p>
     </footer>
 
