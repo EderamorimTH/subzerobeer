@@ -182,11 +182,27 @@ app.post('/check_reservation', async (req, res) => {
 app.post('/create_preference', async (req, res) => {
   const { numbers, userId, buyerName, buyerPhone, quantity } = req.body;
   try {
+    // Validações iniciais
+    if (!numbers || !Array.isArray(numbers) || numbers.length === 0 || !userId || !buyerName || !buyerPhone || !Number.isInteger(quantity) || quantity <= 0) {
+      console.error(`[${new Date().toISOString()}] Dados inválidos:`, { numbers, userId, buyerName, buyerPhone, quantity });
+      return res.status(400).json({ error: 'Dados inválidos ou incompletos' });
+    }
+
     const validNumbers = await PendingNumber.find({ number: { $in: numbers }, userId });
-    if (validNumbers.length !== numbers.length) return res.status(400).json({ error: 'Números não reservados' });
+    if (validNumbers.length !== numbers.length) {
+      console.error(`[${new Date().toISOString()}] Números não reservados:`, numbers);
+      return res.status(400).json({ error: 'Números não reservados' });
+    }
+
     await PendingNumber.updateMany({ number: { $in: numbers }, userId }, { $set: { buyerName, buyerPhone } });
+
     const preference = {
-      items: [{ title: `Compra de ${quantity} número(s)`, unit_price: 10.0, quantity }],
+      items: [{
+        title: `Compra de ${quantity} número(s)`,
+        unit_price: 10.0,
+        quantity: Number(quantity), // Garante que quantity é um número inteiro
+        currency_id: 'BRL', // Adiciona moeda obrigatória
+      }],
       back_urls: {
         success: 'https://subzerobeer.onrender.com/index.html?status=approved',
         failure: 'https://subzerobeer.onrender.com/index.html?status=rejected',
@@ -196,9 +212,12 @@ app.post('/create_preference', async (req, res) => {
       external_reference: numbers.join(','),
       notification_url: 'https://subzerobeer.onrender.com/webhook',
     };
+
+    console.log(`[${new Date().toISOString()}] JSON da preferência:`, JSON.stringify(preference, null, 2));
+
     const preferenceClient = new Preference(mercadopago);
-    const response = await preferenceClient.create(preference);
-    console.log(`[${new Date().toISOString()}] Preferência criada para números ${numbers.join(',')}`);
+    const response = await preferenceClient.create({ body: preference });
+    console.log(`[${new Date().toISOString()}] Preferência criada para números ${numbers.join(',')}, init_point: ${response.body.init_point}`);
     res.json({ init_point: response.body.init_point });
   } catch (error) {
     console.error(`[${new Date().toISOString()}] Erro ao criar preferência:`, error.message);
@@ -215,62 +234,4 @@ app.post('/webhook', async (req, res) => {
     const { status: paymentStatus, external_reference } = payment.body;
     const numbers = external_reference?.split(',');
     if (!numbers || !Array.isArray(numbers)) return res.status(400).json({ error: 'Números inválidos' });
-    const pending = await PendingNumber.find({ number: { $in: numbers } });
-    if (paymentStatus === 'approved') {
-      await Number.updateMany({ number: { $in: numbers } }, { status: 'vendido' });
-      await SoldNumber.insertMany(pending.map(p => ({ number: p.number, buyerName: p.buyerName, buyerPhone: p.buyerPhone, status: 'vendido', timestamp: new Date() })));
-      await Purchase.create({ buyerName: pending[0].buyerName, buyerPhone: pending[0].buyerPhone, numbers, status: 'approved', date_approved: new Date(), paymentId: data.id });
-      await PendingNumber.deleteMany({ number: { $in: numbers } });
-      console.log(`[${new Date().toISOString()}] Pagamento aprovado para números ${numbers.join(',')}`);
-    } else {
-      await Number.updateMany({ number: { $in: numbers } }, { status: 'disponível' });
-      await PendingNumber.deleteMany({ number: { $in: numbers } });
-      console.log(`[${new Date().toISOString()}] Pagamento ${paymentStatus} para números ${numbers.join(',')}`);
-    }
-    res.status(200).send('OK');
-  } catch (error) {
-    console.error(`[${new Date().toISOString()}] Erro no webhook:`, error.message);
-    res.status(500).json({ error: 'Erro no webhook: ' + error.message });
-  }
-});
-
-app.get('/purchases', async (_, res) => {
-  try {
-    const purchases = await Purchase.find({ status: 'approved' });
-    console.log(`[${new Date().toISOString()}] Retornando ${purchases.length} compras aprovadas`);
-    res.json(purchases);
-  } catch (error) {
-    console.error(`[${new Date().toISOString()}] Erro ao buscar compras:`, error.message);
-    res.status(500).json({ error: 'Erro ao buscar compras: ' + error.message });
-  }
-});
-
-app.get('/winners', async (_, res) => {
-  try {
-    const winners = await Winner.find();
-    console.log(`[${new Date().toISOString()}] Retornando ${winners.length} ganhadores`);
-    res.json(winners);
-  } catch (error) {
-    console.error(`[${new Date().toISOString()}] Erro ao buscar ganhadores:`, error.message);
-    res.status(500).json({ error: 'Erro ao buscar ganhadores: ' + error.message });
-  }
-});
-
-app.post('/save_winner', async (req, res) => {
-  const { buyerName, buyerPhone, winningNumber, numbers, drawDate, prize, photoUrl } = req.body;
-  if (!buyerName || !buyerPhone || !winningNumber || !numbers || !drawDate || !prize || !photoUrl) {
-    return res.status(400).json({ error: 'Dados incompletos' });
-  }
-  try {
-    await Winner.create({ buyerName, buyerPhone, winningNumber, numbers, drawDate, prize, photoUrl });
-    console.log(`[${new Date().toISOString()}] Ganhador salvo: ${buyerName}, número: ${winningNumber}`);
-    res.json({ message: 'Ganhador salvo com sucesso' });
-  } catch (error) {
-    console.error(`[${new Date().toISOString()}] Erro ao salvar ganhador:`, error.message);
-    res.status(500).json({ error: 'Erro ao salvar ganhador: ' + error.message });
-  }
-});
-
-app.listen(port, () => {
-  console.log(`[${new Date().toISOString()}] Servidor rodando na porta ${port}`);
-});
+    const pending =
