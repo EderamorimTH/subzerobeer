@@ -179,7 +179,9 @@ app.post('/check_reservation', async (req, res) => {
 app.post('/create_preference', async (req, res) => {
   const { numbers, userId, buyerName, buyerPhone, quantity } = req.body;
   try {
-    if (!numbers || !Array.isArray(numbers) || numbers.length === 0 || !userId || !buyerName || !buyerPhone || !Number.isInteger(quantity) || quantity <= 0) {
+    // Validações iniciais
+    const parsedQuantity = Number(quantity);
+    if (!numbers || !Array.isArray(numbers) || numbers.length === 0 || !userId || !buyerName || !buyerPhone || isNaN(parsedQuantity) || parsedQuantity % 1 !== 0 || parsedQuantity <= 0) {
       console.error(`[${new Date().toISOString()}] Dados inválidos:`, { numbers, userId, buyerName, buyerPhone, quantity });
       return res.status(400).json({ error: 'Dados inválidos ou incompletos' });
     }
@@ -194,9 +196,9 @@ app.post('/create_preference', async (req, res) => {
 
     const preference = {
       items: [{
-        title: `Compra de ${quantity} número(s)`,
+        title: `Compra de ${parsedQuantity} número(s)`,
         unit_price: 10.0,
-        quantity: Number(quantity),
+        quantity: parsedQuantity,
         currency_id: 'BRL',
       }],
       back_urls: {
