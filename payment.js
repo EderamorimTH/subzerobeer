@@ -39,7 +39,7 @@ async function loadNumbers() {
         try {
             console.log(`[${new Date().toISOString()}] Tentativa ${retries + 1} de carregar números`);
             const controller = new AbortController();
-            const timeoutId = setTimeout(() => controller.abort(), 10000);
+            const timeoutId = setTimeout(() => controller.abort(), 15000); // Aumentado para 15s
             const response = await fetch('https://subzerobeer.onrender.com/available_numbers', {
                 method: 'GET',
                 headers: { 'Content-Type': 'application/json' },
@@ -64,8 +64,9 @@ async function loadNumbers() {
                     number: String(i + 1).padStart(3, '0'),
                     status: 'reservado'
                 }));
-                errorDetails.innerHTML = '<p>Erro ao carregar números: Não foi possível conectar ao servidor. Exibindo números como reservados. Tente novamente mais tarde.</p>';
+                errorDetails.innerHTML = '<p>Erro ao conectar ao servidor. Tente novamente em alguns minutos ou entre em contato via <a href="https://instagram.com/Subzerobeercba" target="_blank">@SUBZEROBEERCBA</a>.</p>';
                 numberError.style.display = 'block';
+                setTimeout(loadNumbers, 10000); // Tenta recarregar após 10 segundos
             }
             await new Promise(resolve => setTimeout(resolve, 2000));
         }
@@ -91,8 +92,9 @@ async function loadNumbers() {
     });
 
     if (numbers.every(n => n.status !== 'disponível')) {
-        errorDetails.innerHTML = '<p>Todos os números estão reservados no momento. Tente novamente mais tarde.</p>';
+        errorDetails.innerHTML = '<p>Todos os números estão reservados no momento. Novas vagas podem abrir em breve. Siga <a href="https://instagram.com/Subzerobeercba" target="_blank">@SUBZEROBEERCBA</a> para atualizações.</p>';
         numberError.style.display = 'block';
+        setTimeout(loadNumbers, 30000); // Tenta recarregar após 30 segundos
     }
 }
 
@@ -198,7 +200,7 @@ async function sendPaymentRequest(data) {
             }
 
             const controller = new AbortController();
-            const timeoutId = setTimeout(() => controller.abort(), 10000);
+            const timeoutId = setTimeout(() => controller.abort(), 15000); // Aumentado para 15s
             const response = await fetch('https://subzerobeer.onrender.com/create_preference', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
@@ -224,7 +226,6 @@ async function sendPaymentRequest(data) {
             retries++;
             if (retries === maxRetries) {
                 alert('Erro ao conectar ao servidor após várias tentativas. Detalhes: ' + error.message);
-                // Libera números reservados em caso de erro
                 await fetch('https://subzerobeer.onrender.com/check_reservation', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
@@ -275,7 +276,7 @@ document.getElementById('payment-form').addEventListener('submit', async (event)
         };
         console.log(`[${new Date().toISOString()}] Enviando solicitação de pagamento:`, paymentData);
 
-        await sendPaymentRequest(paymentData);
+        await sendPaymentRequestclasse="highlight">sendPaymentRequest(paymentData);
     } catch (error) {
         console.error(`[${new Date().toISOString()}] Erro ao processar formulário:`, error.message);
         alert('Erro ao processar pagamento: ' + error.message);
@@ -288,7 +289,7 @@ window.onload = async () => {
     const backendOk = await checkBackendHealth();
     if (!backendOk) {
         document.getElementById('number-error').style.display = 'block';
-        document.getElementById('error-details').innerHTML = '<p>NÃO FOI POSSÍVEL CONECTAR AO SERVIDOR.</p>';
+        document.getElementById('error-details').innerHTML = '<p>NÃO FOI POSSÍVEL CONECTAR AO SERVIDOR. Tente novamente em alguns minutos ou entre em contato via <a href="https://instagram.com/Subzerobeercba" target="_blank">@SUBZEROBEERCBA</a>.</p>';
     }
     await loadNumbers();
     const urlParams = new URLSearchParams(window.location.search);
