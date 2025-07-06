@@ -72,15 +72,16 @@
         }
         .countdown {
             font-family: 'Bungee', sans-serif;
-            font-size: clamp(20px, 5vw, 22px);
+            font-size: clamp(30px, 7vw, 36px);
             font-weight: 700;
             margin: 20px 0;
             color: #FFFFFF;
-            padding: 10px;
+            padding: 15px;
             border-radius: 5px;
             display: none;
             text-align: center;
             width: 100%;
+            text-shadow: 0 0 10px rgba(255, 255, 255, 0.5);
         }
         .winning-number {
             font-family: 'Bungee', sans-serif;
@@ -111,7 +112,7 @@
             .logo { max-height: 200px; }
             .draw-button { padding: 10px 20px; font-size: clamp(14px, 3.5vw, 16px); }
             .winner { padding: 15px; margin: 15px auto; }
-            .countdown { font-size: clamp(18px, 4.5vw, 20px); padding: 8px; }
+            .countdown { font-size: clamp(24px, 6vw, 30px); padding: 10px; }
             .winning-number { font-size: clamp(30px, 6vw, 40px); }
             .view-phone-button { padding: 8px 16px; font-size: clamp(12px, 3vw, 14px); }
         }
@@ -210,6 +211,7 @@
             const countdownElement = document.getElementById('countdown');
             const winnerMessage = document.getElementById('winner-message');
             const winningNumberElement = document.getElementById('winning-number');
+            drawButton.style.display = 'block'; // Reexibir o botão ao iniciar um novo sorteio
             drawButton.disabled = true;
             countdownElement.style.display = 'block';
             winnerMessage.style.display = 'none';
@@ -231,6 +233,7 @@
         }
 
         async function performDraw() {
+            const drawButton = document.querySelector('.draw-button');
             const winnerMessage = document.getElementById('winner-message');
             const winningNumberElement = document.getElementById('winning-number');
             const approvedPurchases = purchasesData.filter(purchase => purchase.status === 'approved');
@@ -238,6 +241,7 @@
                 winnerMessage.textContent = 'NENHUMA COMPRA APROVADA PARA REALIZAR O SORTEIO.';
                 winnerMessage.style.display = 'block';
                 winningNumberElement.style.display = 'none';
+                drawButton.style.display = 'none'; // Esconder o botão
                 return;
             }
 
@@ -246,6 +250,7 @@
                 winnerMessage.textContent = 'NENHUM NÚMERO APROVADO ENCONTRADO PARA O SORTEIO.';
                 winnerMessage.style.display = 'block';
                 winningNumberElement.style.display = 'none';
+                drawButton.style.display = 'none'; // Esconder o botão
                 return;
             }
 
@@ -257,6 +262,7 @@
                 winnerMessage.textContent = 'ERRO: COMPRADOR NÃO ENCONTRADO PARA O NÚMERO SORTEADO.';
                 winnerMessage.style.display = 'block';
                 winningNumberElement.style.display = 'none';
+                drawButton.style.display = 'none'; // Esconder o botão
                 return;
             }
 
@@ -293,14 +299,13 @@
                 alert('Erro ao salvar ganhador. Verifique o console para detalhes.');
             }
 
-            // Exibir número sorteado e dados do ganhador simultaneamente
+            // Exibir número sorteado e dados do ganhador (sem foto)
             winningNumberElement.textContent = `NÚMERO SORTEADO: ${winningNumber}`;
             winningNumberElement.style.display = 'block';
 
             const maskedPhone = winner.buyerPhone ? '*******' + winner.buyerPhone.slice(-4) : 'N/A';
             winnerMessage.innerHTML = `
                 <h3>PARABÉNS AO GANHADOR!</h3>
-                <img src="${photoUrl}" alt="Foto do ganhador ${winner.buyerName}" onerror="this.src='https://via.placeholder.com/200';">
                 <p><strong>NOME:</strong> ${winner.buyerName || 'N/A'}</p>
                 <p><strong>NÚMERO SORTEADO:</strong> ${winningNumber}</p>
                 <p><strong>NÚMEROS COMPRADOS:</strong> ${winner.numbers ? winner.numbers.join(', ') : 'N/A'}</p>
@@ -310,6 +315,7 @@
                 <button class="view-phone-button" onclick="viewWinnerPhone()">VER TELEFONE DO GANHADOR</button>
             `;
             winnerMessage.style.display = 'block';
+            drawButton.style.display = 'none'; // Esconder o botão após o sorteio
             console.log(`[${new Date().toISOString()}] Sorteio realizado: Número ${winningNumber}, Ganhador: ${winner.buyerName}`);
             launchConfetti();
         }
