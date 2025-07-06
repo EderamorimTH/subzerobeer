@@ -139,8 +139,14 @@ app.get('/available_numbers', async (_, res) => {
 app.post('/reserve_numbers', async (req, res) => {
   const { numbers, userId, buyerName, buyerPhone } = req.body;
   if (!numbers || !Array.isArray(numbers) || numbers.length === 0 || !userId || !buyerName || !buyerPhone) {
-    console.error(`[${new Date().toISOString()}] Dados inválidos:`, { numbers, userId, buyerName, buyerPhone });
-    return res.status(400).json({ error: 'Dados inválidos ou incompletos' });
+    const missingFields = [];
+    if (!numbers) missingFields.push('numbers');
+    if (!Array.isArray(numbers) || numbers.length === 0) missingFields.push('numbers deve ser um array não vazio');
+    if (!userId) missingFields.push('userId');
+    if (!buyerName) missingFields.push('buyerName');
+    if (!buyerPhone) missingFields.push('buyerPhone');
+    console.error(`[${new Date().toISOString()}] Dados inválidos:`, { missingFields, received: req.body });
+    return res.status(400).json({ error: `Dados inválidos ou incompletos: ${missingFields.join(', ')}` });
   }
   try {
     const available = await Number.find({ number: { $in: numbers }, status: 'disponível' });
@@ -179,7 +185,6 @@ app.post('/check_reservation', async (req, res) => {
 app.post('/create_preference', async (req, res) => {
   const { numbers, userId, buyerName, buyerPhone, quantity } = req.body;
   try {
-    // Validações iniciais
     const parsedQuantity = Number(quantity);
     if (!numbers || !Array.isArray(numbers) || numbers.length === 0 || !userId || !buyerName || !buyerPhone || isNaN(parsedQuantity) || parsedQuantity % 1 !== 0 || parsedQuantity <= 0) {
       console.error(`[${new Date().toISOString()}] Dados inválidos:`, { numbers, userId, buyerName, buyerPhone, quantity });
