@@ -64,7 +64,7 @@
             background-color: #FFFFFF;
             padding: 20px;
             border-left: 4px solid #28A745;
-            margin: 20px auto;
+            margin: 10px auto; /* Reduced top margin to move winner info higher */
             border-radius: 5px;
             text-align: center;
             max-width: 90%;
@@ -83,17 +83,6 @@
             width: 100%;
             text-shadow: 0 0 10px rgba(255, 255, 255, 0.5);
         }
-        .winning-number {
-            font-family: 'Bungee', sans-serif;
-            font-size: clamp(40px, 8vw, 50px);
-            font-weight: 700;
-            color: #FFFFFF;
-            margin: 20px 0;
-            text-align: center;
-            text-shadow: 0 0 10px rgba(255, 255, 255, 0.5);
-            display: none;
-            width: 100%;
-        }
         .view-phone-button {
             background-color: #28A745;
             color: white;
@@ -111,9 +100,8 @@
         @media (max-width: 600px) {
             .logo { max-height: 200px; }
             .draw-button { padding: 10px 20px; font-size: clamp(14px, 3.5vw, 16px); }
-            .winner { padding: 15px; margin: 15px auto; }
+            .winner { padding: 15px; margin: 10px auto; }
             .countdown { font-size: clamp(24px, 6vw, 30px); padding: 10px; }
-            .winning-number { font-size: clamp(30px, 6vw, 40px); }
             .view-phone-button { padding: 8px 16px; font-size: clamp(12px, 3vw, 14px); }
         }
     </style>
@@ -126,7 +114,6 @@
 
     <div class="draw-section">
         <div id="countdown" class="countdown"></div>
-        <div id="winning-number" class="winning-number"></div>
         <button class="draw-button" onclick="startDraw()">SORTEAR AGORA</button>
         <div id="winner-message" class="winner"></div>
     </div>
@@ -210,12 +197,10 @@
             const drawButton = document.querySelector('.draw-button');
             const countdownElement = document.getElementById('countdown');
             const winnerMessage = document.getElementById('winner-message');
-            const winningNumberElement = document.getElementById('winning-number');
             drawButton.style.display = 'block'; // Reexibir o botão ao iniciar um novo sorteio
             drawButton.disabled = true;
             countdownElement.style.display = 'block';
             winnerMessage.style.display = 'none';
-            winningNumberElement.style.display = 'none';
 
             let timeLeft = 10;
             countdownElement.textContent = `${timeLeft}`;
@@ -235,12 +220,10 @@
         async function performDraw() {
             const drawButton = document.querySelector('.draw-button');
             const winnerMessage = document.getElementById('winner-message');
-            const winningNumberElement = document.getElementById('winning-number');
             const approvedPurchases = purchasesData.filter(purchase => purchase.status === 'approved');
             if (approvedPurchases.length === 0) {
                 winnerMessage.textContent = 'NENHUMA COMPRA APROVADA PARA REALIZAR O SORTEIO.';
                 winnerMessage.style.display = 'block';
-                winningNumberElement.style.display = 'none';
                 drawButton.style.display = 'none'; // Esconder o botão
                 return;
             }
@@ -249,7 +232,6 @@
             if (allNumbers.length === 0) {
                 winnerMessage.textContent = 'NENHUM NÚMERO APROVADO ENCONTRADO PARA O SORTEIO.';
                 winnerMessage.style.display = 'block';
-                winningNumberElement.style.display = 'none';
                 drawButton.style.display = 'none'; // Esconder o botão
                 return;
             }
@@ -261,7 +243,6 @@
             if (!winner) {
                 winnerMessage.textContent = 'ERRO: COMPRADOR NÃO ENCONTRADO PARA O NÚMERO SORTEADO.';
                 winnerMessage.style.display = 'block';
-                winningNumberElement.style.display = 'none';
                 drawButton.style.display = 'none'; // Esconder o botão
                 return;
             }
@@ -299,10 +280,7 @@
                 alert('Erro ao salvar ganhador. Verifique o console para detalhes.');
             }
 
-            // Exibir número sorteado e dados do ganhador (sem foto)
-            winningNumberElement.textContent = `NÚMERO SORTEADO: ${winningNumber}`;
-            winningNumberElement.style.display = 'block';
-
+            // Exibir dados do ganhador (sem foto e sem número sorteado gigante)
             const maskedPhone = winner.buyerPhone ? '*******' + winner.buyerPhone.slice(-4) : 'N/A';
             winnerMessage.innerHTML = `
                 <h3>PARABÉNS AO GANHADOR!</h3>
