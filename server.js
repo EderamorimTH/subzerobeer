@@ -66,21 +66,42 @@ async function initializeNumbers() {
   try {
     const count = await Number.countDocuments();
     console.log(`[${new Date().toISOString()}] Verificando coleção 'numbers': ${count} documentos encontrados`);
+
+    // Passo 1: Obter números pagos da coleção purchases
+    const approvedPurchases = await Purchase.find({ status: 'approved' });
+    const paidNumbers = approvedPurchases.reduce((acc, purchase) => {
+      return [...acc, ...purchase.numbers];
+    }, []);
+    console.log(`[${new Date().toISOString()}] Números pagos encontrados em purchases: ${paidNumbers.join(', ')}`);
+
+    // Passo 2: Inicializar ou reinicializar a coleção numbers
     if (count < 150) {
       console.log(`[${new Date().toISOString()}] Coleção 'numbers' incompleta ou vazia. Inicializando números...`);
       await Number.deleteMany({});
       const numbers = Array.from({ length: 150 }, (_, i) => ({
         number: String(i + 1).padStart(3, '0'),
-        status: 'disponível'
+        status: paidNumbers.includes(String(i + 1).padStart(3, '0')) ? 'vendido' : 'disponível'
       }));
       await Number.insertMany(numbers);
-      console.log(`[${new Date().toISOString()}] 150 números inseridos com sucesso`);
+      console.log(`[${new Date().toISOString()}] 150 números inseridos com sucesso, com números pagos marcados como 'vendido'`);
     } else {
       console.log(`[${new Date().toISOString()}] Coleção 'numbers' já contém ${count} registros`);
+      // Passo 3: Atualizar números pagos para 'vendido'
+      if (paidNumbers.length > 0) {
+        await Number.updateMany(
+          { number: { $in: paidNumbers }, status: { $ne: 'vendido' } },
+          { status: 'vendido' }
+        );
+        console.log(`[${new Date().toISOString()}] Números pagos ${paidNumbers.join(', ')} atualizados para 'vendido'`);
+      }
+      // Corrigir status inválidos
       const invalidNumbers = await Number.find({ status: { $nin: ['disponível', 'reservado', 'vendido'] } });
       if (invalidNumbers.length > 0) {
         console.log(`[${new Date().toISOString()}] Encontrados ${invalidNumbers.length} números com status inválido. Corrigindo...`);
-        await Number.updateMany({ status: { $nin: ['disponível', 'reservado', 'vendido'] } }, { status: 'disponível' });
+        await Number.updateMany(
+          { status: { $nin: ['disponível', 'reservado', 'vendido'] } },
+          { status: 'disponível' }
+        );
       }
     }
   } catch (error) {
@@ -162,8 +183,9 @@ app.post('/reserve_numbers', async (req, res) => {
   } catch (error) {
     console.error(`[${new Date().toISOString()}] Erro ao reservar números:`, error.message);
     res.status(500).json({ error: 'Erro ao reservar números: ' + error.message });
-  }
-});
+ 
+ });
+}
 
 app.post('/check_reservation', async (req, res) => {
   const { numbers, userId } = req.body;
@@ -303,7 +325,7 @@ app.post('/webhook', async (req, res) => {
     const pending = await PendingNumber.find({ number: { $in: numbers } });
     if (pending.length !== numbers.length) {
       console.error(`[${new Date().toISOString()}] Números pendentes não encontrados:`, numbers);
-      await Number.updateMany({ number: { $in: numbers } }, { status: 'disponível' });
+      await Number.updateMany({ number: { $in: numbers }, status: 'reservado' }, { status: 'disponível' });
       await PendingNumber.deleteMany({ number: { $in: numbers } });
       return res.status(400).json({ error: 'Números pendentes não encontrados' });
     }
@@ -330,7 +352,7 @@ app.post('/webhook', async (req, res) => {
       console.log(`[${new Date().toISOString()}] Pagamento ${paymentStatus} para números ${numbers.join(',')}, salvo como ${paymentStatus}`);
     }
     res.status(200).send('OK');
-  } catch (error) {
+  } backlight: {
     console.error(`[${new Date().toISOString()}] Erro no webhook:`, error.message, error.stack);
     res.status(500).json({ error: 'Erro no webhook: ' + error.message });
   }
