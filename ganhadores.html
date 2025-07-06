@@ -18,7 +18,7 @@
             text-transform: uppercase;
         }
         header {
-            background-color: #000000 !important; /* Preto */
+            background-color: #000000 !important;
             color: white;
             padding: 20px;
             text-align: center;
@@ -44,6 +44,7 @@
             font-weight: 700;
             margin: 15px 0;
             text-shadow: 0 0 3px rgba(0, 0, 0, 0.3);
+            text-transform: uppercase;
         }
         nav {
             margin-top: 15px;
@@ -75,7 +76,7 @@
             margin: 20px 0;
             padding: 20px;
             background-color: #e0e0e0;
-            border-left: 4px solid #000000; /* Ajustado para preto */
+            border-left: 4px solid #000000;
             border-radius: 5px;
         }
         .winner img {
@@ -112,7 +113,7 @@
             font-size: clamp(16px, 4vw, 18px);
         }
         footer {
-            background-color: #000000 !important; /* Preto */
+            background-color: #000000 !important;
             color: white;
             text-align: center;
             padding: 20px;
@@ -135,62 +136,27 @@
             background-color: #cc0000;
         }
         @media (max-width: 600px) {
-            body {
-                font-size: 14px;
-            }
-            header {
-                padding: 15px;
-            }
-            .header-logo {
-                max-height: 100px;
-            }
-            .sorteio-text {
-                font-size: clamp(14px, 3.5vw, 16px);
-                margin: 10px 0;
-            }
-            nav a {
-                font-size: clamp(14px, 3.5vw, 16px);
-                margin: 0 10px;
-            }
-            .winners-section {
-                margin: 15px;
-                padding: 15px;
-            }
-            .winners-section h2 {
-                font-size: clamp(18px, 4.5vw, 20px);
-            }
-            .winner {
-                margin: 15px 0;
-                padding: 15px;
-            }
-            .winner img {
-                width: 150px;
-                height: 150px;
-            }
-            .no-data {
-                font-size: clamp(14px, 3.5vw, 16px);
-            }
-            .error-message {
-                padding: 15px;
-                font-size: clamp(14px, 3.5vw, 16px);
-            }
-            .loading-message {
-                font-size: clamp(14px, 3.5vw, 16px);
-            }
-            .instagram-button, .share-button {
-                padding: 10px 20px;
-                font-size: clamp(14px, 3.5vw, 16px);
-            }
-            footer {
-                padding: 15px;
-            }
+            body { font-size: 14px; }
+            header { padding: 15px; }
+            .header-logo { max-height: 100px; }
+            .sorteio-text { font-size: clamp(14px, 3.5vw, 16px); margin: 10px 0; }
+            nav a { font-size: clamp(14px, 3.5vw, 16px); margin: 0 10px; }
+            .winners-section { margin: 15px; padding: 15px; }
+            .winners-section h2 { font-size: clamp(18px, 4.5vw, 20px); }
+            .winner { margin: 15px 0; padding: 15px; }
+            .winner img { width: 150px; height: 150px; }
+            .no-data { font-size: clamp(14px, 3.5vw, 16px); }
+            .error-message { padding: 15px; font-size: clamp(14px, 3.5vw, 16px); }
+            .loading-message { font-size: clamp(14px, 3.5vw, 16px); }
+            .instagram-button, .share-button { padding: 10px 20px; font-size: clamp(14px, 3.5vw, 16px); }
+            footer { padding: 15px; }
         }
     </style>
 </head>
 <body>
     <header>
         <img src="/subzerobeer/images/subzero.png" alt="Sub-Zero Beer Logo" class="header-logo">
-        <p class="sorteio-text">VEJA OS GANHADORES ANTERIORES</p>
+        <p class="sorteio-text">PARTICIPE DO NOSSO SORTEIO E CONCORRA A UMA CAIXA DE CERVEJA LITRÃO A SUA ESCOLHA E UMA PORÇÃO DE FRANGO A PASSARINHO</p>
         <nav>
             <a href="/subzerobeer/index.html">INÍCIO</a>
             <a href="/subzerobeer/sorteio.html">SORTEIO</a>
@@ -225,7 +191,7 @@
 
             while (retries < maxRetries) {
                 try {
-                    console.log('[' + new Date().toISOString() + '] Tentativa ' + (retries + 1) + ' de carregar ganhadores');
+                    console.log(`[${new Date().toISOString()}] Tentativa ${retries + 1} de carregar ganhadores`);
                     const controller = new AbortController();
                     const timeoutId = setTimeout(() => controller.abort(), 5000);
                     const response = await fetch('https://subzerobeer.onrender.com/winners', {
@@ -237,7 +203,7 @@
 
                     if (!response.ok) throw new Error(`Erro HTTP: ${response.status}`);
                     const winners = await response.json();
-                    console.log('[' + new Date().toISOString() + '] Ganhadores recebidos:', winners);
+                    console.log(`[${new Date().toISOString()}] Ganhadores recebidos:`, winners);
 
                     if (winners.length === 0) {
                         winnersList.innerHTML = '<p class="no-data">AGUARDANDO O PRIMEIRO GANHADOR</p>';
@@ -246,10 +212,11 @@
 
                     winners.forEach((winner, index) => {
                         const winnerNumber = index + 1;
+                        const photoUrl = `https://raw.githubusercontent.com/ederamorimth/subzerobeer/main/images/ganhador${winnerNumber}.jpg`;
                         const div = document.createElement('div');
                         div.className = 'winner';
                         div.innerHTML = `
-                            <img src="/subzerobeer/images/ganhador${winnerNumber}.jpg" alt="FOTO DO GANHADOR ${winner.buyerName}" onerror="this.style.display='none'">
+                            <img src="${photoUrl}" alt="Foto do ganhador ${winner.buyerName}" onerror="this.src='https://via.placeholder.com/200';">
                             <h3>GANHADOR: ${winner.buyerName || 'N/A'}</h3>
                             <p><strong>NÚMERO SORTEADO:</strong> ${winner.winningNumber || 'N/A'}</p>
                             <p><strong>NÚMEROS COMPRADOS:</strong> ${winner.numbers ? winner.numbers.join(', ') : 'N/A'}</p>
@@ -262,7 +229,7 @@
 
                     return;
                 } catch (error) {
-                    console.error('[' + new Date().toISOString() + '] Erro na tentativa ' + (retries + 1) + ':', error.message);
+                    console.error(`[${new Date().toISOString()}] Erro na tentativa ${retries + 1}:`, error.message);
                     retries++;
                     if (retries === maxRetries) {
                         errorMessage.style.display = 'block';
