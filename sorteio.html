@@ -60,100 +60,24 @@
         nav a:hover {
             color: #FF4040;
         }
-        .password-container {
-            max-width: 90%;
-            margin: 30px auto;
-            padding: 20px;
-            background-color: #F5F5F5;
-            border-radius: 10px;
-            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        .hero {
             text-align: center;
-        }
-        .password-container input {
-            padding: 12px;
-            margin: 10px 0;
-            width: calc(100% - 24px);
-            border: 1px solid #ccc;
-            border-radius: 5px;
-            font-size: clamp(16px, 4vw, 18px);
-            background-color: #FFFFFF;
-            color: #000000;
-        }
-        .password-container button {
-            background-color: #28A745;
-            color: white;
-            padding: 12px 24px;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-            font-weight: 700;
-            font-size: clamp(16px, 4vw, 18px);
-            transition: background-color 0.3s;
-        }
-        .password-container button:hover {
-            background-color: #218838;
-        }
-        .password-error {
-            color: #FF0000;
-            margin-top: 10px;
-            display: none;
-            font-size: clamp(14px, 3.5vw, 16px);
-            background-color: #FFE6E6;
-            padding: 10px;
-            border-radius: 5px;
-        }
-        .content {
-            max-width: 90%;
+            padding: 40px 20px;
+            background-color: #f0f0f0;
+            border-radius: 10px;
             margin: 20px auto;
-            padding: 20px;
-            background-color: #F5F5F5;
-            border-radius: 10px;
+            max-width: 1000px;
             box-shadow: 0 4px 8px rgba(0,0,0,0.1);
-            display: none;
         }
-        .content h2 {
+        .hero h2 {
             font-size: clamp(20px, 5vw, 22px);
         }
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-top: 20px;
-            font-size: clamp(14px, 3.5vw, 16px);
-        }
-        th, td {
-            border: 1px solid #ccc;
-            padding: 10px;
-            text-align: left;
-        }
-        th {
-            background-color: #000000;
-            color: white;
-            font-weight: 700;
-        }
-        .error, .no-data {
-            text-align: center;
-            margin: 20px 0;
+        .hero p {
             font-size: clamp(16px, 4vw, 18px);
         }
-        .error {
-            color: #FF0000;
-            background-color: #FFE6E6;
-            padding: 10px;
-            border-radius: 5px;
-        }
-        .no-data {
+        .buy-button {
+            background-color: #00ff00;
             color: #000000;
-            background-color: #F5F5F5;
-            padding: 10px;
-            border-radius: 5px;
-        }
-        .draw-section {
-            margin: 20px 0;
-            text-align: center;
-        }
-        .draw-button {
-            background-color: #28A745;
-            color: white;
             padding: 12px 24px;
             border: none;
             border-radius: 5px;
@@ -162,40 +86,8 @@
             font-size: clamp(16px, 4vw, 18px);
             transition: background-color 0.3s;
         }
-        .draw-button:hover {
-            background-color: #218838;
-        }
-        .view-phone-button {
-            background-color: #28A745;
-            color: white;
-            padding: 10px 20px;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-            margin-top: 10px;
-            font-weight: 700;
-            font-size: clamp(14px, 3.5vw, 16px);
-            transition: background-color 0.3s;
-        }
-        .view-phone-button:hover {
-            background-color: #218838;
-        }
-        .winner {
-            background-color: #FFFFFF;
-            padding: 20px;
-            border-left: 4px solid #28A745;
-            margin: 20px 0;
-            border-radius: 5px;
-            text-align: center;
-        }
-        .countdown {
-            font-size: clamp(20px, 5vw, 22px);
-            font-weight: 700;
-            margin: 20px 0;
-            color: #FF4040;
-            background-color: #FFE6E6;
-            padding: 10px;
-            border-radius: 5px;
+        .buy-button:hover {
+            background-color: #00cc00;
         }
         footer {
             background-color: #000000 !important;
@@ -232,188 +124,37 @@
             .header-logo { max-height: 100px; }
             .sorteio-text { font-size: clamp(14px, 3.5vw, 16px); margin: 10px 0; }
             nav a { font-size: clamp(14px, 3.5vw, 16px); margin: 0 10px; }
-            .password-container, .content { margin: 15px; padding: 15px; }
-            .password-container input { padding: 10px; font-size: clamp(14px, 3.5vw, 16px); }
-            .password-container button { padding: 10px 20px; font-size: clamp(14px, 3.5vw, 16px); }
-            .password-error { font-size: clamp(12px, 3vw, 14px); padding: 8px; }
-            table { font-size: clamp(12px, 3vw, 14px); }
-            th, td { padding: 8px; }
-            .draw-button { padding: 10px 20px; font-size: clamp(14px, 3.5vw, 16px); }
-            .view-phone-button { padding: 8px 16px; font-size: clamp(12px, 3vw, 14px); }
-            .winner { padding: 15px; margin: 15px 0; }
-            .countdown { font-size: clamp(18px, 4.5vw, 20px); padding: 8px; }
-            .error, .no-data { font-size: clamp(14px, 3.5vw, 16px); padding: 8px; }
+            .hero { padding: 30px 15px; margin: 15px; }
+            .hero h2 { font-size: clamp(18px, 4.5vw, 20px); }
+            .hero p { font-size: clamp(14px, 3.5vw, 16px); }
+            .buy-button { padding: 10px 20px; font-size: clamp(14px, 3.5vw, 16px); }
             .instagram-button, .share-button { padding: 10px 20px; font-size: clamp(14px, 3.5vw, 16px); }
             footer { padding: 15px; }
         }
     </style>
 </head>
 <body>
-    <header id="header">
+    <header>
         <img src="/subzerobeer/images/subzero.png" alt="Sub-Zero Beer Logo" class="header-logo">
         <p class="sorteio-text">PARTICIPE DO NOSSO SORTEIO E CONCORRA A UMA CAIXA DE CERVEJA LITRÃO A SUA ESCOLHA E UMA PORÇÃO DE FRANGO A PASSARINHO</p>
-        <nav id="nav">
+        <nav>
             <a href="/subzerobeer/index.html">INÍCIO</a>
             <a href="/subzerobeer/sorteio.html">SORTEIO</a>
             <a href="/subzerobeer/ganhadores.html">GANHADORES</a>
         </nav>
     </header>
 
-    <div class="password-container" id="password-container">
-        <h2>ACESSO RESTRITO</h2>
-        <p>DIGITE A SENHA PARA ACESSAR A PÁGINA DE SORTEIO:</p>
-        <input type="password" id="password-input" placeholder="SENHA">
-        <button onclick="validatePassword()">ENTRAR</button>
-        <p id="password-error" class="password-error">SENHA INCORRETA. TENTE NOVAMENTE.</p>
-    </div>
-
-    <section class="content" id="content">
-        <h2>LISTA DE COMPRAS</h2>
-        <p>VEJA TODAS AS COMPRAS APROVADAS PARA O SORTEIO.</p>
-        <div id="error-message" class="error" style="display: none;"></div>
-        <div id="no-data-message" class="no-data" style="display: none;">NENHUMA COMPRA REGISTRADA AINDA.</div>
-        <table id="purchases-table">
-            <thead>
-                <tr>
-                    <th>NOME</th>
-                    <th>TELEFONE</th>
-                    <th>NÚMEROS</th>
-                    <th>DATA DA COMPRA</th>
-                    <th>ID DO PAGAMENTO</th>
-                </tr>
-            </thead>
-            <tbody id="purchases-body"></tbody>
-        </table>
-
-        <div class="draw-section" id="sorteio-ao-vivo">
-            <h3>SORTEIO AO VIVO</h3>
-            <p>CLIQUE NO BOTÃO ABAIXO PARA ACESSAR O SORTEIO AO VIVO.</p>
-            <button class="draw-button" onclick="window.location.href='/subzerobeer/sorteio-ao-vivo.html'">ACESSAR SORTEIO AO VIVO</button>
-        </div>
+    <section class="hero">
+        <h2>SORTEIO SUB-ZERO BEER</h2>
+        <p>Compre seus números por apenas R$10 cada e concorra a uma caixa de cerveja litrão à sua escolha e uma porção de frango a passarinho!</p>
+        <p>Clique no botão abaixo para escolher seus números e participar.</p>
+        <button class="buy-button" onclick="window.location.href='/subzerobeer/index.html'">COMPRAR NÚMEROS</button>
     </section>
 
-    <footer id="contato">
+    <footer>
         <p>Contato: <a href="https://instagram.com/Subzerobeercba" class="instagram-button">@SUBZEROBEERCBA</a></p>
         <p><a href="https://wa.me/?text=Participe%20do%20sorteio%20do%20Sub-zero%20Beer!%20Compre%20números%20por%20R$%2010%20e%20concorra%20a%201%20caixa%20de%20litrão%20e%201%20porção%20de%20frango%20a%20passarinho:%20https://subzerobeer.onrender.com" class="share-button">COMPARTILHAR NO WHATSAPP</a></p>
         <p>© 2025 SUB-ZERO BEER</p>
     </footer>
-
-    <script>
-        async function sha256(str) {
-            const encoder = new TextEncoder();
-            const data = encoder.encode(str);
-            const hash = await crypto.subtle.digest('SHA-256', data);
-            return Array.from(new Uint8Array(hash)).map(b => b.toString(16).padStart(2, '0')).join('');
-        }
-
-        async function validatePassword() {
-            const passwordInput = document.getElementById('password-input').value;
-            const passwordError = document.getElementById('password-error');
-            const passwordContainer = document.getElementById('password-container');
-            const content = document.getElementById('content');
-            const footer = document.getElementById('contato');
-
-            try {
-                const controller = new AbortController();
-                const timeoutId = setTimeout(() => controller.abort(), 15000);
-                console.log(`[${new Date().toISOString()}] Fazendo solicitação à API get-page-password...`);
-                const response = await fetch('https://subzerobeer.onrender.com/get-page-password', {
-                    method: 'GET',
-                    headers: { 'Content-Type': 'application/json' },
-                    signal: controller.signal
-                });
-                clearTimeout(timeoutId);
-
-                if (!response.ok) throw new Error(`Erro HTTP ${response.status}: ${response.statusText}`);
-                const data = await response.json();
-                console.log(`[${new Date().toISOString()}] Resposta da API:`, data);
-
-                if (!data.passwordHash) throw new Error('Hash da senha não retornado pela API');
-
-                const inputHash = await sha256(passwordInput);
-                console.log(`[${new Date().toISOString()}] Hash da senha inserida: ${inputHash}`);
-                console.log(`[${new Date().toISOString()}] Hash da API: ${data.passwordHash}`);
-
-                if (inputHash === data.passwordHash) {
-                    console.log(`[${new Date().toISOString()}] Senha válida! Exibindo conteúdo...`);
-                    passwordContainer.style.display = 'none';
-                    content.style.display = 'block';
-                    footer.style.display = 'block';
-                    loadPurchases();
-                    // Comentar o redirecionamento para depuração
-                    // setTimeout(() => window.location.href = '/subzerobeer/sorteio-ao-vivo.html', 1000);
-                } else {
-                    passwordError.textContent = 'SENHA INCORRETA. TENTE NOVAMENTE.';
-                    passwordError.style.display = 'block';
-                }
-            } catch (error) {
-                console.error(`[${new Date().toISOString()}] Erro ao validar senha:`, error.message);
-                passwordError.textContent = `ERRO AO CONECTAR AO SERVIDOR: ${error.message}. TENTE NOVAMENTE OU ENTRE EM CONTATO VIA INSTAGRAM.`;
-                passwordError.style.display = 'block';
-            }
-        }
-
-        async function loadPurchases() {
-            const errorMessage = document.getElementById('error-message');
-            const noDataMessage = document.getElementById('no-data-message');
-            const purchasesBody = document.getElementById('purchases-body');
-            const maxRetries = 3;
-            let retries = 0;
-
-            while (retries < maxRetries) {
-                try {
-                    console.log(`[${new Date().toISOString()}] Tentativa ${retries + 1} de carregar compras...`);
-                    const controller = new AbortController();
-                    const timeoutId = setTimeout(() => controller.abort(), 15000);
-                    const response = await fetch('https://subzerobeer.onrender.com/purchases', {
-                        method: 'GET',
-                        headers: { 'Content-Type': 'application/json' },
-                        signal: controller.signal
-                    });
-                    clearTimeout(timeoutId);
-
-                    if (!response.ok) throw new Error(`HTTP error: ${response.status}`);
-                    const purchasesData = await response.json();
-                    console.log(`[${new Date().toISOString()}] Compras carregadas com sucesso:`, purchasesData);
-
-                    if (purchasesData.length === 0) {
-                        noDataMessage.style.display = 'block';
-                        errorMessage.style.display = 'none';
-                        purchasesBody.innerHTML = '';
-                        return;
-                    }
-
-                    purchasesBody.innerHTML = '';
-                    purchasesData.forEach(purchase => {
-                        if (purchase.status === 'approved') {
-                            const row = document.createElement('tr');
-                            row.innerHTML = `
-                                <td>${purchase.buyerName || 'N/A'}</td>
-                                <td>${purchase.buyerPhone ? purchase.buyerPhone.replace(/(\d{2})(\d{5})(\d{4})/, '($1) $2-$3') : 'N/A'}</td>
-                                <td>${purchase.numbers ? purchase.numbers.join(', ') : 'N/A'}</td>
-                                <td>${purchase.date_approved ? new Date(purchase.date_approved).toLocaleString('pt-BR') : 'N/A'}</td>
-                                <td>${purchase.paymentId || 'N/A'}</td>
-                            `;
-                            purchasesBody.appendChild(row);
-                        }
-                    });
-
-                    noDataMessage.style.display = purchasesData.filter(p => p.status === 'approved').length === 0 ? 'block' : 'none';
-                    errorMessage.style.display = 'none';
-                    return;
-                } catch (error) {
-                    console.error(`[${new Date().toISOString()}] Erro na tentativa ${retries + 1}:`, error.message);
-                    retries++;
-                    if (retries === maxRetries) {
-                        errorMessage.textContent = 'ERRO AO CARREGAR COMPRAS. TENTE NOVAMENTE MAIS TARDE OU ENTRE EM CONTATO VIA INSTAGRAM.';
-                        errorMessage.style.display = 'block';
-                        noDataMessage.style.display = 'none';
-                    } else {
-                        await new Promise(resolve => setTimeout(resolve, 2000));
-                    }
-                }
-            }
-        }
-    </script>
 </body>
 </html>
