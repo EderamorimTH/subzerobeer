@@ -5,6 +5,7 @@ let userId = localStorage.getItem('userId') || (function() {
     console.log(`[${new Date().toISOString()}] Novo userId gerado: ${newUserId}`);
     return newUserId;
 })();
+let isReserving = false; // Controle para evitar requisições duplicadas
 
 async function checkBackendHealth() {
     try {
@@ -107,16 +108,40 @@ async function loadNumbers() {
 }
 
 async function toggleNumberSelection(number, element) {
+    if (isReserving) {
+        console.log(`[${new Date().toISOString()}] Reserva em andamento, aguarde...`);
+        return;
+    }
+
+    const buyerName = document.getElementById('buyer-name')?.value?.trim();
+    const buyerPhone = document.getElementById('buyer-phone')?.value?.trim();
+
+    // Validação antes de reservar
+    if (!buyerName) {
+        console.error(`[${new Date().toISOString()}] Nome do comprador não fornecido`);
+        alert('Por favor, preencha o nome completo antes de selecionar números.');
+        return;
+    }
+    if (!buyerPhone) {
+        console.error(`[${new Date().toISOString()}] Telefone não fornecido`);
+        alert('Por favor, preencha o telefone antes de selecionar números.');
+        return;
+    }
+
     const index = selectedNumbers.indexOf(number);
     if (index === -1) {
+        isReserving = true;
         try {
             console.log(`[${new Date().toISOString()}] Reservando número ${number} para userId: ${userId}`);
             const response = await fetch('https://subzerobeer.onrender.com/reserve_numbers', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ numbers: [number], userId })
+                body: JSON.stringify({ numbers: [number], userId, buyerName, buyerPhone })
             });
-            if (!response.ok) throw new Error(`Erro HTTP: ${response.status}`);
+            if (!response.ok) {
+                const errorData = await response.json();
+                throw new Error(`Erro HTTP: ${response.status} - ${errorData.error || 'Erro desconhecido'}`);
+            }
             const result = await response.json();
             if (result.success) {
                 selectedNumbers.push(number);
@@ -131,6 +156,8 @@ async function toggleNumberSelection(number, element) {
         } catch (error) {
             console.error(`[${new Date().toISOString()}] Erro ao reservar:`, error.message);
             alert('Erro ao reservar: ' + error.message);
+        } finally {
+            isReserving = false;
         }
     } else {
         selectedNumbers.splice(index, 1);
