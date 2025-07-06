@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=2.0, user-scalable=yes">
-    <title>Sorteio - Sub-zero Beer</title>
+    <title>Ganhadores - Sub-zero Beer</title>
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
     <style>
         body {
@@ -67,61 +67,61 @@
             background-color: #F5F5F5;
             border-radius: 10px;
             box-shadow: 0 4px 8px rgba(0,0,0,0.1);
-            display: block;
         }
         .content h2 {
-            font-size: clamp(20px, 5vw, 22px);
+            font-size: clamp(20px, 5vw, 24px);
+            text-align: center;
+            margin-bottom: 20px;
         }
-        table {
+        .winner-card {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            background-color: #FFFFFF;
+            border-radius: 10px;
+            padding: 20px;
+            margin: 15px 0;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            transition: transform 0.3s ease;
+        }
+        .winner-card:hover {
+            transform: translateY(-5px);
+        }
+        .winner-image {
+            max-width: 300px;
             width: 100%;
-            border-collapse: collapse;
-            margin-top: 20px;
+            height: auto;
+            border-radius: 10px;
+            margin-bottom: 15px;
+            object-fit: cover;
+        }
+        .winner-details {
+            text-align: center;
+            width: 100%;
+        }
+        .winner-details p {
+            margin: 8px 0;
             font-size: clamp(14px, 3.5vw, 16px);
         }
-        th, td {
-            border: 1px solid #ccc;
-            padding: 10px;
-            text-align: left;
-        }
-        th {
-            background-color: #000000;
-            color: white;
+        .winner-details strong {
+            color: #000000;
             font-weight: 700;
+            text-transform: uppercase;
         }
         .error, .no-data {
             text-align: center;
             margin: 20px 0;
             font-size: clamp(16px, 4vw, 18px);
+            padding: 10px;
+            border-radius: 5px;
         }
         .error {
             color: #FF0000;
             background-color: #FFE6E6;
-            padding: 10px;
-            border-radius: 5px;
         }
         .no-data {
             color: #000000;
             background-color: #F5F5F5;
-            padding: 10px;
-            border-radius: 5px;
-        }
-        .draw-section {
-            margin: 20px 0;
-            text-align: center;
-        }
-        .draw-button {
-            background-color: #28A745;
-            color: white;
-            padding: 12px 24px;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-            font-weight: 700;
-            font-size: clamp(16px, 4vw, 18px);
-            transition: background-color 0.3s;
-        }
-        .draw-button:hover {
-            background-color: #218838;
         }
         footer {
             background-color: #000000 !important;
@@ -159,9 +159,8 @@
             .sorteio-text { font-size: clamp(14px, 3.5vw, 16px); margin: 10px 0; }
             nav a { font-size: clamp(14px, 3.5vw, 16px); margin: 0 10px; }
             .content { margin: 15px; padding: 15px; }
-            table { font-size: clamp(12px, 3vw, 14px); }
-            th, td { padding: 8px; }
-            .draw-button { padding: 10px 20px; font-size: clamp(14px, 3.5vw, 16px); }
+            .winner-image { max-width: 200px; }
+            .winner-details p { font-size: clamp(12px, 3vw, 14px); }
             .error, .no-data { font-size: clamp(14px, 3.5vw, 16px); padding: 8px; }
             .instagram-button, .share-button { padding: 10px 20px; font-size: clamp(14px, 3.5vw, 16px); }
             footer { padding: 15px; }
@@ -176,33 +175,15 @@
             <a href="/subzerobeer/index.html">INÍCIO</a>
             <a href="/subzerobeer/sorteio.html">SORTEIO</a>
             <a href="/subzerobeer/ganhadores.html">GANHADORES</a>
-            <a href="/subzerobeer/sorteio-ao-vivo.html">SORTEIO AO VIVO</a>
         </nav>
     </header>
 
     <section class="content" id="content">
-        <h2>LISTA DE COMPRAS</h2>
-        <p>VEJA TODAS AS COMPRAS APROVADAS PARA O SORTEIO.</p>
+        <h2>LISTA DE GANHADORES</h2>
+        <p>VEJA OS GANHADORES DOS SORTEIOS DO SUB-ZERO BEER.</p>
         <div id="error-message" class="error" style="display: none;"></div>
-        <div id="no-data-message" class="no-data" style="display: none;">NENHUMA COMPRA REGISTRADA AINDA.</div>
-        <table id="purchases-table">
-            <thead>
-                <tr>
-                    <th>NOME</th>
-                    <th>TELEFONE</th>
-                    <th>NÚMEROS</th>
-                    <th>DATA DA COMPRA</th>
-                    <th>ID DO PAGAMENTO</th>
-                </tr>
-            </thead>
-            <tbody id="purchases-body"></tbody>
-        </table>
-
-        <div class="draw-section" id="sorteio-ao-vivo">
-            <h3>SORTEIO AO VIVO</h3>
-            <p>CLIQUE NO BOTÃO ABAIXO PARA ACESSAR O SORTEIO AO VIVO.</p>
-            <button class="draw-button" onclick="window.location.href='/subzerobeer/sorteio-ao-vivo.html'">ACESSAR SORTEIO AO VIVO</button>
-        </div>
+        <div id="no-data-message" class="no-data" style="display: none;">NENHUM GANHADOR REGISTRADO AINDA.</div>
+        <div id="winners-container"></div>
     </section>
 
     <footer id="contato">
@@ -212,19 +193,19 @@
     </footer>
 
     <script>
-        async function loadPurchases() {
+        async function loadWinners() {
             const errorMessage = document.getElementById('error-message');
             const noDataMessage = document.getElementById('no-data-message');
-            const purchasesBody = document.getElementById('purchases-body');
+            const winnersContainer = document.getElementById('winners-container');
             const maxRetries = 3;
             let retries = 0;
 
             while (retries < maxRetries) {
                 try {
-                    console.log(`[${new Date().toISOString()}] Tentativa ${retries + 1} de carregar compras...`);
-                    const controller = new document.createElement('controller');
+                    console.log(`[${new Date().toISOString()}] Tentativa ${retries + 1} de carregar ganhadores...`);
+                    const controller = new AbortController();
                     const timeoutId = setTimeout(() => controller.abort(), 15000);
-                    const response = await fetch('https://subzerobeer.onrender.com/purchases', {
+                    const response = await fetch('https://subzerobeer.onrender.com/winners', {
                         method: 'GET',
                         headers: { 'Content-Type': 'application/json' },
                         signal: controller.signal
@@ -232,39 +213,41 @@
                     clearTimeout(timeoutId);
 
                     if (!response.ok) throw new Error(`HTTP error: ${response.status}`);
-                    const purchasesData = await response.json();
-                    console.log(`[${new Date().toISOString()}] Compras carregadas com sucesso:`, purchasesData);
+                    const winnersData = await response.json();
+                    console.log(`[${new Date().toISOString()}] Ganhadores carregados com sucesso:`, winnersData);
 
-                    if (purchasesData.length === 0) {
+                    if (winnersData.length === 0) {
                         noDataMessage.style.display = 'block';
                         errorMessage.style.display = 'none';
-                        purchasesBody.innerHTML = '';
+                        winnersContainer.innerHTML = '';
                         return;
                     }
 
-                    purchasesBody.innerHTML = '';
-                    purchasesData.forEach(purchase => {
-                        if (purchase.status === 'approved') {
-                            const row = document.createElement('tr');
-                            row.innerHTML = `
-                                <td>${purchase.buyerName || 'N/A'}</td>
-                                <td>${purchase.buyerPhone ? purchase.buyerPhone.replace(/(\d{2})(\d{5})(\d{4})/, '($1) $2-$3') : 'N/A'}</td>
-                                <td>${purchase.numbers ? purchase.numbers.join(', ') : 'N/A'}</td>
-                                <td>${purchase.date_approved ? new Date(purchase.date_approved).toLocaleString('pt-BR') : 'N/A'}</td>
-                                <td>${purchase.paymentId || 'N/A'}</td>
-                            `;
-                            purchasesBody.appendChild(row);
-                        }
+                    winnersContainer.innerHTML = '';
+                    winnersData.forEach(winner => {
+                        const card = document.createElement('div');
+                        card.className = 'winner-card';
+                        card.innerHTML = `
+                            ${winner.photoUrl ? `<img src="${winner.photoUrl}" alt="Foto do ganhador" class="winner-image" onerror="this.src='https://via.placeholder.com/300';">` : '<img src="https://via.placeholder.com/300" alt="Sem foto" class="winner-image">'}
+                            <div class="winner-details">
+                                <p><strong>Nome:</strong> ${winner.buyerName || 'N/A'}</p>
+                                <p><strong>Número Vencedor:</strong> ${winner.winningNumber || 'N/A'}</p>
+                <p><strong>Números Comprados:</strong> ${winner.numbers ? winner.numbers.join(', ') : 'N/A'}</p>
+                                <p><strong>Data do Sorteio:</strong> ${winner.drawDate ? new Date(winner.drawDate).toLocaleString('pt-BR') : 'N/A'}</p>
+                                <p><strong>Prêmio:</strong> ${winner.prize || 'N/A'}</p>
+                            </div>
+                        `;
+                        winnersContainer.appendChild(card);
                     });
 
-                    noDataMessage.style.display = purchasesData.filter(p => p.status === 'approved').length === 0 ? 'block' : 'none';
+                    noDataMessage.style.display = winnersData.length === 0 ? 'block' : 'none';
                     errorMessage.style.display = 'none';
                     return;
                 } catch (error) {
                     console.error(`[${new Date().toISOString()}] Erro na tentativa ${retries + 1}:`, error.message);
                     retries++;
                     if (retries === maxRetries) {
-                        errorMessage.textContent = 'ERRO AO CARREGAR COMPRAS. TENTE NOVAMENTE MAIS TARDE OU ENTRE EM CONTATO VIA INSTAGRAM.';
+                        errorMessage.textContent = 'ERRO AO CARREGAR GANHADORES. TENTE NOVAMENTE MAIS TARDE OU ENTRE EM CONTATO VIA INSTAGRAM.';
                         errorMessage.style.display = 'block';
                         noDataMessage.style.display = 'none';
                     } else {
@@ -274,8 +257,9 @@
             }
         }
 
-        // Carrega as compras automaticamente ao abrir a página
-        document.addEventListener('DOMContentLoaded', loadPurchases);
+        window.onload = () => {
+            loadWinners();
+        };
     </script>
 </body>
 </html>
