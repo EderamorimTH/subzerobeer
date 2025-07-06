@@ -87,7 +87,7 @@ async function initializeNumbers() {
       console.log(`[${new Date().toISOString()}] 150 números inseridos com sucesso`);
     } else {
       console.log(`[${new Date().toISOString()}] Coleção 'numbers' já contém ${count} registros`);
-      // Verificar se todos os números estão com status correto
+      // Corrigir status inválidos
       const invalidNumbers = await Number.find({ status: { $nin: ['disponível', 'reservado', 'vendido'] } });
       if (invalidNumbers.length > 0) {
         console.log(`[${new Date().toISOString()}] Encontrados ${invalidNumbers.length} números com status inválido. Corrigindo...`);
@@ -189,9 +189,9 @@ app.post('/create_preference', async (req, res) => {
     const preference = {
       items: [{ title: `Compra de ${quantity} número(s)`, unit_price: 10.0, quantity }],
       back_urls: {
-        success: 'https://subzerobeer.onrender.com/sorteio.html?status=approved',
-        failure: 'https://subzerobeer.onrender.com/sorteio.html?status=rejected',
-        pending: 'https://subzerobeer.onrender.com/sorteio.html?status=pending',
+        success: 'https://subzerobeer.onrender.com/index.html?status=approved',
+        failure: 'https://subzerobeer.onrender.com/index.html?status=rejected',
+        pending: 'https://subzerobeer.onrender.com/index.html?status=pending',
       },
       auto_return: 'approved',
       external_reference: numbers.join(','),
