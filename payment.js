@@ -47,12 +47,12 @@ async function loadNumbers() {
             });
             clearTimeout(timeoutId);
 
-            if (!response.ok) throw new Error(`Erro HTTP: ${response.status}`);
+            if (!response.ok) throw new Error(`Erro HTTP: ${response.status} - ${response.statusText}`);
             numbers = await response.json();
             console.log(`[${new Date().toISOString()}] Números recebidos:`, numbers);
 
-            if (!Array.isArray(numbers) || numbers.length === 0) {
-                throw new Error('Resposta inválida ou sem números disponíveis');
+            if (!Array.isArray(numbers)) {
+                throw new Error('Resposta da API não é uma lista válida');
             }
             break;
         } catch (error) {
@@ -64,7 +64,7 @@ async function loadNumbers() {
                     number: String(i + 1).padStart(3, '0'),
                     status: 'reservado'
                 }));
-                errorDetails.innerHTML = '<p>Erro ao conectar ao servidor. Tente novamente em alguns minutos ou entre em contato via <a href="https://instagram.com/Subzerobeercba" target="_blank">@SUBZEROBEERCBA</a>.</p>';
+                errorDetails.innerHTML = '<p>Não foi possível conectar ao servidor. Tente novamente em alguns minutos ou entre em contato via <a href="https://instagram.com/Subzerobeercba" target="_blank">@SUBZEROBEERCBA</a>.</p>';
                 numberError.style.display = 'block';
                 setTimeout(loadNumbers, 10000);
             }
@@ -73,6 +73,13 @@ async function loadNumbers() {
     }
 
     loadingMessage.style.display = 'none';
+
+    if (numbers.length === 0) {
+        errorDetails.innerHTML = '<p>Nenhum número disponível no momento. Tente novamente mais tarde ou entre em contato via <a href="https://instagram.com/Subzerobeercba" target="_blank">@SUBZEROBEERCBA</a>.</p>';
+        numberError.style.display = 'block';
+        setTimeout(loadNumbers, 30000);
+        return;
+    }
 
     const allNumbers = Array.from({ length: 150 }, (_, i) => String(i + 1).padStart(3, '0'));
     allNumbers.forEach(number => {
@@ -289,7 +296,7 @@ window.onload = async () => {
     const backendOk = await checkBackendHealth();
     if (!backendOk) {
         document.getElementById('number-error').style.display = 'block';
-        document.getElementById('error-details').innerHTML = '<p>NÃO FOI POSSÍVEL CONECTAR AO SERVIDOR. Tente novamente em alguns minutos ou entre em contato via <a href="https://instagram.com/Subzerobeercba" target="_blank">@SUBZEROBEERCBA</a>.</p>';
+        document.getElementById('error-details').innerHTML = '<p>Não foi possível conectar ao servidor. Tente novamente em alguns minutos ou entre em contato via <a href="https://instagram.com/Subzerobeercba" target="_blank">@SUBZEROBEERCBA</a>.</p>';
     }
     await loadNumbers();
     const urlParams = new URLSearchParams(window.location.search);
