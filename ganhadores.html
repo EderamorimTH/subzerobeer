@@ -170,17 +170,16 @@
 <body>
     <header id="header">
         <img src="/subzerobeer/images/subzero.png" alt="Sub-Zero Beer Logo" class="header-logo">
-        <p class="sorteio-text">PARTICIPE DO NOSSO SORTEIO E CONCORRA A UMA CAIXA DE CERVEJA LITRÃO A SUA ESCOLHA E UMA PORÇÃO DE FRANGO A PASSARINHO</p>
+        <p class="sorteio-text">PARTICIPE DO NOSSO SORTEIO E CONCORRA A UMA CAIXA DE CERVEJA LITRÃO A SUA ESCOLHA E UMA PORÇÃO DE FRANGO A PASSARINHO VALOR DE 5 REAIS CADA NÚMERO!</p>
         <nav id="nav">
             <a href="/subzerobeer/index.html">INÍCIO</a>
-            <a href="/subzerobeer/sorteio.html">SORTEIO</a>
             <a href="/subzerobeer/ganhadores.html">GANHADORES</a>
         </nav>
     </header>
 
     <section class="content" id="content">
         <h2>LISTA DE GANHADORES</h2>
-        <p>.</p>
+        <p>CONFIRA OS GANHADORES DOS SORTEIOS ANTERIORES.</p>
         <div id="error-message" class="error" style="display: none;"></div>
         <div id="no-data-message" class="no-data" style="display: none;">NENHUM GANHADOR REGISTRADO AINDA.</div>
         <div id="winners-container"></div>
@@ -188,7 +187,7 @@
 
     <footer id="contato">
         <p>Contato: <a href="https://instagram.com/Subzerobeercba" class="instagram-button">@SUBZEROBEERCBA</a></p>
-        <p><a href="https://wa.me/?text=Participe%20do%20sorteio%20do%20Sub-zero%20Beer!%20Compre%20números%20por%20R$%2010%20e%20concorra%20a%201%20caixa%20de%20litrão%20e%201%20porção%20de%20frango%20a%20passarinho:%20https://subzerobeer.onrender.com" class="share-button">COMPARTILHAR NO WHATSAPP</a></p>
+        <p><a href="https://wa.me/?text=Participe%20do%20sorteio%20do%20Sub-zero%20Beer!%20Compre%20números%20por%20R$%205%20e%20concorra%20a%201%20caixa%20de%20litrão%20e%201%20porção%20de%20frango%20a%20passarinho:%20https://subzerobeer.onrender.com" class="share-button">COMPARTILHAR NO WHATSAPP</a></p>
         <p>© 2025 SUB-ZERO BEER</p>
     </footer>
 
@@ -224,6 +223,7 @@
                     }
 
                     winnersContainer.innerHTML = '';
+                    winnersData.sort((a, b) => new Date(b.drawDate) - new Date(a.drawDate)); // Sort by most recent
                     winnersData.forEach(winner => {
                         const card = document.createElement('div');
                         card.className = 'winner-card';
@@ -232,7 +232,7 @@
                             <div class="winner-details">
                                 <p><strong>Nome:</strong> ${winner.buyerName || 'N/A'}</p>
                                 <p><strong>Número Vencedor:</strong> ${winner.winningNumber || 'N/A'}</p>
-                <p><strong>Números Comprados:</strong> ${winner.numbers ? winner.numbers.join(', ') : 'N/A'}</p>
+                                <p><strong>Números Comprados:</strong> ${winner.numbers ? winner.numbers.join(', ') : 'N/A'}</p>
                                 <p><strong>Data do Sorteio:</strong> ${winner.drawDate ? new Date(winner.drawDate).toLocaleString('pt-BR') : 'N/A'}</p>
                                 <p><strong>Prêmio:</strong> ${winner.prize || 'N/A'}</p>
                             </div>
