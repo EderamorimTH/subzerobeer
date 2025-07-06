@@ -39,7 +39,7 @@ async function loadNumbers() {
         try {
             console.log(`[${new Date().toISOString()}] Tentativa ${retries + 1} de carregar números`);
             const controller = new AbortController();
-            const timeoutId = setTimeout(() => controller.abort(), 15000); // Aumentado para 15s
+            const timeoutId = setTimeout(() => controller.abort(), 15000);
             const response = await fetch('https://subzerobeer.onrender.com/available_numbers', {
                 method: 'GET',
                 headers: { 'Content-Type': 'application/json' },
@@ -66,7 +66,7 @@ async function loadNumbers() {
                 }));
                 errorDetails.innerHTML = '<p>Erro ao conectar ao servidor. Tente novamente em alguns minutos ou entre em contato via <a href="https://instagram.com/Subzerobeercba" target="_blank">@SUBZEROBEERCBA</a>.</p>';
                 numberError.style.display = 'block';
-                setTimeout(loadNumbers, 10000); // Tenta recarregar após 10 segundos
+                setTimeout(loadNumbers, 10000);
             }
             await new Promise(resolve => setTimeout(resolve, 2000));
         }
@@ -94,7 +94,7 @@ async function loadNumbers() {
     if (numbers.every(n => n.status !== 'disponível')) {
         errorDetails.innerHTML = '<p>Todos os números estão reservados no momento. Novas vagas podem abrir em breve. Siga <a href="https://instagram.com/Subzerobeercba" target="_blank">@SUBZEROBEERCBA</a> para atualizações.</p>';
         numberError.style.display = 'block';
-        setTimeout(loadNumbers, 30000); // Tenta recarregar após 30 segundos
+        setTimeout(loadNumbers, 30000);
     }
 }
 
@@ -200,7 +200,7 @@ async function sendPaymentRequest(data) {
             }
 
             const controller = new AbortController();
-            const timeoutId = setTimeout(() => controller.abort(), 15000); // Aumentado para 15s
+            const timeoutId = setTimeout(() => controller.abort(), 15000);
             const response = await fetch('https://subzerobeer.onrender.com/create_preference', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
@@ -276,7 +276,7 @@ document.getElementById('payment-form').addEventListener('submit', async (event)
         };
         console.log(`[${new Date().toISOString()}] Enviando solicitação de pagamento:`, paymentData);
 
-        await sendPaymentRequestclasse="highlight">sendPaymentRequest(paymentData);
+        await sendPaymentRequest(paymentData);
     } catch (error) {
         console.error(`[${new Date().toISOString()}] Erro ao processar formulário:`, error.message);
         alert('Erro ao processar pagamento: ' + error.message);
