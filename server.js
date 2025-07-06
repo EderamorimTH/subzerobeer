@@ -67,26 +67,23 @@ async function initializeNumbers() {
     const count = await Number.countDocuments();
     console.log(`[${new Date().toISOString()}] Verificando coleção 'numbers': ${count} documentos encontrados`);
 
-    // Obter números pagos da coleção purchases
     const approvedPurchases = await Purchase.find({ status: 'approved' });
     const paidNumbers = approvedPurchases.reduce((acc, purchase) => {
       return [...acc, ...purchase.numbers];
     }, []);
     console.log(`[${new Date().toISOString()}] Números pagos encontrados em purchases: ${paidNumbers.join(', ')}`);
 
-    // Inicializar ou reinicializar a coleção numbers
-    if (count < 150) {
-      console.log(`[${new Date().toISOString()}] Coleção 'numbers' incompleta ou vazia. Inicializando números...`);
+    if (count !== 200) {
+      console.log(`[${new Date().toISOString()}] Coleção 'numbers' incompleta ou vazia. Inicializando 200 números...`);
       await Number.deleteMany({});
-      const numbers = Array.from({ length: 150 }, (_, i) => ({
+      const numbers = Array.from({ length: 200 }, (_, i) => ({
         number: String(i + 1).padStart(3, '0'),
         status: paidNumbers.includes(String(i + 1).padStart(3, '0')) ? 'vendido' : 'disponível'
       }));
       await Number.insertMany(numbers);
-      console.log(`[${new Date().toISOString()}] 150 números inseridos com sucesso, com números pagos marcados como 'vendido'`);
+      console.log(`[${new Date().toISOString()}] 200 números inseridos com sucesso`);
     } else {
       console.log(`[${new Date().toISOString()}] Coleção 'numbers' já contém ${count} registros`);
-      // Atualizar números pagos para 'vendido'
       if (paidNumbers.length > 0) {
         await Number.updateMany(
           { number: { $in: paidNumbers }, status: { $ne: 'vendido' } },
@@ -94,7 +91,6 @@ async function initializeNumbers() {
         );
         console.log(`[${new Date().toISOString()}] Números pagos ${paidNumbers.join(', ')} atualizados para 'vendido'`);
       }
-      // Corrigir status inválidos
       const invalidNumbers = await Number.find({ status: { $nin: ['disponível', 'reservado', 'vendido'] } });
       if (invalidNumbers.length > 0) {
         console.log(`[${new Date().toISOString()}] Encontrados ${invalidNumbers.length} números com status inválido. Corrigindo...`);
@@ -257,7 +253,7 @@ app.post('/create_preference', async (req, res) => {
       items: [
         {
           title: `Compra de ${parsedQuantity} número(s)`,
-          unit_price: 10.0,
+          unit_price: 5.0,
           quantity: parsedQuantity,
           currency_id: 'BRL',
         },
@@ -284,7 +280,7 @@ app.post('/create_preference', async (req, res) => {
     try {
       response = await preferenceClient.create({ body: preference });
     } catch (apiError) {
-      console.error(`[${new Date().toISOString()}] Erro ao chamar a API do Mercado Pago:`, apiError.message, apiError.stack);
+      console.error(`[${new Date().toISOString()}] Erro ao chamar a API do Mercado Pago:`, apiError.message);
       return res.status(500).json({ error: `Erro ao chamar a API do Mercado Pago: ${apiError.message}` });
     }
 
@@ -300,7 +296,7 @@ app.post('/create_preference', async (req, res) => {
     );
     res.json({ init_point: response.init_point });
   } catch (error) {
-    console.error(`[${new Date().toISOString()}] Erro ao criar preferência:`, error.message, error.stack);
+    console.error(`[${new Date().toISOString()}] Erro ao criar preferência:`, error.message);
     res.status(500).json({ error: `Erro ao criar preferência: ${error.message}` });
   }
 });
@@ -357,7 +353,7 @@ app.post('/webhook', async (req, res) => {
     }
     res.status(200).send('OK');
   } catch (error) {
-    console.error(`[${new Date().toISOString()}] Erro no webhook:`, error.message, error.stack);
+    console.error(`[${new Date().toISOString()}] Erro no webhook:`, error.message);
     res.status(500).json({ error: 'Erro no webhook: ' + error.message });
   }
 });
