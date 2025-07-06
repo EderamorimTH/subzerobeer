@@ -98,7 +98,7 @@
             padding: 20px;
             background-color: #f0f0f0;
             border-radius: 10px;
-            box-shadow: 0 4px8px rgba(0,0,0,0.1);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
             display: block;
         }
         .payment-form h2 {
@@ -326,17 +326,17 @@
 
             try {
                 // Envia a senha para o servidor (Render) para verificação
-                const response = await fetch('https://subzerobeer.onrender.com/get-page-password', {
-                    method: 'GET',
+                const response = await fetch('https://subzerobeer.onrender.com/verify-password', {
+                    method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
-                        'X-Password': passwordInput // Envia a senha no cabeçalho
                     },
+                    body: JSON.stringify({ password: passwordInput }),
                 });
 
                 const result = await response.json();
 
-                if (result.passwordHash && result.passwordHash === passwordInput) {
+                if (result.success) {
                     // Se a senha estiver correta, redireciona para sorteio.html
                     passwordOverlay.style.display = 'none';
                     window.location.href = '/subzerobeer/sorteio.html';
@@ -353,7 +353,7 @@
             }
         }
 
-        // Mostra o overlay de senha ao clicar no logo
+        // Mostra o overlay de senha ao clicarztem no logo
         document.getElementById('header-logo').addEventListener('click', (event) => {
             event.preventDefault(); // Impede o redirecionamento padrão
             document.getElementById('password-overlay').style.display = 'flex';
