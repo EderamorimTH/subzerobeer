@@ -29,7 +29,6 @@ mongoose.connect(mongoURI, {
 app.use(cors({ origin: ['https://subzerobeer.onrender.com', 'https://ederamorimth.github.io', 'http://localhost:3000'] }));
 app.use(express.json());
 
-// Schemas
 const numberSchema = new mongoose.Schema({ number: String, status: String });
 const Number = mongoose.model('Number', numberSchema);
 
@@ -107,8 +106,6 @@ mongoose.connection.once('open', async () => {
   await initializeNumbers();
   setInterval(cleanupExpiredReservations, 60 * 1000);
 });
-
-// --- ENDPOINTS --- //
 
 app.get('/health', (_, res) => {
   console.log(`[${new Date().toISOString()}] Requisição à rota /health`);
@@ -189,8 +186,7 @@ app.post('/check_reservation', async (req, res) => {
 app.post('/create_preference', async (req, res) => {
   const { numbers, userId, buyerName, buyerPhone, quantity } = req.body;
   try {
-    // Validação dos dados recebidos
-    const parsedQuantity = parseInt(quantity, 10); // Garante que quantity é um número inteiro
+    const parsedQuantity = parseInt(quantity, 10);
     console.log(`[${new Date().toISOString()}] Dados recebidos em create_preference:`, {
       numbers,
       userId,
@@ -220,26 +216,23 @@ app.post('/create_preference', async (req, res) => {
       return res.status(400).json({ error: 'Dados inválidos ou incompletos' });
     }
 
-    // Verifica se os números estão reservados para o userId
     const validNumbers = await PendingNumber.find({ number: { $in: numbers }, userId });
     if (validNumbers.length !== numbers.length) {
       console.error(`[${new Date().toISOString()}] Números não reservados:`, numbers);
       return res.status(400).json({ error: 'Números não reservados' });
     }
 
-    // Atualiza os documentos pendentes com buyerName e buyerPhone
     await PendingNumber.updateMany(
       { number: { $in: numbers }, userId },
       { $set: { buyerName, buyerPhone } }
     );
 
-    // Cria a preferência do Mercado Pago
     const preference = {
       items: [
         {
           title: `Compra de ${parsedQuantity} número(s)`,
           unit_price: 10.0,
-          quantity: parsedQuantity, // Usa parsedQuantity
+          quantity: parsedQuantity,
           currency_id: 'BRL',
         },
       ],
@@ -255,8 +248,25 @@ app.post('/create_preference', async (req, res) => {
 
     console.log(`[${new Date().toISOString()}] JSON da preferência:`, JSON.stringify(preference, null, 2));
 
+    if (!process.env.MERCADO_PAGO_ACCESS_TOKEN) {
+      console.error(`[${new Date().toISOString()}] ACCESS_TOKEN do Mercado Pago não configurado`);
+      return res.status(500).json({ error: 'Configuração do Mercado Pago inválida' });
+    }
+
     const preferenceClient = new Preference(mercadopago);
-    const response = await preferenceClient.create({ body: preference });
+    let response;
+    try {
+      response = await preferenceClient.create({ body: preference });
+    } catch (apiError) {
+      console.error(`[${new Date().toISOString()}] Erro ao chamar a API do Mercado Pago:`, apiError.message, apiError.stack);
+      return res.status(500).json({ error: `Erro ao chamar a API do Mercado Pago: ${apiError.message}` });
+    }
+
+    if (!response || !response.body || !response.body.init_point) {
+      console.error(`[${new Date().toISOString()}] Resposta inválida do Mercado Pago:`, response);
+      return res.status(500).json({ error: 'Resposta inválida do Mercado Pago' });
+    }
+
     console.log(
       `[${new Date().toISOString()}] Preferência criada para números ${numbers.join(',')}, init_point: ${
         response.body.init_point
@@ -264,8 +274,8 @@ app.post('/create_preference', async (req, res) => {
     );
     res.json({ init_point: response.body.init_point });
   } catch (error) {
-    console.error(`[${new Date().toISOString()}] Erro ao criar preferência:`, error.message);
-    res.status(500).json({ error: 'Erro ao criar preferência: ' + error.message });
+    console.error(`[${new Date().toISOString()}] Erro ao criar preferência:`, error.message, error.stack);
+    res.status(500).json({ error: `Erro ao criar preferência: ${error.message}` });
   }
 });
 
