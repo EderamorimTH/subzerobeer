@@ -181,9 +181,9 @@
 
     <section class="content" id="content">
         <h2>LISTA DE COMPRAS</h2>
-        <p>VEJA TODAS AS COMPRAS REGISTRADAS PARA O SORTEIO.</p>
+        <p>VEJA TODAS AS COMPRAS APROVADAS PARA O SORTEIO.</p>
         <div id="error-message" class="error" style="display: none;"></div>
-        <div id="no-data-message" class="no-data" style="display: none;">NENHUMA COMPRA REGISTRADA AINDA.</div>
+        <div id="no-data-message" class="no-data" style="display: none;">NENHUMA COMPRA APROVADA REGISTRADA AINDA.</div>
         <table id="purchases-table">
             <thead>
                 <tr>
@@ -235,7 +235,8 @@
                     const purchasesData = await response.json();
                     console.log(`[${new Date().toISOString()}] Compras carregadas com sucesso:`, purchasesData);
 
-                    if (purchasesData.length === 0) {
+                    const approvedPurchases = purchasesData.filter(purchase => purchase.status === 'approved');
+                    if (approvedPurchases.length === 0) {
                         noDataMessage.style.display = 'block';
                         errorMessage.style.display = 'none';
                         purchasesBody.innerHTML = '';
@@ -243,7 +244,7 @@
                     }
 
                     purchasesBody.innerHTML = '';
-                    purchasesData.forEach(purchase => {
+                    approvedPurchases.forEach(purchase => {
                         const row = document.createElement('tr');
                         row.innerHTML = `
                             <td>${purchase.buyerName || 'N/A'}</td>
@@ -256,7 +257,7 @@
                         purchasesBody.appendChild(row);
                     });
 
-                    noDataMessage.style.display = purchasesData.length === 0 ? 'block' : 'none';
+                    noDataMessage.style.display = approvedPurchases.length === 0 ? 'block' : 'none';
                     errorMessage.style.display = 'none';
                     return;
                 } catch (error) {
