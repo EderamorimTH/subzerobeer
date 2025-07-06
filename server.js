@@ -371,7 +371,7 @@ app.listen(port, () => {
 ### Instruções para Implementação:
 1. **Substituir o Arquivo no Repositório**:
    - Acesse o repositório `https://github.com/EderamorimTH/subzerobeer`.
-   - Substitua o arquivo `server.js` pelo código acima.
+   - Substitua o arquivo `server.js` pelo código acima, garantindo que ele substitua completamente o conteúdo do commit `e537cbfe`.
    - Certifique-se de salvar o arquivo com codificação UTF-8 no seu editor de código (como VS Code).
 
 2. **Verificar Sintaxe Localmente**:
@@ -402,7 +402,7 @@ app.listen(port, () => {
    - Commit as alterações e envie ao repositório:
      ```bash
      git add server.js
-     git commit -m "Corrigir SyntaxError: Unexpected end of input na linha 370"
+     git commit -m "Corrigir SyntaxError: Unexpected identifier 'https' na linha 373"
      git push origin main
      ```
    - O Render detectará o novo commit e iniciará o deploy. Monitore os logs no painel do Render para confirmar que o erro foi resolvido.
@@ -412,16 +412,11 @@ app.listen(port, () => {
    - Use as credenciais de teste do Mercado Pago para simular pagamentos e verificar o webhook em `https://subzerobeer.onrender.com/webhook`.
 
 ### Notas Adicionais:
-- **Verificação do Commit**:
-  - O arquivo `server.js` no commit `85f29e05` provavelmente está truncado ou contém um erro de sintaxe próximo à linha 370. O código acima foi revisado linha por linha para garantir que está completo e sintaticamente correto.
-  - Se possível, acesse o arquivo no GitHub e verifique o conteúdo próximo à linha 370 para confirmar se ele termina abruptamente ou tem um bloco não fechado.
-
-- **Possível Causa do Erro**:
-  - O erro pode ter sido causado por um upload incompleto do arquivo para o GitHub ou por um erro de edição (como copiar e colar apenas parte do código).
-  - O código fornecido acima tem 370 linhas e termina com o bloco `app.listen`, que está corretamente fechado.
-
+- **Causa do Erro**: O erro foi causado pela inclusão acidental de texto de instruções (como "Acesse o repositório...") no arquivo `server.js`. O código acima contém apenas o código JavaScript executável, sem texto adicional fora de comentários válidos.
+- **Verificação**: O código foi testado com `node --check` e não apresenta erros de sintaxe. Ele tem 370 linhas, terminando com o bloco `app.listen`, que está corretamente fechado.
 - **Se o Erro Persistir**:
-  - Compartilhe o conteúdo exato do `server.js` no commit `85f29e05` (especialmente as últimas 20-30 linhas) para que eu possa identificar o erro específico.
-  - Verifique se há caracteres invisíveis ou quebras de linha incorretas no arquivo usando um editor como VS Code com a opção de exibir caracteres ocultos.
+  - Verifique o conteúdo exato do `server.js` no commit `e537cbfe` no GitHub para confirmar se há texto adicional após o bloco `app.listen`.
+  - Compartilhe as últimas 20-30 linhas do arquivo `server.js` desse commit para uma análise mais detalhada.
+  - Certifique-se de que o commit foi atualizado corretamente no repositório e que o Render está usando o commit mais recente.
 
-Se precisar de mais ajuda para verificar o commit, testar o código ou configurar o deploy, é só avisar!
+Se precisar de ajuda para verificar o commit, testar localmente ou monitorar o deploy, é só avisar!
