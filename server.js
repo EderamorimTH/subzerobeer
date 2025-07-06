@@ -262,7 +262,6 @@ app.post('/create_preference', async (req, res) => {
       return res.status(500).json({ error: `Erro ao chamar a API do Mercado Pago: ${apiError.message}` });
     }
 
-    // Ajuste: Acessar init_point diretamente do response
     if (!response || !response.init_point) {
       console.error(`[${new Date().toISOString()}] Resposta inválida do Mercado Pago:`, response);
       return res.status(500).json({ error: 'Resposta inválida do Mercado Pago' });
@@ -282,12 +281,21 @@ app.post('/create_preference', async (req, res) => {
 
 app.post('/webhook', async (req, res) => {
   const { type, data } = req.body;
-  if (type !== 'payment') return res.status(200).send('OK');
+  console.log(`[${new Date().toISOString()}] Webhook recebido:`, JSON.stringify(req.body, null, 2));
+  if (type !== 'payment') {
+    console.log(`[${new Date().toISOString()}] Ignorando webhook: tipo ${type} não é 'payment'`);
+    return res.status(200).send('OK');
+  }
   try {
     const paymentClient = new Payment(mercadopago);
     const payment = await paymentClient.get({ id: data.id });
-    const { status: paymentStatus, external_reference } = payment.body;
-    const numbers = external_reference?.split(',');
+    console.log(`[${new Date().toISOString()}] Resposta do paymentClient.get:`, JSON.stringify(payment, null, 2));
+    const { status: paymentStatus, external_reference } = payment;
+    if (!paymentStatus || !external_reference) {
+      console.error(`[${new Date().toISOString()}] Dados de pagamento inválidos:`, payment);
+      return res.status(400).json({ error: 'Dados de pagamento inválidos' });
+    }
+    const numbers = external_reference.split(',');
     if (!numbers || !Array.isArray(numbers) || numbers.length === 0) {
       console.error(`[${new Date().toISOString()}] Números inválidos no webhook:`, external_reference);
       return res.status(400).json({ error: 'Números inválidos' });
@@ -323,7 +331,7 @@ app.post('/webhook', async (req, res) => {
     }
     res.status(200).send('OK');
   } catch (error) {
-    console.error(`[${new Date().toISOString()}] Erro no webhook:`, error.message);
+    console.error(`[${new Date().toISOString()}] Erro no webhook:`, error.message, error.stack);
     res.status(500).json({ error: 'Erro no webhook: ' + error.message });
   }
 });
