@@ -224,8 +224,8 @@ async function sendPaymentRequest(data) {
             const response = await fetch('https://subzerobeer.onrender.com/create_preference', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(data),
-                signal: controller.signal
+                body: JSON.stringify({ ...data, quantity: parseInt(data.quantity, 10) }), // Garante que quantity é um número inteiro
+                signal: controller.signal,
             });
 
             clearTimeout(timeoutId);
@@ -249,7 +249,7 @@ async function sendPaymentRequest(data) {
                 await fetch('https://subzerobeer.onrender.com/check_reservation', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ numbers: data.numbers, userId: data.userId })
+                    body: JSON.stringify({ numbers: data.numbers, userId: data.userId }),
                 });
             } else {
                 await new Promise(resolve => setTimeout(resolve, 3000));
@@ -267,7 +267,7 @@ document.getElementById('payment-form').addEventListener('submit', async (event)
     try {
         const buyerName = document.getElementById('buyer-name').value;
         const buyerPhone = document.getElementById('buyer-phone').value;
-        const quantity = selectedNumbers.length;
+        const quantity = parseInt(selectedNumbers.length, 10); // Garante que quantity é um número inteiro
 
         console.log(`[${new Date().toISOString()}] Dados do formulário:`, { buyerName, buyerPhone, selectedNumbers, quantity });
 
@@ -288,7 +288,7 @@ document.getElementById('payment-form').addEventListener('submit', async (event)
         localStorage.setItem('buyerPhone', buyerPhone);
 
         const paymentData = {
-            quantity,
+            quantity, // Usa o quantity convertido
             buyerName,
             buyerPhone,
             numbers: selectedNumbers,
