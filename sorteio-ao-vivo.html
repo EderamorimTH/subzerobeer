@@ -57,8 +57,8 @@
             z-index: 2;
         }
         @keyframes fall {
-            0% { transform: translateY(-100px); opacity: 1; }
-            100% { transform: translateY(calc(100vh + 100px)); opacity: 0; }
+            0% { transform: translateY(-10vh); opacity: 1; } /* Start above the viewport */
+            100% { transform: translateY(100vh); opacity: 0; } /* Fall to bottom */
         }
         .winner {
             background-color: #FFFFFF;
@@ -71,26 +71,43 @@
             display: none;
         }
         .countdown {
-            font-size: clamp(20px, 5vw, 22px);
+            font-family: 'Bungee', sans-serif;
+            font-size: clamp(60px, 10vw, 80px); /* Large countdown */
             font-weight: 700;
             margin: 20px 0;
-            color: #FFFFFF;
+            color: #FF4040;
             padding: 10px;
             border-radius: 5px;
             display: none;
+            text-shadow: 0 0 10px rgba(255, 255, 255, 0.5);
+        }
+        .view-phone-button {
+            background-color: #28A745;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: 700;
+            font-size: clamp(14px, 3.5vw, 16px);
+            transition: background-color 0.3s;
+        }
+        .view-phone-button:hover {
+            background-color: #218838;
         }
         @media (max-width: 600px) {
             .logo { max-height: 200px; }
             .draw-button { padding: 10px 20px; font-size: clamp(14px, 3.5vw, 16px); }
             .winner { padding: 15px; margin: 15px 0; }
-            .countdown { font-size: clamp(18px, 4.5vw, 20px); padding: 8px; }
+            .countdown { font-size: clamp(40px, 8vw, 60px); padding: 8px; }
+            .view-phone-button { padding: 8px 16px; font-size: clamp(12px, 3vw, 14px); }
         }
     </style>
 </head>
 <body>
     <header>
         <img src="/subzerobeer/images/subzero.png" alt="Sub-Zero Beer Logo" class="logo">
-        <p class="sorteio-text">PARTICIPE DO NOSSO SORTEIO E CONCORRA A UMA CAIXA DE CERVEJA LITRÃO A SUA ESCOLHA E UMA PORÇÃO DE FRANGO A PASSARINHO</p>
+        <p class="sorteio-text">PARTICIPE DO NOSSO SORTEIO E CONCORRA A UMA CAIXA DE CERVEJA LITRÃO A SUA ESCOLHA E UMA PORÇÃO DE FRANGO A PASSARINHO VALOR DE 5 REAIS CADA NÚMERO!</p>
     </header>
 
     <div class="draw-section">
@@ -114,10 +131,9 @@
             setTimeout(() => snowflake.remove(), 20000);
         }
 
-        // Aumenta a frequência dos flocos de neve
         setInterval(() => {
             createSnowflake();
-            createSnowflake(); // Cria dois flocos por intervalo para mais densidade
+            createSnowflake();
         }, 300);
 
         async function loadPurchases() {
@@ -255,6 +271,7 @@
                 alert('Erro ao salvar ganhador. Verifique o console para detalhes.');
             }
 
+            const maskedPhone = winner.buyerPhone ? '*******' + winner.buyerPhone.slice(-4) : 'N/A';
             winnerMessage.innerHTML = `
                 <h3>PARABÉNS AO GANHADOR!</h3>
                 <img src="${photoUrl}" alt="Foto do ganhador ${winner.buyerName}" onerror="this.src='https://via.placeholder.com/200';">
@@ -262,7 +279,7 @@
                 <p><strong>NÚMERO SORTEADO:</strong> ${winningNumber}</p>
                 <p><strong>NÚMEROS COMPRADOS:</strong> ${winner.numbers ? winner.numbers.join(', ') : 'N/A'}</p>
                 <p><strong>PRÊMIO:</strong> 1 CAIXA DE LITRÃO E 1 PORÇÃO DE FRANGO A PASSARINHO</p>
-                <p><strong>TELEFONE:</strong> ${winner.buyerPhone ? '*******' + winner.buyerPhone.slice(-4) : 'N/A'}</p>
+                <p><strong>TELEFONE:</strong> ${maskedPhone}</p>
                 <p><strong>DATA DO SORTEIO:</strong> ${new Date().toLocaleString('pt-BR')}</p>
                 <button class="view-phone-button" onclick="viewWinnerPhone()">VER TELEFONE DO GANHADOR</button>
             `;
