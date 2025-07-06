@@ -226,7 +226,7 @@ app.post('/create_preference', async (req, res) => {
     const preference = {
       items: [
         {
-          title: `Compra de ${quantity} número(s) para sorteio`,
+          title: `Compra de ${quantity} numero(s) para sorteio`,
           unit_price: 10.0,
           quantity: quantity,
         },
