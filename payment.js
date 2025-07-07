@@ -35,21 +35,21 @@ app.get('/health', (req, res) => {
     res.json({ status: 'ok' });
 });
 
-// 📋 Números disponíveis
+// 📋 Retorna os 200 números com status correto
 app.get('/available_numbers', async (req, res) => {
     try {
-        let numbers = await NumbersCollection.find().toArray();
+        const storedNumbers = await NumbersCollection.find({}).toArray();
+        const storedMap = {};
+        storedNumbers.forEach(item => {
+            storedMap[item.number] = item;
+        });
 
-        // Ordenar por número (como string com padding)
-        numbers = numbers.map(n => ({
-            ...n,
-            number: n.number.toString().padStart(3, '0'),
-            status: n.status || 'disponível'
-        }));
+        const allNumbers = Array.from({ length: 200 }, (_, i) => {
+            const number = String(i + 1).padStart(3, '0');
+            return storedMap[number] || { number, status: 'disponível' };
+        });
 
-        numbers.sort((a, b) => a.number.localeCompare(b.number));
-
-        res.json(numbers);
+        res.json(allNumbers);
     } catch (error) {
         console.error('Erro ao buscar números:', error.message);
         res.status(500).json({ error: 'Erro ao buscar números' });
@@ -70,7 +70,8 @@ app.post('/reserve_numbers', async (req, res) => {
                         userId,
                         reservedAt: new Date()
                     }
-                }
+                },
+                { upsert: true }
             )
         );
         await Promise.all(updates);
