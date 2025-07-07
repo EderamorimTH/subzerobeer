@@ -1,6 +1,6 @@
 let selectedNumbers = [];
-let userId = localStorage.getItem('userId') || (function() {
-    const newUserId = Math.random().toString(36).substr(2, 9);
+let userId = localStorage.getItem('userId') || (() => {
+    const newUserId = Math.random().toString(36).substring(2, 11); // Corrige substr para substring
     localStorage.setItem('userId', newUserId);
     console.log(`[${new Date().toISOString()}] Novo userId gerado: ${newUserId}`);
     return newUserId;
@@ -61,7 +61,7 @@ async function loadNumbers() {
             if (retries === maxRetries) {
                 console.log(`[${new Date().toISOString()}] Fallback: preenchendo grade com números padrão`);
                 numbers = Array.from({ length: 200 }, (_, i) => ({
-                    number: String(i + 1).padStart(3, '0'),
+                    number: String(i + 1).padStart(3,0),
                     status: 'disponível'
                 }));
                 errorDetails.innerHTML = '<p>Não foi possível conectar ao servidor. Tente novamente em alguns minutos ou entre em contato via <a href="https://instagram.com/Subzerobeercba" target="_blank">@SUBZEROBEERCBA</a>.</p>';
@@ -145,7 +145,9 @@ async function toggleNumberSelection(number, element) {
         }
     } else {
         selectedNumbers.splice(index, 1);
-        element.classList.remove('selected');
+       
+
+ element.classList.remove('selected');
         element.classList.add('available');
         console.log(`[${new Date().toISOString()}] Número ${number} desselecionado`);
     }
