@@ -11,7 +11,7 @@ async function checkBackendHealth() {
     try {
         const response = await fetch('https://subzerobeer.onrender.com/health', {
             method: 'GET',
-            headers: { 'Content-Type': 'application/json' }
+            headers: { 'Content-Type': 'application/json', 'Cache-Control': 'no-cache' }
         });
         if (!response.ok) throw new Error(`Erro HTTP: ${response.status}`);
         console.log(`[${new Date().toISOString()}] Backend ativo`);
@@ -40,10 +40,10 @@ async function loadNumbers() {
         try {
             console.log(`[${new Date().toISOString()}] Tentativa ${retries + 1} de carregar números`);
             const controller = new AbortController();
-            const timeoutId = setTimeout(() => controller.abort(), 15000);
-            const response = await fetch('https://subzerobeer.onrender.com/available_numbers', {
+            const timeoutId = setTimeout(() => controller.abort(), 30000);
+            const response = await fetch(`https://subzerobeer.onrender.com/available_numbers?t=${new Date().getTime()}`, {
                 method: 'GET',
-                headers: { 'Content-Type': 'application/json' },
+                headers: { 'Content-Type': 'application/json', 'Cache-Control': 'no-cache' },
                 signal: controller.signal
             });
             clearTimeout(timeoutId);
@@ -51,6 +51,7 @@ async function loadNumbers() {
             if (!response.ok) throw new Error(`Erro HTTP: ${response.status} - ${response.statusText}`);
             numbers = await response.json();
             console.log(`[${new Date().toISOString()}] Números recebidos:`, JSON.stringify(numbers.slice(0, 5)));
+            console.log(`[${new Date().toISOString()}] Números disponíveis: ${numbers.filter(n => n.status === 'disponível').length}, Reservados: ${numbers.filter(n => n.status === 'reservado').length}, Vendidos: ${numbers.filter(n => n.status === 'vendido').length}`);
             if (!Array.isArray(numbers)) {
                 throw new Error('Resposta da API não é uma lista válida');
             }
@@ -85,7 +86,7 @@ async function loadNumbers() {
         const numData = numbers.find(n => n.number === number) || { number, status: 'disponível' };
         const status = numData.status.normalize('NFD').replace(/[\u0300-\u036f]/g, '') === 'disponivel' ? 'disponível' : numData.status;
         const cssStatus = status === 'disponível' ? 'available' : status === 'reservado' ? 'reserved' : 'sold';
-        console.log(`[${new Date().toISOString()}] Processando número: ${number}`);
+        console.log(`[${new Date().toISOString()}] Processando número: ${number}, Status: ${status}`);
         const div = document.createElement('div');
         div.className = `number ${cssStatus}`;
         div.textContent = number;
@@ -117,11 +118,15 @@ async function toggleNumberSelection(number, element) {
         isReserving = true;
         try {
             console.log(`[${new Date().toISOString()}] Reservando número ${number} para userId: ${userId}`);
+            const controller = new AbortController();
+            const timeoutId = setTimeout(() => controller.abort(), 30000);
             const response = await fetch('https://subzerobeer.onrender.com/reserve_numbers', {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ numbers: [number], userId })
+                headers: { 'Content-Type': 'application/json', 'Cache-Control': 'no-cache' },
+                body: JSON.stringify({ numbers: [number], userId }),
+                signal: controller.signal
             });
+            clearTimeout(timeoutId);
             if (!response.ok) {
                 const errorData = await response.json();
                 throw new Error(`Erro HTTP: ${response.status} - ${errorData.error || 'Erro desconhecido'}`);
@@ -152,27 +157,65 @@ async function toggleNumberSelection(number, element) {
     updateForm();
 }
 
-async function checkReservation(number, element) {
+async function checkReservation(number, element, retries = 3) {
+    for (let attempt = 1; attempt <= retries; attempt++) {
+        try {
+            console.log(`[${new Date().toISOString()}] Verificando reserva do número ${number} (tentativa ${attempt})`);
+            const controller = new AbortController();
+            const timeoutId = setTimeout(() => controller.abort(), 30000);
+            const response = await fetch('https://subzerobeer.onrender.com/check_reservation', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', 'Cache-Control': 'no-cache' },
+                body: JSON.stringify({ numbers: [number], userId }),
+                signal: controller.signal
+            });
+            clearTimeout(timeoutId);
+            if (!response.ok) throw new Error(`Erro HTTP: ${response.status}`);
+            const result = await response.json();
+            if (!result.valid) {
+                element.classList.remove('selected');
+                element.classList.add('available');
+                selectedNumbers = selectedNumbers.filter(n => n !== number);
+                updateForm();
+                element.onclick = () => toggleNumberSelection(number, element);
+                element.style.pointerEvents = 'auto';
+                console.log(`[${new Date().toISOString()}] Reserva do número ${number} expirou`);
+            }
+            return;
+        } catch (error) {
+            console.error(`[${new Date().toISOString()}] Erro ao verificar reserva ${number} (tentativa ${attempt}):`, error.message);
+            if (attempt === retries) {
+                console.warn(`[${new Date().toISOString()}] Falha após ${retries} tentativas, recarregando números`);
+                await loadNumbers(); // Recarrega todos os números em caso de falha persistente
+            }
+            await new Promise(resolve => setTimeout(resolve, 2000));
+        }
+    }
+}
+
+async function checkReservationForPending(numbers) {
     try {
-        console.log(`[${new Date().toISOString()}] Verificando reserva do número ${number}`);
+        console.log(`[${new Date().toISOString()}] Verificando números pendentes: ${numbers}`);
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 30000);
         const response = await fetch('https://subzerobeer.onrender.com/check_reservation', {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ numbers: [number], userId })
+            headers: { 'Content-Type': 'application/json', 'Cache-Control': 'no-cache' },
+            body: JSON.stringify({ numbers, userId }),
+            signal: controller.signal
         });
+        clearTimeout(timeoutId);
         if (!response.ok) throw new Error(`Erro HTTP: ${response.status}`);
         const result = await response.json();
         if (!result.valid) {
-            element.classList.remove('selected');
-            element.classList.add('available');
-            selectedNumbers = selectedNumbers.filter(n => n !== number);
+            selectedNumbers = [];
             updateForm();
-            element.onclick = () => toggleNumberSelection(number, element);
-            element.style.pointerEvents = 'auto';
-            console.log(`[${new Date().toISOString()}] Reserva do número ${number} expirou`);
+            await loadNumbers();
+            console.log(`[${new Date().toISOString()}] Números pendentes liberados`);
         }
     } catch (error) {
-        console.error(`[${new Date().toISOString()}] Erro ao verificar reserva ${number}:`, error.message);
+        console.error(`[${new Date().toISOString()}] Erro ao verificar números pendentes:`, error.message);
+        await loadNumbers(); // Recarrega números em caso de erro
     }
 }
 
@@ -187,11 +230,15 @@ function updateForm() {
 async function checkReservations(numbers) {
     try {
         console.log(`[${new Date().toISOString()}] Verificando reserva para números: ${numbers}`);
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 30000);
         const response = await fetch('https://subzerobeer.onrender.com/check_reservation', {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ numbers, userId })
+            headers: { 'Content-Type': 'application/json', 'Cache-Control': 'no-cache' },
+            body: JSON.stringify({ numbers, userId }),
+            signal: controller.signal
         });
+        clearTimeout(timeoutId);
         if (!response.ok) {
             const errorData = await response.json();
             throw new Error(`Erro HTTP ${response.status}: ${errorData.message || 'Erro desconhecido'}`);
@@ -215,14 +262,15 @@ async function sendPaymentRequest(data) {
             if (!await checkReservations(data.numbers)) {
                 console.warn(`[${new Date().toISOString()}] Números inválidos ou já reservados`);
                 alert('Um ou mais números selecionados já foram reservados ou vendidos por outra pessoa. Escolha outros números.');
+                await loadNumbers(); // Recarrega números após falha na verificação
                 return;
             }
 
             const controller = new AbortController();
-            const timeoutId = setTimeout(() => controller.abort(), 15000);
+            const timeoutId = setTimeout(() => controller.abort(), 30000);
             const response = await fetch('https://subzerobeer.onrender.com/create_preference', {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
+                headers: { 'Content-Type': 'application/json', 'Cache-Control': 'no-cache' },
                 body: JSON.stringify({ ...data, quantity: parseInt(data.quantity, 10) }),
                 signal: controller.signal
             });
@@ -247,9 +295,10 @@ async function sendPaymentRequest(data) {
                 alert('Erro ao conectar ao servidor após várias tentativas. Detalhes: ' + error.message);
                 await fetch('https://subzerobeer.onrender.com/check_reservation', {
                     method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
+                    headers: { 'Content-Type': 'application/json', 'Cache-Control': 'no-cache' },
                     body: JSON.stringify({ numbers: data.numbers, userId: data.userId })
                 });
+                await loadNumbers();
             } else {
                 await new Promise(resolve => setTimeout(resolve, 3000));
             }
@@ -311,6 +360,11 @@ window.onload = async () => {
         document.getElementById('error-details').innerHTML = '<p>Não foi possível conectar ao servidor. Tente novamente em alguns minutos ou entre em contato via <a href="https://instagram.com/Subzerobeercba" target="_blank">@SUBZEROBEERCBA</a>.</p>';
     }
     await loadNumbers();
+    // Atualização periódica dos números a cada 30 segundos
+    setInterval(async () => {
+        console.log(`[${new Date().toISOString()}] Atualização periódica dos números`);
+        await loadNumbers();
+    }, 30000);
     const urlParams = new URLSearchParams(window.location.search);
     const status = urlParams.get('status');
     if (status === 'approved') {
@@ -320,12 +374,27 @@ window.onload = async () => {
         console.log(`[${new Date().toISOString()}] Pagamento aprovado`);
     } else if (status === 'rejected') {
         document.getElementById('error-message').style.display = 'block';
+        try {
+            const controller = new AbortController();
+            const timeoutId = setTimeout(() => controller.abort(), 30000);
+            await fetch('https://subzerobeer.onrender.com/release_reservations', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', 'Cache-Control': 'no-cache' },
+                body: JSON.stringify({ numbers: selectedNumbers, userId }),
+                signal: controller.signal
+            });
+            clearTimeout(timeoutId);
+            console.log(`[${new Date().toISOString()}] Números liberados após pagamento rejeitado`);
+        } catch (error) {
+            console.error(`[${new Date().toISOString()}] Erro ao liberar números:`, error.message);
+        }
         selectedNumbers = [];
         updateForm();
-        loadNumbers();
+        await loadNumbers();
         console.log(`[${new Date().toISOString()}] Pagamento rejeitado`);
     } else if (status === 'pending') {
         document.getElementById('pending-message').style.display = 'block';
         console.log(`[${new Date().toISOString()}] Pagamento pendente`);
+        setTimeout(() => checkReservationForPending(selectedNumbers), 5 * 60 * 1000);
     }
 };
