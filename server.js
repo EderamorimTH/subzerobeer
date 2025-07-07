@@ -39,6 +39,7 @@ const pendingNumberSchema = new mongoose.Schema({
   buyerPhone: String,
   reservedAt: { type: Date, default: Date.now, expires: 300 },
 });
+pendingNumberSchema.index({ reservedAt: 1 }, { expireAfterSeconds: 300 });
 const PendingNumber = mongoose.model('PendingNumber', pendingNumberSchema);
 
 const purchaseSchema = new mongoose.Schema({
@@ -106,22 +107,47 @@ async function initializeNumbers() {
 }
 
 async function cleanupExpiredReservations() {
+  const timeout = setTimeout(() => {
+    console.error(`[${new Date().toISOString()}] Timeout na limpeza de reservas expiradas`);
+  }, 10000);
   try {
-    const expired = await PendingNumber.find({ reservedAt: { $lte: new Date(Date.now() - 300000) } });
-    if (expired.length > 0) {
-      const expiredNumbers = expired.map(p => p.number);
-      await Number.updateMany({ number: { $in: expiredNumbers }, status: 'reservado' }, { status: 'disponível' });
-      await PendingNumber.deleteMany({ number: { $in: expiredNumbers } });
-      console.log(`[${new Date().toISOString()}] Limpeza de ${expired.length} reservas expiradas concluída`);
+    const reservedNumbers = await Number.find({ status: 'reservado' }).select('number');
+    if (reservedNumbers.length === 0) {
+      console.log(`[${new Date().toISOString()}] Nenhum número reservado encontrado para limpeza`);
+      return;
+    }
+
+    const reservedNumberIds = reservedNumbers.map(n => n.number);
+    const pending = await PendingNumber.find({ number: { $in: reservedNumberIds } }).select('number');
+    const pendingNumberIds = pending.map(p => p.number);
+
+    const expiredNumbers = reservedNumberIds.filter(n => !pendingNumberIds.includes(n));
+    
+    if (expiredNumbers.length > 0) {
+      await Number.updateMany(
+        { number: { $in: expiredNumbers }, status: 'reservado' },
+        { status: 'disponível' }
+      );
+      console.log(`[${new Date().toISOString()}] ${expiredNumbers.length} números liberados: ${expiredNumbers.join(', ')}`);
+    } else {
+      console.log(`[${new Date().toISOString()}] Nenhum número reservado expirado encontrado`);
     }
   } catch (error) {
     console.error(`[${new Date().toISOString()}] Erro ao limpar reservas expiradas:`, error.message);
+  } finally {
+    clearTimeout(timeout);
   }
 }
 
 mongoose.connection.once('open', async () => {
   await initializeNumbers();
-  setInterval(cleanupExpiredReservations, 60 * 1000);
+  setInterval(cleanupExpiredReservations, 120 * 1000); // Aumentado para 2 minutos
+  try {
+    const indexes = await PendingNumber.collection.indexes();
+    console.log(`[${new Date().toISOString()}] Índices da coleção PendingNumber:`, JSON.stringify(indexes, null, 2));
+  } catch (error) {
+    console.error(`[${new Date().toISOString()}] Erro ao verificar índices:`, error.message);
+  }
 });
 
 app.get('/health', (_, res) => {
@@ -184,6 +210,28 @@ app.post('/reserve_numbers', async (req, res) => {
   } catch (error) {
     console.error(`[${new Date().toISOString()}] Erro ao reservar números:`, error.message);
     res.status(500).json({ error: 'Erro ao reservar números: ' + error.message });
+  }
+});
+
+app.post('/release_numbers', async (req, res) => {
+  const { numbers, userId } = req.body;
+  if (!numbers || !Array.isArray(numbers) || numbers.length === 0 || !userId) {
+    console.error(`[${new Date().toISOString()}] Dados inválidos para liberar números:`, req.body);
+    return res.status(400).json({ error: 'Dados inválidos ou incompletos' });
+  }
+  try {
+    const pending = await PendingNumber.find({ number: { $in: numbers }, userId });
+    if (pending.length !== numbers.length) {
+      console.error(`[${new Date().toISOString()}] Alguns números não estão reservados pelo userId ${userId}:`, numbers);
+      return res.status(400).json({ error: 'Alguns números não estão reservados por este usuário' });
+    }
+    await Number.updateMany({ number: { $in: numbers }, status: 'reservado' }, { status: 'disponível' });
+    await PendingNumber.deleteMany({ number: { $in: numbers }, userId });
+    console.log(`[${new Date().toISOString()}] Números ${numbers.join(',')} liberados para userId: ${userId}`);
+    res.json({ success: true });
+  } catch (error) {
+    console.error(`[${new Date().toISOString()}] Erro ao liberar números:`, error.message);
+    res.status(500).json({ error: 'Erro ao liberar números: ' + error.message });
   }
 });
 
