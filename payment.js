@@ -85,7 +85,7 @@ async function loadNumbers() {
         const numData = numbers.find(n => n.number === number) || { number, status: 'disponível' };
         const status = numData.status.normalize('NFD').replace(/[\u0300-\u036f]/g, '') === 'disponivel' ? 'disponível' : numData.status;
         const cssStatus = status === 'disponível' ? 'available' : status === 'reservado' ? 'reserved' : 'sold';
-        console.log(`[${new Date().toISOString()}] Processando número: ${number}`);
+        console.log(`[${new Date().toISOString()}] Processando número: ${number}, status: ${status}`);
         const div = document.createElement('div');
         div.className = `number ${cssStatus}`;
         div.textContent = number;
@@ -116,6 +116,17 @@ async function toggleNumberSelection(number, element) {
     if (index === -1) {
         isReserving = true;
         try {
+            console.log(`[${new Date().toISOString()}] Verificando disponibilidade do número ${number} antes de reservar`);
+            const checkResponse = await fetch('https://subzerobeer.onrender.com/check_reservation', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ numbers: [number], userId: null })
+            });
+            const checkResult = await checkResponse.json();
+            if (!checkResult.valid || checkResult.status !== 'disponível') {
+                throw new Error(`Número ${number} não está disponível`);
+            }
+
             console.log(`[${new Date().toISOString()}] Reservando número ${number} para userId: ${userId}`);
             const response = await fetch('https://subzerobeer.onrender.com/reserve_numbers', {
                 method: 'POST',
@@ -132,14 +143,16 @@ async function toggleNumberSelection(number, element) {
                 element.classList.remove('available');
                 element.classList.add('selected');
                 console.log(`[${new Date().toISOString()}] Número ${number} reservado`);
-                setTimeout(() => checkReservation(number, element), 5 * 60 * 1000);
+                setTimeout(() => checkReservation(number, element), 5 * 60 * 
+
+1000);
             } else {
                 console.error(`[${new Date().toISOString()}] Erro ao reservar:`, result.message);
                 alert('Erro ao reservar: ' + result.message);
             }
         } catch (error) {
             console.error(`[${new Date().toISOString()}] Erro ao reservar:`, error.message);
-            alert('Erro ao reservar: ' + error.message);
+            alert(`Erro ao reservar o número ${number}: ${error.message}`);
         } finally {
             isReserving = false;
         }
@@ -163,16 +176,21 @@ async function checkReservation(number, element) {
         if (!response.ok) throw new Error(`Erro HTTP: ${response.status}`);
         const result = await response.json();
         if (!result.valid) {
+            console.log(`[${new Date().toISOString()}] Reserva do número ${number} expirou ou inválida`);
             element.classList.remove('selected');
             element.classList.add('available');
             selectedNumbers = selectedNumbers.filter(n => n !== number);
-            updateForm();
             element.onclick = () => toggleNumberSelection(number, element);
             element.style.pointerEvents = 'auto';
-            console.log(`[${new Date().toISOString()}] Reserva do número ${number} expirou`);
+            updateForm();
+            alert(`A reserva do número ${number} expirou. Por favor, selecione novamente se desejar.`);
+            await loadNumbers(); // Recarrega a grade para refletir o estado mais recente
+        } else {
+            console.log(`[${new Date().toISOString()}] Reserva do número ${number} ainda válida`);
         }
     } catch (error) {
         console.error(`[${new Date().toISOString()}] Erro ao verificar reserva ${number}:`, error.message);
+        // Não recarrega automaticamente em caso de erro para evitar loops, mas loga para depuração
     }
 }
 
@@ -198,7 +216,7 @@ async function checkReservations(numbers) {
         }
         const result = await response.json();
         console.log(`[${new Date().toISOString()}] Resultado da verificação de reserva:`, result);
-        return result.valid;
+        return result.valid && numbers.every(num => result.statuses?.[num] === 'reservado' && result.userIds?.[num] === userId);
     } catch (error) {
         console.error(`[${new Date().toISOString()}] Erro ao verificar reserva:`, error.message);
         return false;
@@ -215,6 +233,7 @@ async function sendPaymentRequest(data) {
             if (!await checkReservations(data.numbers)) {
                 console.warn(`[${new Date().toISOString()}] Números inválidos ou já reservados`);
                 alert('Um ou mais números selecionados já foram reservados ou vendidos por outra pessoa. Escolha outros números.');
+                await loadNumbers(); // Recarrega a grade para refletir o estado mais recente
                 return;
             }
 
@@ -250,6 +269,7 @@ async function sendPaymentRequest(data) {
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ numbers: data.numbers, userId: data.userId })
                 });
+                await loadNumbers();
             } else {
                 await new Promise(resolve => setTimeout(resolve, 3000));
             }
@@ -299,6 +319,7 @@ document.getElementById('payment-form').addEventListener('submit', async (event)
     } catch (error) {
         console.error(`[${new Date().toISOString()}] Erro ao processar formulário:`, error.message);
         alert('Erro ao processar pagamento: ' + error.message);
+        await loadNumbers();
     } finally {
         loadingMessage.style.display = 'none';
     }
@@ -318,11 +339,12 @@ window.onload = async () => {
         selectedNumbers = [];
         updateForm();
         console.log(`[${new Date().toISOString()}] Pagamento aprovado`);
+        await loadNumbers();
     } else if (status === 'rejected') {
         document.getElementById('error-message').style.display = 'block';
         selectedNumbers = [];
         updateForm();
-        loadNumbers();
+        await loadNumbers();
         console.log(`[${new Date().toISOString()}] Pagamento rejeitado`);
     } else if (status === 'pending') {
         document.getElementById('pending-message').style.display = 'block';
