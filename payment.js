@@ -8,7 +8,7 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
-// Conexão MongoDB
+// 🔗 Conexão com MongoDB
 const uri = process.env.MONGO_URI || 'mongodb+srv://<usuario>:<senha>@cluster.mongodb.net/subzero';
 const client = new MongoClient(uri);
 let db, NumbersCollection;
@@ -25,17 +25,17 @@ async function connectDB() {
 }
 connectDB();
 
-// Mercado Pago
+// 💳 Configuração Mercado Pago
 const mercadopago = new MercadoPagoConfig({
     accessToken: process.env.MERCADO_PAGO_ACCESS_TOKEN
 });
 
-// Health check
+// 🔍 Verificação de status do servidor
 app.get('/health', (req, res) => {
     res.json({ status: 'ok' });
 });
 
-// GET - números disponíveis
+// 📋 Números disponíveis
 app.get('/available_numbers', async (req, res) => {
     try {
         const numbers = await NumbersCollection.find().toArray();
@@ -45,7 +45,7 @@ app.get('/available_numbers', async (req, res) => {
     }
 });
 
-// POST - reservar números
+// 🟡 Reservar números
 app.post('/reserve_numbers', async (req, res) => {
     const { numbers, userId } = req.body;
 
@@ -69,7 +69,7 @@ app.post('/reserve_numbers', async (req, res) => {
     }
 });
 
-// POST - checar reserva
+// 🔍 Verificar se a reserva ainda é válida
 app.post('/check_reservation', async (req, res) => {
     const { numbers, userId } = req.body;
 
@@ -86,7 +86,7 @@ app.post('/check_reservation', async (req, res) => {
     }
 });
 
-// ✅ NOVO - liberar número manualmente
+// ✅ Liberar número manualmente após expiração
 app.post('/release_number', async (req, res) => {
     const { number, userId } = req.body;
 
@@ -119,7 +119,7 @@ app.post('/release_number', async (req, res) => {
     }
 });
 
-// POST - criar pagamento
+// 💰 Criar preferência de pagamento Mercado Pago
 app.post('/create_preference', async (req, res) => {
     const { buyerName, buyerPhone, quantity, numbers, userId } = req.body;
 
@@ -151,7 +151,7 @@ app.post('/create_preference', async (req, res) => {
     }
 });
 
-// Iniciar servidor
+// 🚀 Iniciar servidor
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
     console.log(`🚀 Servidor rodando na porta ${PORT}`);
