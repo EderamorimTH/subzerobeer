@@ -59,13 +59,11 @@ async function loadNumbers() {
             console.error(`[${new Date().toISOString()}] Erro na tentativa ${retries + 1}:`, error.message);
             retries++;
             if (retries === maxRetries) {
-                console.log(`[${new Date().toISOString()}] Fallback: preenchendo grade com números padrão`);
-                numbers = Array.from({ length: 200 }, (_, i) => ({
-                    number: String(i + 1).padStart(3,0),
-                    status: 'disponível'
-                }));
+                console.log(`[${new Date().toISOString()}] Falha ao carregar números do servidor`);
                 errorDetails.innerHTML = '<p>Não foi possível conectar ao servidor. Tente novamente em alguns minutos ou entre em contato via <a href="https://instagram.com/Subzerobeercba" target="_blank">@SUBZEROBEERCBA</a>.</p>';
                 numberError.style.display = 'block';
+                loadingMessage.style.display = 'none';
+                return; // Não carrega números localmente
             }
             await new Promise(resolve => setTimeout(resolve, 2000));
         }
