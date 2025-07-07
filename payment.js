@@ -27,12 +27,6 @@ async function loadNumbers() {
     const loadingMessage = document.getElementById('loading-message');
     const numberError = document.getElementById('number-error');
     const errorDetails = document.getElementById('error-details');
-    
-    if (!numbersGrid || !loadingMessage || !numberError || !errorDetails) {
-        console.error(`[${new Date().toISOString()}] Elementos do DOM não encontrados`);
-        return;
-    }
-
     numbersGrid.style.display = 'grid';
     numberError.style.display = 'none';
     loadingMessage.style.display = 'block';
@@ -70,7 +64,7 @@ async function loadNumbers() {
                     number: String(i + 1).padStart(3, '0'),
                     status: 'disponível'
                 }));
-                errorDetails.innerHTML = '<p>Não foi possível conectar ao servidor. Exibindo números padrão. Tente novamente em alguns minutos ou entre em contato via <a href="https://instagram.com/Subzerobeercba" target="_blank">@SUBZEROBEERCBA</a>.</p>';
+                errorDetails.innerHTML = '<p>Não foi possível conectar ao servidor. Tente novamente em alguns minutos ou entre em contato via <a href="https://instagram.com/Subzerobeercba" target="_blank">@SUBZEROBEERCBA</a>.</p>';
                 numberError.style.display = 'block';
             }
             await new Promise(resolve => setTimeout(resolve, 2000));
@@ -79,7 +73,6 @@ async function loadNumbers() {
 
     loadingMessage.style.display = 'none';
 
-    console.log(`[${new Date().toISOString()}] Total de números a processar: ${numbers.length}`);
     if (numbers.length === 0) {
         errorDetails.innerHTML = '<p>Nenhum número disponível no momento. Tente novamente mais tarde ou entre em contato via <a href="https://instagram.com/Subzerobeercba" target="_blank">@SUBZEROBEERCBA</a>.</p>';
         numberError.style.display = 'block';
@@ -92,7 +85,7 @@ async function loadNumbers() {
         const numData = numbers.find(n => n.number === number) || { number, status: 'disponível' };
         const status = numData.status.normalize('NFD').replace(/[\u0300-\u036f]/g, '') === 'disponivel' ? 'disponível' : numData.status;
         const cssStatus = status === 'disponível' ? 'available' : status === 'reservado' ? 'reserved' : 'sold';
-        console.log(`[${new Date().toISOString()}] Processando número: ${number}, status: ${status}`);
+        console.log(`[${new Date().toISOString()}] Processando número: ${number}`);
         const div = document.createElement('div');
         div.className = `number ${cssStatus}`;
         div.textContent = number;
@@ -123,22 +116,6 @@ async function toggleNumberSelection(number, element) {
     if (index === -1) {
         isReserving = true;
         try {
-            console.log(`[${new Date().toISOString()}] Verificando disponibilidade do número ${number} antes de reservar`);
-            const checkResponse = await fetch('https://subzerobeer.onrender.com/check_reservation', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ numbers: [number], userId: null })
-            });
-            if (!checkResponse.ok) {
-                throw new Error(`Erro HTTP ${checkResponse.status}: Falha ao verificar disponibilidade do número ${number}`);
-            }
-            const checkResult = await checkResponse.json();
-            console.log(`[${new Date().toISOString()}] Resultado da verificação de disponibilidade para ${number}:`, checkResult);
-
-            if (!checkResult.valid || checkResult.statuses?.[number] !== 'disponível') {
-                throw new Error(`Número ${number} não está disponível. Status: ${checkResult.statuses?.[number] || 'desconhecido'}`);
-            }
-
             console.log(`[${new Date().toISOString()}] Reservando número ${number} para userId: ${userId}`);
             const response = await fetch('https://subzerobeer.onrender.com/reserve_numbers', {
                 method: 'POST',
@@ -147,23 +124,22 @@ async function toggleNumberSelection(number, element) {
             });
             if (!response.ok) {
                 const errorData = await response.json();
-                throw new Error(`Erro HTTP ${response.status}: ${errorData.error || 'Erro desconhecido'}`);
+                throw new Error(`Erro HTTP: ${response.status} - ${errorData.error || 'Erro desconhecido'}`);
             }
             const result = await response.json();
             if (result.success) {
                 selectedNumbers.push(number);
                 element.classList.remove('available');
                 element.classList.add('selected');
-                console.log(`[${new Date().toISOString()}] Número ${number} reservado com sucesso`);
+                console.log(`[${new Date().toISOString()}] Número ${number} reservado`);
                 setTimeout(() => checkReservation(number, element), 5 * 60 * 1000);
             } else {
                 console.error(`[${new Date().toISOString()}] Erro ao reservar:`, result.message);
-                throw new Error(result.message || 'Erro desconhecido ao reservar');
+                alert('Erro ao reservar: ' + result.message);
             }
         } catch (error) {
-            console.error(`[${new Date().toISOString()}] Erro ao reservar o número ${number}:`, error.message);
-            alert(`Não foi possível reservar o número ${number}: ${error.message}. A grade será atualizada.`);
-            await loadNumbers();
+            console.error(`[${new Date().toISOString()}] Erro ao reservar:`, error.message);
+            alert('Erro ao reservar: ' + error.message);
         } finally {
             isReserving = false;
         }
@@ -172,7 +148,6 @@ async function toggleNumberSelection(number, element) {
         element.classList.remove('selected');
         element.classList.add('available');
         console.log(`[${new Date().toISOString()}] Número ${number} desselecionado`);
-        await loadNumbers();
     }
     updateForm();
 }
@@ -185,38 +160,25 @@ async function checkReservation(number, element) {
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ numbers: [number], userId })
         });
-        if (!response.ok) {
-            throw new Error(`Erro HTTP ${response.status}: Falha ao verificar reserva do número ${number}`);
-        }
+        if (!response.ok) throw new Error(`Erro HTTP: ${response.status}`);
         const result = await response.json();
-        console.log(`[${new Date().toISOString()}] Resultado da verificação para ${number}:`, result);
-        if (!result.valid || result.statuses?.[number] !== 'reservado') {
-            console.log(`[${new Date().toISOString()}] Reserva do número ${number} expirou ou inválida`);
+        if (!result.valid) {
             element.classList.remove('selected');
             element.classList.add('available');
             selectedNumbers = selectedNumbers.filter(n => n !== number);
+            updateForm();
             element.onclick = () => toggleNumberSelection(number, element);
             element.style.pointerEvents = 'auto';
-            updateForm();
-            alert(`A reserva do número ${number} expirou ou não é mais válida. Por favor, selecione novamente se desejar.`);
-            await loadNumbers();
-        } else {
-            console.log(`[${new Date().toISOString()}] Reserva do número ${number} ainda válida`);
+            console.log(`[${new Date().toISOString()}] Reserva do número ${number} expirou`);
         }
     } catch (error) {
         console.error(`[${new Date().toISOString()}] Erro ao verificar reserva ${number}:`, error.message);
-        alert(`Erro ao verificar a reserva do número ${number}. A grade será atualizada.`);
-        await loadNumbers();
     }
 }
 
 function updateForm() {
     const selectedNumbersSpan = document.getElementById('selected-numbers');
     const totalPriceSpan = document.getElementById('total-price');
-    if (!selectedNumbersSpan || !totalPriceSpan) {
-        console.error(`[${new Date().toISOString()}] Elementos do formulário não encontrados`);
-        return;
-    }
     selectedNumbersSpan.textContent = selectedNumbers.length > 0 ? selectedNumbers.join(', ') : 'Nenhum';
     totalPriceSpan.textContent = (selectedNumbers.length * 5).toFixed(2);
     console.log(`[${new Date().toISOString()}] Formulário atualizado: Números: ${selectedNumbers}, Total: R$${totalPriceSpan.textContent}`);
@@ -236,7 +198,7 @@ async function checkReservations(numbers) {
         }
         const result = await response.json();
         console.log(`[${new Date().toISOString()}] Resultado da verificação de reserva:`, result);
-        return result.valid && numbers.every(num => result.statuses?.[num] === 'reservado' && result.userIds?.[num] === userId);
+        return result.valid;
     } catch (error) {
         console.error(`[${new Date().toISOString()}] Erro ao verificar reserva:`, error.message);
         return false;
@@ -253,7 +215,6 @@ async function sendPaymentRequest(data) {
             if (!await checkReservations(data.numbers)) {
                 console.warn(`[${new Date().toISOString()}] Números inválidos ou já reservados`);
                 alert('Um ou mais números selecionados já foram reservados ou vendidos por outra pessoa. Escolha outros números.');
-                await loadNumbers();
                 return;
             }
 
@@ -289,7 +250,6 @@ async function sendPaymentRequest(data) {
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ numbers: data.numbers, userId: data.userId })
                 });
-                await loadNumbers();
             } else {
                 await new Promise(resolve => setTimeout(resolve, 3000));
             }
@@ -300,10 +260,6 @@ async function sendPaymentRequest(data) {
 document.getElementById('payment-form').addEventListener('submit', async (event) => {
     event.preventDefault();
     const loadingMessage = document.getElementById('loading-message');
-    if (!loadingMessage) {
-        console.error(`[${new Date().toISOString()}] Elemento loading-message não encontrado`);
-        return;
-    }
     loadingMessage.style.display = 'block';
     console.log(`[${new Date().toISOString()}] Formulário enviado`);
 
@@ -343,7 +299,6 @@ document.getElementById('payment-form').addEventListener('submit', async (event)
     } catch (error) {
         console.error(`[${new Date().toISOString()}] Erro ao processar formulário:`, error.message);
         alert('Erro ao processar pagamento: ' + error.message);
-        await loadNumbers();
     } finally {
         loadingMessage.style.display = 'none';
     }
@@ -352,33 +307,25 @@ document.getElementById('payment-form').addEventListener('submit', async (event)
 window.onload = async () => {
     const backendOk = await checkBackendHealth();
     if (!backendOk) {
-        const numberError = document.getElementById('number-error');
-        const errorDetails = document.getElementById('error-details');
-        if (numberError && errorDetails) {
-            numberError.style.display = 'block';
-            errorDetails.innerHTML = '<p>Não foi possível conectar ao servidor. Tente novamente em alguns minutos ou entre em contato via <a href="https://instagram.com/Subzerobeercba" target="_blank">@SUBZEROBEERCBA</a>.</p>';
-        }
+        document.getElementById('number-error').style.display = 'block';
+        document.getElementById('error-details').innerHTML = '<p>Não foi possível conectar ao servidor. Tente novamente em alguns minutos ou entre em contato via <a href="https://instagram.com/Subzerobeercba" target="_blank">@SUBZEROBEERCBA</a>.</p>';
     }
     await loadNumbers();
     const urlParams = new URLSearchParams(window.location.search);
     const status = urlParams.get('status');
     if (status === 'approved') {
-        const successMessage = document.getElementById('success-message');
-        if (successMessage) successMessage.style.display = 'block';
+        document.getElementById('success-message').style.display = 'block';
         selectedNumbers = [];
         updateForm();
         console.log(`[${new Date().toISOString()}] Pagamento aprovado`);
-        await loadNumbers();
     } else if (status === 'rejected') {
-        const errorMessage = document.getElementById('error-message');
-        if (errorMessage) errorMessage.style.display = 'block';
+        document.getElementById('error-message').style.display = 'block';
         selectedNumbers = [];
         updateForm();
-        await loadNumbers();
+        loadNumbers();
         console.log(`[${new Date().toISOString()}] Pagamento rejeitado`);
     } else if (status === 'pending') {
-        const pendingMessage = document.getElementById('pending-message');
-        if (pendingMessage) pendingMessage.style.display = 'block';
+        document.getElementById('pending-message').style.display = 'block';
         console.log(`[${new Date().toISOString()}] Pagamento pendente`);
     }
 };
