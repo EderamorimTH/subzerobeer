@@ -30,33 +30,37 @@ const mercadopago = new MercadoPagoConfig({
     accessToken: process.env.MERCADO_PAGO_ACCESS_TOKEN
 });
 
-// 🔍 Verificação de status do servidor
+// 🔍 Verificação de status
 app.get('/health', (req, res) => {
     res.json({ status: 'ok' });
 });
 
-// 📋 Retorna os 200 números com status correto
+// 📋 Liberar números expirados e retornar os disponíveis
 app.get('/available_numbers', async (req, res) => {
     try {
-        const storedNumbers = await NumbersCollection.find({}).toArray();
-        const storedMap = {};
-        storedNumbers.forEach(item => {
-            storedMap[item.number] = item;
-        });
+        const now = new Date();
+        const fiveMinutesAgo = new Date(now.getTime() - 5 * 60 * 1000);
 
-        const allNumbers = Array.from({ length: 200 }, (_, i) => {
-            const number = String(i + 1).padStart(3, '0');
-            return storedMap[number] || { number, status: 'disponível' };
-        });
+        // Libera os expirados
+        await NumbersCollection.updateMany(
+            {
+                status: 'reservado',
+                reservedAt: { $lt: fiveMinutesAgo }
+            },
+            {
+                $set: { status: 'disponível' },
+                $unset: { userId: "", reservedAt: "" }
+            }
+        );
 
-        res.json(allNumbers);
+        const numbers = await NumbersCollection.find().toArray();
+        res.json(numbers);
     } catch (error) {
-        console.error('Erro ao buscar números:', error.message);
         res.status(500).json({ error: 'Erro ao buscar números' });
     }
 });
 
-// 🟡 Reservar números
+// 🟡 Reservar número
 app.post('/reserve_numbers', async (req, res) => {
     const { numbers, userId } = req.body;
 
@@ -65,13 +69,8 @@ app.post('/reserve_numbers', async (req, res) => {
             NumbersCollection.updateOne(
                 { number, status: 'disponível' },
                 {
-                    $set: {
-                        status: 'reservado',
-                        userId,
-                        reservedAt: new Date()
-                    }
-                },
-                { upsert: true }
+                    $set: { status: 'reservado', userId, reservedAt: new Date() }
+                }
             )
         );
         await Promise.all(updates);
@@ -81,57 +80,22 @@ app.post('/reserve_numbers', async (req, res) => {
     }
 });
 
-// 🔍 Verificar se a reserva ainda é válida
+// 🔍 Verificar reserva
 app.post('/check_reservation', async (req, res) => {
     const { numbers, userId } = req.body;
-
     try {
-        const result = await NumbersCollection.find({
+        const valid = await NumbersCollection.find({
             number: { $in: numbers },
             userId,
             status: 'reservado'
         }).toArray();
-
-        res.json({ valid: result.length === numbers.length });
+        res.json({ valid: valid.length === numbers.length });
     } catch (error) {
         res.status(500).json({ valid: false });
     }
 });
 
-// ✅ Liberar número manualmente após expiração
-app.post('/release_number', async (req, res) => {
-    const { number, userId } = req.body;
-
-    if (!number || !userId) {
-        return res.status(400).json({ success: false, error: 'Parâmetros ausentes.' });
-    }
-
-    try {
-        const result = await NumbersCollection.updateOne(
-            { number, userId, status: 'reservado' },
-            {
-                $set: {
-                    status: 'disponível',
-                    userId: null,
-                    updatedAt: new Date()
-                }
-            }
-        );
-
-        if (result.modifiedCount === 0) {
-            return res.status(404).json({
-                success: false,
-                error: 'Número não encontrado ou já está disponível.'
-            });
-        }
-
-        res.json({ success: true });
-    } catch (error) {
-        res.status(500).json({ success: false, error: error.message });
-    }
-});
-
-// 💰 Criar preferência de pagamento Mercado Pago
+// 💰 Criar preferência de pagamento
 app.post('/create_preference', async (req, res) => {
     const { buyerName, buyerPhone, quantity, numbers, userId } = req.body;
 
@@ -158,7 +122,6 @@ app.post('/create_preference', async (req, res) => {
 
         res.json({ init_point: preference.init_point });
     } catch (error) {
-        console.error('Erro ao criar preferência:', error.message);
         res.status(500).json({ error: error.message });
     }
 });
