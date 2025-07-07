@@ -38,9 +38,20 @@ app.get('/health', (req, res) => {
 // 📋 Números disponíveis
 app.get('/available_numbers', async (req, res) => {
     try {
-        const numbers = await NumbersCollection.find().toArray();
+        let numbers = await NumbersCollection.find().toArray();
+
+        // Ordenar por número (como string com padding)
+        numbers = numbers.map(n => ({
+            ...n,
+            number: n.number.toString().padStart(3, '0'),
+            status: n.status || 'disponível'
+        }));
+
+        numbers.sort((a, b) => a.number.localeCompare(b.number));
+
         res.json(numbers);
     } catch (error) {
+        console.error('Erro ao buscar números:', error.message);
         res.status(500).json({ error: 'Erro ao buscar números' });
     }
 });
