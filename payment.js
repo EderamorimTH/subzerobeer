@@ -130,7 +130,7 @@ async function toggleNumberSelection(number, element) {
                 element.classList.remove('available');
                 element.classList.add('selected');
                 console.log(`[${new Date().toISOString()}] Número ${number} reservado`);
-                updateForm(); // Adicionado para atualizar o total imediatamente
+                updateForm(); // Atualiza o formulário ao selecionar
                 setTimeout(() => checkReservation(number, element), 5 * 60 * 1000);
             } else {
                 console.error(`[${new Date().toISOString()}] Erro ao reservar:`, result.message);
@@ -161,7 +161,7 @@ async function toggleNumberSelection(number, element) {
             element.style.pointerEvents = 'auto';
             element.onclick = () => toggleNumberSelection(number, element);
             console.log(`[${new Date().toISOString()}] Número ${number} desselecionado e liberado`);
-            updateForm();
+            updateForm(); // Atualiza o formulário ao desselecionar
         } catch (error) {
             console.error(`[${new Date().toISOString()}] Erro ao liberar número ${number}:`, error.message);
             alert('Erro ao liberar número: ' + error.message);
@@ -204,6 +204,10 @@ async function checkReservation(number, element) {
 function updateForm() {
     const selectedNumbersSpan = document.getElementById('selected-numbers');
     const totalPriceSpan = document.getElementById('total-price');
+    if (!selectedNumbersSpan || !totalPriceSpan) {
+        console.error(`[${new Date().toISOString()}] Elementos HTML 'selected-numbers' ou 'total-price' não encontrados`);
+        return;
+    }
     selectedNumbersSpan.textContent = selectedNumbers.length > 0 ? selectedNumbers.join(', ') : 'Nenhum';
     totalPriceSpan.textContent = (selectedNumbers.length * 5).toFixed(2);
     console.log(`[${new Date().toISOString()}] Formulário atualizado: Números: ${selectedNumbers}, Total: R$${totalPriceSpan.textContent}`);
