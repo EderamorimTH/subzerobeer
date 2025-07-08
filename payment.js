@@ -63,7 +63,7 @@ async function loadNumbers() {
                 errorDetails.innerHTML = '<p>Não foi possível conectar ao servidor. Tente novamente em alguns minutos ou entre em contato via <a href="https://instagram.com/Subzerobeercba" target="_blank">@SUBZEROBEERCBA</a>.</p>';
                 numberError.style.display = 'block';
                 loadingMessage.style.display = 'none';
-                return; // Não carrega números localmente
+                return;
             }
             await new Promise(resolve => setTimeout(resolve, 2000));
         }
@@ -130,6 +130,7 @@ async function toggleNumberSelection(number, element) {
                 element.classList.remove('available');
                 element.classList.add('selected');
                 console.log(`[${new Date().toISOString()}] Número ${number} reservado`);
+                updateForm(); // Adicionado para atualizar o total imediatamente
                 setTimeout(() => checkReservation(number, element), 5 * 60 * 1000);
             } else {
                 console.error(`[${new Date().toISOString()}] Erro ao reservar:`, result.message);
@@ -160,13 +161,13 @@ async function toggleNumberSelection(number, element) {
             element.style.pointerEvents = 'auto';
             element.onclick = () => toggleNumberSelection(number, element);
             console.log(`[${new Date().toISOString()}] Número ${number} desselecionado e liberado`);
+            updateForm();
         } catch (error) {
             console.error(`[${new Date().toISOString()}] Erro ao liberar número ${number}:`, error.message);
             alert('Erro ao liberar número: ' + error.message);
         } finally {
             isReserving = false;
         }
-        updateForm();
     }
 }
 
