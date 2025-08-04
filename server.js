@@ -74,15 +74,36 @@ async function initializeNumbers() {
     }, []);
     console.log(`[${new Date().toISOString()}] Números pagos encontrados em purchases: ${paidNumbers.join(', ')}`);
 
-    if (count !== 300) {
-      console.log(`[${new Date().toISOString()}] Coleção 'numbers' incompleta ou vazia. Inicializando 300 números...`);
-      await Number.deleteMany({});
-      const numbers = Array.from({ length: 300 }, (_, i) => ({
-        number: String(i + 1).padStart(3, '0'),
-        status: paidNumbers.includes(String(i + 1).padStart(3, '0')) ? 'vendido' : 'disponível'
+    // Verificar se todos os números de 001 a 300 existem
+    const expectedNumbers = Array.from({ length: 300 }, (_, i) => String(i + 1).padStart(3, '0'));
+    const existingNumbers = await Number.find({}).select('number');
+    const existingNumberIds = existingNumbers.map(n => n.number);
+    const missingNumbers = expectedNumbers.filter(n => !existingNumberIds.includes(n));
+
+    if (missingNumbers.length > 0 || count !== 300) {
+      console.log(`[${new Date().toISOString()}] Coleção 'numbers' incompleta ou com números faltando. Inicializando 300 números...`);
+
+      // Inserir números faltantes
+      const numbersToInsert = missingNumbers.map(number => ({
+        number,
+        status: paidNumbers.includes(number) ? 'vendido' : 'disponível'
       }));
-      await Number.insertMany(numbers);
-      console.log(`[${new Date().toISOString()}] 300 números inseridos com sucesso`);
+      if (numbersToInsert.length > 0) {
+        await Number.insertMany(numbersToInsert);
+        console.log(`[${new Date().toISOString()}] ${numbersToInsert.length} números inseridos: ${missingNumbers.join(', ')}`);
+      }
+
+      // Corrigir status de números de 201 a 300 que possam estar incorretos
+      const numbersToFix = Array.from({ length: 100 }, (_, i) => String(i + 201).padStart(3, '0'));
+      await Number.updateMany(
+        { number: { $in: numbersToFix }, status: { $nin: ['disponível', 'vendido'] } },
+        { status: 'disponível' }
+      );
+      console.log(`[${new Date().toISOString()}] Status corrigido para 'disponível' nos números 201 a 300, se necessário`);
+
+      // Limpar reservas inválidas para números de 201 a 300
+      await PendingNumber.deleteMany({ number: { $in: numbersToFix } });
+      console.log(`[${new Date().toISOString()}] Reservas inválidas removidas para números 201 a 300`);
     } else {
       console.log(`[${new Date().toISOString()}] Coleção 'numbers' já contém ${count} registros`);
       if (paidNumbers.length > 0) {
@@ -100,6 +121,15 @@ async function initializeNumbers() {
           { status: 'disponível' }
         );
       }
+      // Corrigir status de números de 201 a 300 que possam estar como 'reservado'
+      const numbersToFix = Array.from({ length: 100 }, (_, i) => String(i + 201).padStart(3, '0'));
+      await Number.updateMany(
+        { number: { $in: numbersToFix }, status: 'reservado' },
+        { status: 'disponível' }
+      );
+      console.log(`[${new Date().toISOString()}] Status corrigido para 'disponível' nos números 201 a 300, se estavam 'reservado'`);
+      await PendingNumber.deleteMany({ number: { $in: numbersToFix } });
+      console.log(`[${new Date().toISOString()}] Reservas inválidas removidas para números 201 a 300`);
     }
   } catch (error) {
     console.error(`[${new Date().toISOString()}] Erro ao inicializar números:`, error.message);
