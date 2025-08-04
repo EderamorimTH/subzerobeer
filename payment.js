@@ -78,7 +78,7 @@ async function loadNumbers() {
         return;
     }
 
-    const allNumbers = Array.from({ length: 200 }, (_, i) => String(i + 1).padStart(3, '0'));
+    const allNumbers = Array.from({ length: 300 }, (_, i) => String(i + 1).padStart(3, '0'));
     allNumbers.forEach(number => {
         const numData = numbers.find(n => n.number === number) || { number, status: 'disponível' };
         const status = numData.status.normalize('NFD').replace(/[\u0300-\u036f]/g, '') === 'disponivel' ? 'disponível' : numData.status;
