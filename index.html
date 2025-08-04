@@ -263,6 +263,19 @@
         </nav>
     </header>
 
+    <section class="payment-form" id="payment-form-section">
+        <h2>FINALIZE SUA COMPRA</h2>
+        <p>Preencha os dados abaixo e clique em "Pagar com Pix/Cartão" para ser redirecionado ao Mercado Pago. Cada número custa R$ 5,00.</p>
+        <form id="payment-form">
+            <p>Números selecionados: <span id="selected-numbers">Nenhum</span></p>
+            <p>Total: R$ <span id="total-price">0.00</span></p>
+            <input type="text" id="buyer-name" placeholder="Seu Nome" required>
+            <input type="tel" id="buyer-phone" placeholder="Seu Telefone (ex.: 11912345678)" pattern="[0-9]{10,11}" required>
+            <button type="submit" class="pay-button">Pagar com Pix/Cartão</button>
+            <p>Atenção: Você tem 5 minutos para realizar o pagamento, ou os números selecionados serão liberados. Volte ao site para verificar a disponibilidade.</p>
+        </form>
+    </section>
+
     <!-- Overlay de senha -->
     <div class="password-overlay" id="password-overlay">
         <div class="password-box">
@@ -296,19 +309,6 @@
     <div class="loading-message" id="loading-message">Aguarde um momento, os números estão sendo carregados...</div>
 
     <div class="numbers-grid" id="numbers-grid"></div>
-
-    <section class="payment-form" id="payment-form-section">
-        <h2>FINALIZE SUA COMPRA</h2>
-        <p>Preencha os dados abaixo e clique em "Pagar com Pix/Cartão" para ser redirecionado ao Mercado Pago. Cada número custa R$ 5,00.</p>
-        <form id="payment-form">
-            <p>Números selecionados: <span id="selected-numbers">Nenhum</span></p>
-            <p>Total: R$ <span id="total-price">0.00</span></p>
-            <input type="text" id="buyer-name" placeholder="Seu Nome" required>
-            <input type="tel" id="buyer-phone" placeholder="Seu Telefone (ex.: 11912345678)" pattern="[0-9]{10,11}" required>
-            <button type="submit" class="pay-button">Pagar com Pix/Cartão</button>
-            <p>Atenção: Você tem 5 minutos para realizar o pagamento, ou os números selecionados serão liberados. Volte ao site para verificar a disponibilidade.</p>
-        </form>
-    </section>
 
     <footer>
         <p>Contato: <a href="https://instagram.com/Subzerobeercba" class="instagram-button">@SUBZEROBEERCBA</a></p>
