@@ -74,15 +74,15 @@ async function initializeNumbers() {
     }, []);
     console.log(`[${new Date().toISOString()}] Números pagos encontrados em purchases: ${paidNumbers.join(', ')}`);
 
-    if (count !== 200) {
-      console.log(`[${new Date().toISOString()}] Coleção 'numbers' incompleta ou vazia. Inicializando 200 números...`);
+    if (count !== 300) {
+      console.log(`[${new Date().toISOString()}] Coleção 'numbers' incompleta ou vazia. Inicializando 300 números...`);
       await Number.deleteMany({});
-      const numbers = Array.from({ length: 200 }, (_, i) => ({
+      const numbers = Array.from({ length: 300 }, (_, i) => ({
         number: String(i + 1).padStart(3, '0'),
         status: paidNumbers.includes(String(i + 1).padStart(3, '0')) ? 'vendido' : 'disponível'
       }));
       await Number.insertMany(numbers);
-      console.log(`[${new Date().toISOString()}] 200 números inseridos com sucesso`);
+      console.log(`[${new Date().toISOString()}] 300 números inseridos com sucesso`);
     } else {
       console.log(`[${new Date().toISOString()}] Coleção 'numbers' já contém ${count} registros`);
       if (paidNumbers.length > 0) {
